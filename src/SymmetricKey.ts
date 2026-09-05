@@ -1,34 +1,24 @@
+import { Buffer } from 'buffer';
+
 import {
   InvalidFormatError,
   InvalidLengthError,
   Media,
   NullObject,
-  Password,
   StringValueObject,
   ValueObject,
   assert,
 } from '@haskou/value-objects';
-import { Buffer } from 'buffer';
 
+import { CryptoPassword } from './CryptoPassword';
 import { EncryptedPayload } from './EncryptedPayload';
 import { CryptoAdapter } from './internal/CryptoAdapter';
 import { CryptoDerivation } from './internal/CryptoDerivation';
 import { CryptoPayload } from './internal/CryptoPayload';
 import { StrictBase64 } from './internal/StrictBase64';
 import { SymmetricEncryptedPayload } from './SymmetricEncryptedPayload';
-
-export type SymmetricKeyDerivationOptions = {
-  N?: number;
-  p?: number;
-  r?: number;
-  salt: string | StringValueObject | Buffer;
-};
-
-export type CryptoPassword = string | StringValueObject | Password;
-
-export type SymmetricKeyCryptOptions = {
-  aad?: string | StringValueObject | Buffer;
-};
+import { SymmetricKeyCryptOptions } from './SymmetricKeyCryptOptions';
+import { SymmetricKeyDerivationOptions } from './SymmetricKeyDerivationOptions';
 
 export class SymmetricKey extends ValueObject<string> {
   private static readonly ALGORITHM = 'aes-256-gcm';

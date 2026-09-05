@@ -1,5 +1,11 @@
-import { NullObject, StringValueObject, ValueObject, assert } from '@haskou/value-objects';
 import type { Buffer } from 'buffer';
+
+import {
+  NullObject,
+  StringValueObject,
+  ValueObject,
+  assert,
+} from '@haskou/value-objects';
 
 import { InvalidSignatureError } from './errors/InvalidSignatureError';
 

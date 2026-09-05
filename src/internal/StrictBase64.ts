@@ -1,9 +1,8 @@
-import { assert } from '@haskou/value-objects';
 import { Buffer } from 'buffer';
 
-type StrictBase64Options = {
-  allowEmpty?: boolean;
-};
+import { assert } from '@haskou/value-objects';
+
+import { StrictBase64Options } from './StrictBase64Options';
 
 export class StrictBase64 {
   private static readonly PATTERN =

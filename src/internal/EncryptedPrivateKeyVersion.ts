@@ -1,5 +1,5 @@
+import { CryptoPassword } from '../CryptoPassword';
 import { PrivateKey } from '../PrivateKey';
-import { CryptoPassword } from '../SymmetricKey';
 
 export abstract class EncryptedPrivateKeyVersion {
   public abstract matches(parts: string[]): boolean;

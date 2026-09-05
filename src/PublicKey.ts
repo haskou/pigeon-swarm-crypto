@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import {
   InvalidFormatError,
   InvalidLengthError,
@@ -6,7 +8,6 @@ import {
   StringValueObject,
   assert,
 } from '@haskou/value-objects';
-import { Buffer } from 'buffer';
 
 import { AsymmetricEncryptedPayload } from './AsymmetricEncryptedPayload';
 import { CryptoAdapter } from './internal/CryptoAdapter';
@@ -60,11 +61,7 @@ export class PublicKey extends Key {
         : Buffer.from(payload.valueOf());
     const signatureBuffer = Buffer.from(signature.valueOf(), 'base64');
 
-    return CryptoAdapter.verify(
-      signatureBuffer,
-      messageBuffer,
-      this.valueOf(),
-    );
+    return CryptoAdapter.verify(signatureBuffer, messageBuffer, this.valueOf());
   }
 
   public encrypt(payload: CryptoPayload): AsymmetricEncryptedPayload {

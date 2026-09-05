@@ -1,4 +1,5 @@
-import { EncryptedPayload, EncryptedPayloadScheme } from './EncryptedPayload';
+import { EncryptedPayload } from './EncryptedPayload';
+import { EncryptedPayloadScheme } from './EncryptedPayloadScheme';
 
 export class SymmetricEncryptedPayload extends EncryptedPayload {
   public getScheme(): EncryptedPayloadScheme {

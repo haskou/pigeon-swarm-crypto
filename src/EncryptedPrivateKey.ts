@@ -1,11 +1,11 @@
 import { StringValueObject, ValueObject, assert } from '@haskou/value-objects';
 
+import { CryptoPassword } from './CryptoPassword';
 import { InvalidEncryptedPrivateKeyFormatError } from './errors/InvalidEncryptedPrivateKeyFormatError';
 import { EncryptedPrivateKeyLegacy } from './internal/EncryptedPrivateKeyLegacy';
 import { EncryptedPrivateKeyV2 } from './internal/EncryptedPrivateKeyV2';
 import { EncryptedPrivateKeyV3 } from './internal/EncryptedPrivateKeyV3';
 import { PrivateKey } from './PrivateKey';
-import { CryptoPassword } from './SymmetricKey';
 
 export class EncryptedPrivateKey extends ValueObject<string> {
   private static readonly versions = [

@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 
+import { CryptoPassword } from '../CryptoPassword';
 import { PrivateKey } from '../PrivateKey';
-import { CryptoPassword } from '../SymmetricKey';
 import { CryptoAdapter } from './CryptoAdapter';
 import { CryptoDerivation } from './CryptoDerivation';
 import { EncryptedPrivateKeyVersion } from './EncryptedPrivateKeyVersion';

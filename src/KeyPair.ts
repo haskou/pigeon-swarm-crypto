@@ -1,13 +1,13 @@
 import type { PrimitiveOf } from '@haskou/value-objects';
 import type { Buffer } from 'buffer';
 
+import { CryptoPassword } from './CryptoPassword';
 import { EncryptedKeyPair } from './EncryptedKeyPair';
 import { EncryptedPayload } from './EncryptedPayload';
 import { CryptoPayload } from './internal/CryptoPayload';
 import { PrivateKey } from './PrivateKey';
 import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
-import { CryptoPassword } from './SymmetricKey';
 
 export class KeyPair {
   public static generate(): Promise<KeyPair> {

@@ -1,10 +1,12 @@
-import { assert } from '@haskou/value-objects';
 import { Buffer } from 'buffer';
 
+import { assert } from '@haskou/value-objects';
+
+import { CryptoPassword } from '../CryptoPassword';
 import { InvalidEncryptedPrivateKeyFormatError } from '../errors/InvalidEncryptedPrivateKeyFormatError';
 import { PrivateKey } from '../PrivateKey';
 import { SymmetricEncryptedPayload } from '../SymmetricEncryptedPayload';
-import { CryptoPassword, SymmetricKey } from '../SymmetricKey';
+import { SymmetricKey } from '../SymmetricKey';
 import { CryptoDerivation } from './CryptoDerivation';
 import { EncryptedPrivateKeyVersion } from './EncryptedPrivateKeyVersion';
 import { StrictBase64 } from './StrictBase64';

@@ -1,6 +1,8 @@
 export * from './AsymmetricEncryptedPayload';
+export * from './CryptoPassword';
 export * from './EncryptedKeyPair';
 export * from './EncryptedPayload';
+export * from './EncryptedPayloadScheme';
 export * from './EncryptedPrivateKey';
 export * from './errors/InvalidEncryptedPrivateKeyFormatError';
 export * from './errors/InvalidKeyError';
@@ -16,3 +18,5 @@ export * from './PublicKey';
 export * from './Signature';
 export * from './SymmetricEncryptedPayload';
 export * from './SymmetricKey';
+export * from './SymmetricKeyCryptOptions';
+export * from './SymmetricKeyDerivationOptions';

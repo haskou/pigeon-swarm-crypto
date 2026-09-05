@@ -1,6 +1,6 @@
 import { ValueObject } from '@haskou/value-objects';
 
-export type EncryptedPayloadScheme = 'asymmetric' | 'symmetric' | 'unknown';
+import { EncryptedPayloadScheme } from './EncryptedPayloadScheme';
 
 export class EncryptedPayload extends ValueObject<string> {
   public getScheme(): EncryptedPayloadScheme {

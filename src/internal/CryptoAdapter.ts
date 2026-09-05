@@ -11,14 +11,14 @@ import {
 } from '@noble/hashes/utils.js';
 import { Buffer } from 'buffer';
 
+import { HashAlgorithm } from './HashAlgorithm';
+
 const privateKeyDerPrefix = hexToBytes('302e020100300506032b657004220420');
 const publicKeyDerPrefix = hexToBytes('302a300506032b6570032100');
 const gcmTagLength = 16;
 const asymmetricPayloadV2Info = Buffer.from(
   '@haskou/value-objects/asymmetric-payload/v2',
 );
-
-export type HashAlgorithm = 'md5' | 'sha256' | 'sha512';
 
 export class CryptoAdapter {
   private static pemToDer(pem: string): Buffer {

@@ -95,7 +95,10 @@ describe('PrivateKey', () => {
       ephemeralPriv,
       recipientPub,
     );
-    const aesKey = CryptoAdapter.deriveEncryptionKey(sharedSecret, ephemeralPub);
+    const aesKey = CryptoAdapter.deriveEncryptionKey(
+      sharedSecret,
+      ephemeralPub,
+    );
     const iv = CryptoAdapter.randomBytes(12);
     const { cipherText, tag } = CryptoAdapter.encryptAes256Gcm(
       aesKey,
@@ -133,7 +136,9 @@ describe('PrivateKey', () => {
     ] as Array<[number, string]>) {
       const parts = encrypted.valueOf().split('.');
       parts[index] = value;
-      expect(() => priv.decrypt(new EncryptedPayload(parts.join('.')))).toThrow();
+      expect(() =>
+        priv.decrypt(new EncryptedPayload(parts.join('.'))),
+      ).toThrow();
     }
   });
 
@@ -197,7 +202,8 @@ describe('PrivateKey', () => {
 
     expect(first).toBeInstanceOf(Key);
     expect(first.isEqual(second)).toBeTrue();
-    expect(first.isEqual(privatePem)).toBeTrue();
+    expect(first.isEqual(privatePem)).toBeFalse();
+    expect(first.hasValue(privatePem)).toBeTrue();
     expect(first.isEqual(new PrivateKey(other.privateKey))).toBeFalse();
     expect(cloned).toBeInstanceOf(PrivateKey);
     expect(cloned.valueOf()).toBe(privatePem);

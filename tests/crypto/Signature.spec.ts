@@ -75,7 +75,8 @@ describe('Signature', () => {
     expect(first.valueOf()).toBe(validSignatureBase64);
     expect(first.toString()).toBe(validSignatureBase64);
     expect(first.isEqual(second)).toBeTrue();
-    expect(first.isEqual(validSignatureBase64)).toBeTrue();
+    expect(first.isEqual(validSignatureBase64)).toBeFalse();
+    expect(first.hasValue(validSignatureBase64)).toBeTrue();
     expect(first.isEqual(different)).toBeFalse();
     expect(cloned).toBeInstanceOf(Signature);
     expect(cloned.isEqual(first)).toBeTrue();

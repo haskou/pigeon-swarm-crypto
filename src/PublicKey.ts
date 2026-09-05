@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-
 import {
   InvalidFormatError,
   InvalidLengthError,
@@ -8,6 +6,7 @@ import {
   StringValueObject,
   assert,
 } from '@haskou/value-objects';
+import { Buffer } from 'buffer';
 
 import { AsymmetricEncryptedPayload } from './AsymmetricEncryptedPayload';
 import { CryptoAdapter } from './internal/CryptoAdapter';

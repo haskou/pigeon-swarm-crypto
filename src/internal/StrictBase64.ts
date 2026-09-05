@@ -1,6 +1,5 @@
-import { Buffer } from 'buffer';
-
 import { assert } from '@haskou/value-objects';
+import { Buffer } from 'buffer';
 
 import { StrictBase64Options } from './StrictBase64Options';
 

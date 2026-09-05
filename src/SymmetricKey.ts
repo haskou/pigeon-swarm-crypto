@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-
 import {
   InvalidFormatError,
   InvalidLengthError,
@@ -9,6 +7,7 @@ import {
   ValueObject,
   assert,
 } from '@haskou/value-objects';
+import { Buffer } from 'buffer';
 
 import { CryptoPassword } from './CryptoPassword';
 import { EncryptedPayload } from './EncryptedPayload';

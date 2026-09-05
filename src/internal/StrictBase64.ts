@@ -4,8 +4,14 @@ import { Buffer } from 'buffer';
 import { StrictBase64Options } from './StrictBase64Options';
 
 export class StrictBase64 {
-  private static readonly PATTERN =
-    /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+  private static readonly INVALID_CHARACTER = /[^A-Za-z0-9+/]/;
+
+  private static hasValidCharacters(value: string): boolean {
+    const padding = value.endsWith('==') ? 2 : value.endsWith('=') ? 1 : 0;
+    const content = value.slice(0, value.length - padding);
+
+    return !StrictBase64.INVALID_CHARACTER.test(content);
+  }
 
   public static getDecodedLength(value: string): number {
     const padding = value.endsWith('==') ? 2 : value.endsWith('=') ? 1 : 0;
@@ -21,7 +27,7 @@ export class StrictBase64 {
     assert(
       (options.allowEmpty === true || value.length > 0) &&
         value.length % 4 === 0 &&
-        StrictBase64.PATTERN.test(value),
+        StrictBase64.hasValidCharacters(value),
       error,
     );
   }

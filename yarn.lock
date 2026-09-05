@@ -378,16 +378,13 @@
     eslint-plugin-unused-imports "^4.4.1"
     globals "^17.9.0"
 
-"@haskou/value-objects@^4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@haskou/value-objects/-/value-objects-4.0.1.tgz#bfe6b6ba9d646a84c6a8a5d444e51fa6f591a3d2"
-  integrity sha512-k+S2itD8Bm8wW7wkNVh9e2voVUqUxXjjTgsnvpcvLAGKp3sZ1g10Nomh218G2BdLxDKjWmvQ/FVxQON91wfSRA==
+"@haskou/value-objects@7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/@haskou/value-objects/-/value-objects-7.0.0.tgz#b7028a082b4f71bd8c3708c0450d0a54b8edbbbb"
+  integrity sha512-wcZlTGZvNmsVUpZciPJ05ugoEpfn6/uwVEduRtanxVGpvT+Su8kYWFfemOYjosqyLsuB9/AR+auss3l/NEyU/w==
   dependencies:
-    "@noble/ciphers" "^2.2.0"
-    "@noble/curves" "^2.2.0"
-    "@noble/hashes" "^2.2.0"
     buffer "^6.0.3"
-    tslib "^2.8.1"
+    uuid "^11.1.1"
 
 "@humanfs/core@^0.19.2":
   version "0.19.2"
@@ -737,14 +734,14 @@
   resolved "https://registry.yarnpkg.com/@noble/ciphers/-/ciphers-2.4.0.tgz#04cf9e0f1cd3d521e8e5ca92dc0c02238180f676"
   integrity sha512-AnjFn0Jv92laAkvMrghlFZq4qQCIN/4DxFV/eooqtC2YTjB7kBeLMS2T9KJX4Dn+ZVXLOwK0lSgqDtx9gvxtiw==
 
-"@noble/curves@^2.2.0":
+"@noble/curves@^2.0.1", "@noble/curves@^2.2.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-2.4.0.tgz#367c869bfd790c3a2248152562f255b5f8898b74"
   integrity sha512-P4/62zrgfH33CneE3Dn4WhJVA22YUU0eR51wKIan4NVRvwsA0YnPTwWGpNbpuacSujmSFLvyzpyuR30+fbq2Ew==
   dependencies:
     "@noble/hashes" "2.4.0"
 
-"@noble/hashes@2.4.0", "@noble/hashes@^2.2.0":
+"@noble/hashes@2.4.0", "@noble/hashes@^2.0.1", "@noble/hashes@^2.2.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-2.4.0.tgz#e6a3e98edbed3c8659b28bb8f9b18ca02ec8ea4b"
   integrity sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==
@@ -1369,6 +1366,11 @@ bser@2.1.1:
   integrity sha512-gQxTNE/GAfIIrmHLUE3oJyp5FO6HRBfhjnw4/wMmA63ZGDJnWBmgY/lyQBpnDUkGmAhbSe39tx2d/iTOAfglwQ==
   dependencies:
     node-int64 "^0.4.0"
+
+bson-objectid@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/bson-objectid/-/bson-objectid-2.0.4.tgz#339211572ef97dc98f2d68eaee7b99b7be59a089"
+  integrity sha512-vgnKAUzcDoa+AeyYwXCoHyF2q6u/8H46dxu5JN+4/TZeq/Dlinn0K6GvxsCLb3LHUJl0m/TLiEK31kUwtgocMQ==
 
 buffer@^6.0.3:
   version "6.0.3"
@@ -2450,6 +2452,29 @@ keyv@^5.6.0:
   dependencies:
     "@keyv/serialize" "^1.1.1"
 
+"legacy-value-objects-v2@npm:@haskou/value-objects@2.10.0":
+  version "2.10.0"
+  resolved "https://registry.yarnpkg.com/@haskou/value-objects/-/value-objects-2.10.0.tgz#52dc1e39b3a5d44b4784e637e96e061166426165"
+  integrity sha512-Nf9E26hUCs7sJ0gnqdL3x6QG52EFPYn1bMHxOhEbUkpHV5HYA62g+4J2IXaUHtRGFdn5XLUeL9MS5NQ/2JfbQQ==
+  dependencies:
+    "@noble/ciphers" "^2.2.0"
+    "@noble/curves" "^2.0.1"
+    "@noble/hashes" "^2.0.1"
+    bson-objectid "^2.0.4"
+    buffer "^6.0.3"
+    uuid "8"
+
+"legacy-value-objects-v3@npm:@haskou/value-objects@3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@haskou/value-objects/-/value-objects-3.0.1.tgz#d62e30c91425f873874f14c0b9c47df643f3a666"
+  integrity sha512-ofPcdZeOsj1lOP+eftkrYJ7jIGGlOYzBNbGuezv6RM0D15G+GFWM4gqxB0iMS1MFR9SYCo6rkQi2hI4779Q+/w==
+  dependencies:
+    "@noble/ciphers" "^2.2.0"
+    "@noble/curves" "^2.2.0"
+    "@noble/hashes" "^2.2.0"
+    buffer "^6.0.3"
+    tslib "^2.8.1"
+
 leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/leven/-/leven-3.1.0.tgz#77891de834064cccba82ae7842bb6b14a13ed7f2"
@@ -3081,6 +3106,16 @@ uri-js@^4.2.2:
   integrity sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==
   dependencies:
     punycode "^2.1.0"
+
+uuid@8:
+  version "8.3.2"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
+  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
+
+uuid@^11.1.1:
+  version "11.1.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-11.1.1.tgz#f6d81d2e1c65d00762e5e29b16c5d2d995e208ad"
+  integrity sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ==
 
 v8-to-istanbul@^9.0.1:
   version "9.3.0"

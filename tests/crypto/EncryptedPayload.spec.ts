@@ -15,7 +15,7 @@ describe('EncryptedPayload', () => {
 
     it('should store a string value verbatim', () => {
       const payload = new EncryptedPayload('some-data');
-      expect(payload.isEqual('some-data')).toBeTrue();
+      expect(payload.hasValue('some-data')).toBeTrue();
       expect(payload.toString()).toBe('some-data');
     });
   });
@@ -46,7 +46,9 @@ describe('EncryptedPayload', () => {
     });
 
     it('should return unknown for incomplete symmetric payload formats', () => {
-      expect(new EncryptedPayload('v1.aes-256-gcm').getScheme()).toBe('unknown');
+      expect(new EncryptedPayload('v1.aes-256-gcm').getScheme()).toBe(
+        'unknown',
+      );
     });
 
     it('should allow subclasses to expose their fixed scheme', () => {
@@ -71,7 +73,8 @@ describe('EncryptedPayload', () => {
       expect(payload.toString()).toBe('encrypted');
       expect(payload.isEqual(equal)).toBeTrue();
       expect(payload.isEqual(different)).toBeFalse();
-      expect(payload.isEqual('encrypted')).toBeTrue();
+      expect(payload.isEqual('encrypted')).toBeFalse();
+      expect(payload.hasValue('encrypted')).toBeTrue();
       expect(payload.isEqual('different')).toBeFalse();
       expect(cloned).toBeInstanceOf(EncryptedPayload);
       expect(cloned.valueOf()).toBe('encrypted');
@@ -80,7 +83,9 @@ describe('EncryptedPayload', () => {
 
     it('should accept StringValueObject through ValueObject semantics', () => {
       const value = new StringValueObject('secret');
-      expect(new EncryptedPayload(value.valueOf()).isEqual('secret')).toBeTrue();
+      expect(
+        new EncryptedPayload(value.valueOf()).hasValue('secret'),
+      ).toBeTrue();
     });
   });
 });

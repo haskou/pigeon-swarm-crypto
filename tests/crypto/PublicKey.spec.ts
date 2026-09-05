@@ -44,9 +44,9 @@ describe('PublicKey', () => {
 
   it('creates keys from PEM strings and VOs', () => {
     expect(PublicKey.fromPEM(publicPem).valueOf()).toBe(publicPem);
-    expect(
-      PublicKey.fromPEM(new StringValueObject(publicPem)).valueOf(),
-    ).toBe(publicPem);
+    expect(PublicKey.fromPEM(new StringValueObject(publicPem)).valueOf()).toBe(
+      publicPem,
+    );
   });
 
   it('verifies valid signatures and rejects invalid ones', () => {
@@ -123,7 +123,8 @@ describe('PublicKey', () => {
 
     expect(first).toBeInstanceOf(Key);
     expect(first.isEqual(second)).toBeTrue();
-    expect(first.isEqual(publicPem)).toBeTrue();
+    expect(first.isEqual(publicPem)).toBeFalse();
+    expect(first.hasValue(publicPem)).toBeTrue();
     expect(first.isEqual(new PublicKey(other.publicKey))).toBeFalse();
     expect(cloned).toBeInstanceOf(PublicKey);
     expect(cloned.valueOf()).toBe(publicPem);

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "package": "@haskou/ddd-engineer-skills",
+  "skills": {
+    "ddd-engineer": {
+      "hash": "sha256:1fd824c295a33da0c2f334aec7c05975acdf118cc5a9df628cfaa75f80d8a7c9",
+      "version": "0.1.0"
+    },
+    "haskou-value-objects": {
+      "hash": "sha256:9874cf23239509879730080d47d80829ab8654ba056d28e5d921dea9b6fc653b",
+      "version": "0.1.0"
+    }
+  }
+}

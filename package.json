@@ -1,6 +1,6 @@
 {
   "name": "@haskou/pigeon-swarm-crypto",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Cryptographic primitives, key handling, and wire-format compatibility for Pigeon Swarm.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

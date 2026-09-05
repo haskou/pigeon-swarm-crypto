@@ -5,7 +5,9 @@
 Import keys, signatures, encrypted envelopes and digest-computation factories from
 `@haskou/pigeon-swarm-crypto`. Keep generic types such as `Media`, `Password`,
 `StringValueObject`, `Timestamp` and identifiers in `@haskou/value-objects`.
-Use version 7 of that dependency throughout the application's crypto module graph.
+Install version 7 as a direct dependency of the application. The crypto package
+declares it as a peer dependency so compatible 7.x updates share the consumer's
+runtime classes.
 Multiple incompatible copies can break class identity and `instanceof Media`.
 
 This migration changes package ownership, not serialized data. Do not rewrite

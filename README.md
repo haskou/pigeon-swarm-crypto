@@ -115,3 +115,7 @@ for validation and release requirements.
 ## License
 
 MIT. See [LICENSE.txt](LICENSE.txt).
+
+Private-protocol signature verification is documented in
+[Private operation signatures](docs/private-operation-signatures.md), including
+required application authorization and metadata-handling limits.

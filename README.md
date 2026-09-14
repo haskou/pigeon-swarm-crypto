@@ -119,3 +119,9 @@ MIT. See [LICENSE.txt](LICENSE.txt).
 Private-protocol signature verification is documented in
 [Private operation signatures](docs/private-operation-signatures.md), including
 required application authorization and metadata-handling limits.
+
+## Private scope initialization
+
+See [private genesis signatures](docs/private-genesis-signatures.md) for the
+versioned, pinned-owner verification boundary shared by Node and browser clients.
+It does not change authorization of existing replicated data.

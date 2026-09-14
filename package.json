@@ -17,7 +17,8 @@
     "docs/compatibility.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
-    "docs/private-operation-signatures.md"
+    "docs/private-operation-signatures.md",
+    "docs/private-genesis-signatures.md"
   ],
   "sideEffects": false,
   "license": "MIT",
@@ -52,7 +53,8 @@
     "test:coverage": "NODE_ENV=test jest --collect-coverage",
     "build": "rm -rf dist/ && tsc",
     "test:runtime": "node --stack_size=256 tests/runtime/base64.cjs",
-    "test:private-signatures": "node tests/runtime/private-signatures.cjs"
+    "test:private-signatures": "node tests/runtime/private-signatures.cjs",
+    "test:private-genesis": "node tests/runtime/private-genesis.cjs"
   },
   "dependencies": {
     "@noble/ciphers": "^2.2.0",

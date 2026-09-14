@@ -23,3 +23,5 @@ export * from './SymmetricKeyDerivationOptions';
 
 export { PrivateOperationSignature } from './PrivateOperationSignature';
 export { InvalidPrivateOperationError } from './errors/InvalidPrivateOperationError';
+export { PrivateGenesisSignature } from './PrivateGenesisSignature';
+export { InvalidPrivateGenesisError } from './errors/InvalidPrivateGenesisError';

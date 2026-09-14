@@ -50,6 +50,9 @@ jobs:
       - name: Verify private signatures in Node and Chromium
         run: yarn test:private-signatures
 
+      - name: Verify pinned genesis in Node and Chromium
+        run: yarn test:private-genesis
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:

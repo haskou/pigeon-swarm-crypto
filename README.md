@@ -125,3 +125,6 @@ required application authorization and metadata-handling limits.
 See [private genesis signatures](docs/private-genesis-signatures.md) for the
 versioned, pinned-owner verification boundary shared by Node and browser clients.
 It does not change authorization of existing replicated data.
+
+Subsequent [private control signatures](docs/private-control-signatures.md) must
+satisfy the previous policy's quorum and sequencer before MLS processing.

@@ -53,6 +53,9 @@ jobs:
       - name: Verify pinned genesis in Node and Chromium
         run: yarn test:private-genesis
 
+      - name: Verify control quorum in Node and Chromium
+        run: yarn test:private-control
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:

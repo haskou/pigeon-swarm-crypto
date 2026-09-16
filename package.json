@@ -15,6 +15,7 @@
   "files": [
     "dist",
     "docs/compatibility.md",
+    "docs/key-lifecycle-review.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
     "docs/private-operation-signatures.md",

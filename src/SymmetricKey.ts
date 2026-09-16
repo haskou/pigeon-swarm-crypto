@@ -149,7 +149,7 @@ export class SymmetricKey extends ValueObject<string> {
   }
 
   private ensureIsValidKey(value: string): void {
-    StrictBase64.ensure(value, new InvalidFormatError(value));
+    StrictBase64.ensure(value, new InvalidFormatError('[redacted key]'));
     const decodedLength = StrictBase64.getDecodedLength(value);
     assert(
       decodedLength === SymmetricKey.KEY_LENGTH,

@@ -37,6 +37,24 @@ remain separate surfaces. This change cannot remove previously retained logs.
 
 ## Missing lifecycle guarantees
 
+### Signing and encryption currently share a root secret
+
+`CryptoAdapter.privateKeyToX25519` converts the Ed25519 signing seed to an X25519
+secret; the public conversion mirrors it. This couples compromise and replacement
+of signing and asymmetric decryption keys. The conversion itself is not evidence
+of a cryptographic break, but it prevents independent lifecycle management.
+
+New private-protocol devices must generate separate signing, MLS leaf/init and
+outer recipient-HPKE keys. Bind the encryption credentials to the signing identity
+through authenticated protocol records. Keep symmetric encryption for application
+data; key agreement and group updates distribute new symmetric secrets. Rotating
+only a password or deriving the next key solely from a compromised old secret does
+not establish post-compromise recovery.
+
+The [isolated MLS lifecycle evaluation](https://github.com/haskou/pigeon-swarm-crypto/tree/main/tests/evaluation/mls-key-lifecycle)
+exercises independent encryption-key generation, removal, refresh and retained
+attacker state in Node and Chromium. It does not activate rotation in Pigeon.
+
 ### Generating a key is not rotating a group
 
 There is no group key schedule, epoch state, recipient-specific update protocol,

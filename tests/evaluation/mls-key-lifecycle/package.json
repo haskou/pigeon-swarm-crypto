@@ -1,0 +1,14 @@
+{
+  "name": "pigeon-mls-key-lifecycle-evaluation",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "test": "node run.cjs"
+  },
+  "devDependencies": {
+    "ts-mls": "1.6.4",
+    "@noble/curves": "2.0.1",
+    "esbuild": "0.28.2",
+    "playwright": "1.63.0"
+  }
+}

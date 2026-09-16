@@ -95,6 +95,10 @@ not for security-sensitive integrity or password storage.
 
 See [wire formats and migration](docs/compatibility.md) before changing imports or
 persisted data, and [SECURITY.md](SECURITY.md) for security boundaries and reporting.
+See the [key lifecycle review](docs/key-lifecycle-review.md) for current rotation
+gaps, the distinction between password re-encryption and key replacement, and
+the next integration milestone.
+
 Moving encryption into this package does not provide forward secrecy, metadata
 privacy, anonymous communication or deletion of data already replicated through
 IPFS.

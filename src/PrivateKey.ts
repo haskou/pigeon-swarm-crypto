@@ -90,9 +90,12 @@ export class PrivateKey extends Key {
   private ensureIsValidPrivateKey(value: string): void {
     assert(
       value.length === PrivateKey.LENGTH,
-      new InvalidLengthError(value, PrivateKey.LENGTH),
+      new InvalidLengthError(value.length, PrivateKey.LENGTH),
     );
-    assert(PrivateKey.PATTERN.test(value), new InvalidFormatError(value));
+    assert(
+      PrivateKey.PATTERN.test(value),
+      new InvalidFormatError('[redacted key]'),
+    );
   }
 
   private decryptPayload(

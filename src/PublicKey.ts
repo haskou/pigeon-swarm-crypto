@@ -45,9 +45,12 @@ export class PublicKey extends Key {
   private ensureIsValidPublicKey(value: string): void {
     assert(
       value.length === PublicKey.LENGTH,
-      new InvalidLengthError(value, PublicKey.LENGTH),
+      new InvalidLengthError(value.length, PublicKey.LENGTH),
     );
-    assert(PublicKey.PATTERN.test(value), new InvalidFormatError(value));
+    assert(
+      PublicKey.PATTERN.test(value),
+      new InvalidFormatError('[redacted key]'),
+    );
   }
 
   public isValidSignature(

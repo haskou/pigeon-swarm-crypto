@@ -84,7 +84,7 @@ jobs:
   publish:
     name: Publish queued releases
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, mls-evaluation]
     if: github.event_name == 'push'
     concurrency:
       group: publish-${{ github.repository }}-${{ github.ref_name }}

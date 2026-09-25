@@ -189,13 +189,14 @@ export class PrivateDeliveryKeySchedule {
       if (commitmentFor(entries) !== expectedCommitment) {
         throw new InvalidPrivateDeliveryError();
       }
+      const restored = new PrivateDeliveryKeySchedule(entries);
+      plaintext.fill(0);
 
-      return new PrivateDeliveryKeySchedule(entries);
+      return restored;
     } catch {
       entries.forEach((entry) => entry.privateKey.fill(0));
-      throw new InvalidPrivateDeliveryError();
-    } finally {
       plaintext.fill(0);
+      throw new InvalidPrivateDeliveryError();
     }
   }
 

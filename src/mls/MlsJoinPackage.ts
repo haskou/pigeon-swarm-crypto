@@ -65,20 +65,22 @@ export class MlsJoinPackage {
           throw new InvalidMlsStateError();
         }
 
-        return new MlsJoinPackage(publicPackage, {
+        const restored = new MlsJoinPackage(publicPackage, {
           hpkePrivateKey,
           initPrivateKey,
           signaturePrivateKey,
         });
+        state.fill(0);
+
+        return restored;
       } finally {
         initPublicKey.fill(0);
         leafPublicKey.fill(0);
         signature.fill(0);
       }
     } catch {
-      throw new InvalidMlsStateError();
-    } finally {
       state.fill(0);
+      throw new InvalidMlsStateError();
     }
   }
 

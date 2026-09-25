@@ -75,14 +75,16 @@ export class MlsDeviceIdentity {
           throw new InvalidMlsStateError();
         }
 
-        return new MlsDeviceIdentity(identity, publicKey, privateKey);
+        const restored = new MlsDeviceIdentity(identity, publicKey, privateKey);
+        state.fill(0);
+
+        return restored;
       } finally {
         signature.fill(0);
       }
     } catch {
-      throw new InvalidMlsStateError();
-    } finally {
       state.fill(0);
+      throw new InvalidMlsStateError();
     }
   }
 

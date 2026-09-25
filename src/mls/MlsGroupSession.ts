@@ -24,6 +24,11 @@ import {
   encodeMessage,
   encodeState,
 } from './internal/MlsCodec';
+import {
+  acceptsMlsMemberCount,
+  requireMlsWelcome,
+  validateMlsCredential,
+} from './internal/MlsProtocolPolicy';
 import { getMlsCiphersuite } from './internal/MlsRuntime';
 import { InvalidMlsFrameError } from './InvalidMlsFrameError';
 import { InvalidMlsStateError } from './InvalidMlsStateError';
@@ -37,12 +42,7 @@ import { ProtectedMlsGroupState } from './ProtectedMlsGroupState';
 const createConfig = (verify: MlsCredentialVerifier): ClientConfig => ({
   authService: {
     async validateCredential(credential, signaturePublicKey) {
-      if (credential.credentialType !== 'basic') return false;
-
-      return verify({
-        identity: new Uint8Array(credential.identity),
-        signaturePublicKey: new Uint8Array(signaturePublicKey),
-      });
+      return validateMlsCredential(credential, signaturePublicKey, verify);
     },
   },
   keyPackageEqualityConfig: defaultKeyPackageEqualityConfig,
@@ -252,17 +252,11 @@ export class MlsGroupSession {
         this.#state,
         emptyPskIndex,
         (incoming) => {
-          if (incoming.kind !== 'commit') return 'accept';
-          const additions = incoming.proposals.filter(
-            ({ proposal }) => proposal.proposalType === 'add',
-          ).length;
-          const removals = incoming.proposals.filter(
-            ({ proposal }) => proposal.proposalType === 'remove',
-          ).length;
-          const externalJoin = incoming.senderLeafIndex === undefined ? 1 : 0;
-          rejectedByMemberLimit =
-            memberCount(this.#state) + additions - removals + externalJoin >
-            MAX_GROUP_MEMBERS;
+          rejectedByMemberLimit = !acceptsMlsMemberCount(
+            memberCount(this.#state),
+            incoming,
+            MAX_GROUP_MEMBERS,
+          );
 
           return rejectedByMemberLimit ? 'reject' : 'accept';
         },
@@ -337,7 +331,7 @@ export class MlsGroupSession {
       },
     );
     try {
-      if (result.welcome === undefined) throw new InvalidMlsStateError();
+      const welcome = requireMlsWelcome(result.welcome);
 
       return {
         commit: MlsCommitFrame.create(encodeMessage(result.commit)),
@@ -345,7 +339,7 @@ export class MlsGroupSession {
         welcome: MlsWelcomeFrame.create(
           encodeMessage({
             version: 'mls10',
-            welcome: result.welcome,
+            welcome,
             wireformat: 'mls_welcome',
           }),
         ),

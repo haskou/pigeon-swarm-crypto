@@ -2,6 +2,9 @@ const assert = require('node:assert/strict');
 
 const {
   AuthenticatedPrivateDeliverySchedule,
+  InvalidMlsFrameError,
+  InvalidMlsStateError,
+  InvalidPrivateDeliveryError,
   MlsApplicationFrame,
   MlsCommitFrame,
   MlsDeviceIdentity,
@@ -24,17 +27,23 @@ const {
 const {
   DeliveryBase64Url,
 } = require('../../dist/mls/internal/DeliveryBase64Url.js');
+const MlsCodec = require('../../dist/mls/internal/MlsCodec.js');
 const {
   decodeMessage,
   decodePublicKeyPackage,
   decodeState,
-} = require('../../dist/mls/internal/MlsCodec.js');
+} = MlsCodec;
 const {
   RootProtectedEnvelope,
 } = require('../../dist/mls/internal/RootProtectedEnvelope.js');
 const {
   getMlsCiphersuite,
 } = require('../../dist/mls/internal/MlsRuntime.js');
+const {
+  acceptsMlsMemberCount,
+  requireMlsWelcome,
+  validateMlsCredential,
+} = require('../../dist/mls/internal/MlsProtocolPolicy.js');
 const canonicalize = require('canonicalize');
 
 const text = new TextEncoder();
@@ -49,6 +58,10 @@ const replacePart = (serialized, index, value) => {
 };
 
 const run = async () => {
+  assert.equal(typeof InvalidMlsFrameError, 'function');
+  assert.equal(typeof InvalidMlsStateError, 'function');
+  assert.equal(typeof InvalidPrivateDeliveryError, 'function');
+  assert.equal(typeof MlsCodec.encodeGroupContext, 'function');
   const root = UserRootKey.generate();
   const nullRoot = new UserRootKey();
 
@@ -124,6 +137,32 @@ const run = async () => {
     Buffer.alloc(4097).toString('base64'),
   ].join('.');
   expectInvalid(() => RootProtectedEnvelope.validate(oversizedCiphertext, 4096));
+  expectInvalid(() =>
+    RootProtectedEnvelope.validate(
+      replacePart(
+        protectedSecret,
+        3,
+        `${'A'.repeat(21)}B==`,
+      ),
+      8,
+    ),
+  );
+  const paddedCiphertextEnvelope = RootProtectedEnvelope.protect(
+    bytes('abcde'),
+    root,
+    'domain',
+    4096,
+  );
+  const paddedCiphertextParts = paddedCiphertextEnvelope.split('.');
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  const finalContentIndex = paddedCiphertextParts[6].length - 2;
+  const finalCharacterIndex = alphabet.indexOf(
+    paddedCiphertextParts[6][finalContentIndex],
+  );
+  paddedCiphertextParts[6] = `${paddedCiphertextParts[6].slice(0, finalContentIndex)}${alphabet[finalCharacterIndex + 1]}=`;
+  expectInvalid(() =>
+    RootProtectedEnvelope.validate(paddedCiphertextParts.join('.'), 4096),
+  );
 
   for (const Frame of [MlsApplicationFrame, MlsCommitFrame, MlsWelcomeFrame]) {
     expectInvalid(() => Frame.create(new Uint8Array()));
@@ -244,6 +283,11 @@ const run = async () => {
   founder.process = async () => ({ consumed: [], kind: 'newState' });
   await expectInvalidAsync(() =>
     founder.decrypt(MlsApplicationFrame.create(bytes('invalid-result'))),
+  );
+  founder.process = originalProcess;
+  founder.process = async () => ({ consumed: [], kind: 'applicationMessage' });
+  await expectInvalidAsync(() =>
+    founder.applyCommit(MlsCommitFrame.create(bytes('invalid-result'))),
   );
   founder.process = originalProcess;
   expectInvalid(() => decodePublicKeyPackage(bytes('not a key package')));
@@ -402,6 +446,13 @@ const run = async () => {
   const invalidOpenEnvelope = { ...header, ciphertext: Buffer.alloc(4096).toString('base64') };
   await expectInvalidAsync(() => PrivateDeliveryEnvelope.open(invalidOpenEnvelope, new Uint8Array(32), 21));
   await expectInvalidAsync(() => PrivateDeliveryEnvelope.open(invalidOpenEnvelope, new Uint8Array(), 10));
+  await expectInvalidAsync(() =>
+    PrivateDeliveryEnvelope.open(
+      { ...header, ciphertext: '='.repeat(Math.ceil(4096 / 3) * 4) },
+      new Uint8Array(32),
+      10,
+    ),
+  );
   const nonCanonicalCiphertext = Buffer.alloc(4096, 251).toString('base64').replace('+', '-');
   await expectInvalidAsync(() =>
     PrivateDeliveryEnvelope.open(
@@ -499,6 +550,41 @@ const run = async () => {
       DeliveryBase64Url.encode(new Uint8Array(32)),
     ),
   );
+  const validScheduleState = JSON.parse(
+    Buffer.from(protectedSchedule.unlock(root)).toString('utf8'),
+  );
+  const nonCanonicalScheduleState = RootProtectedEnvelope.protect(
+    bytes(JSON.stringify({ version: 1, entries: [] })),
+    root,
+    'pigeon.private-delivery-key-schedule.v1',
+    32768,
+  );
+  await expectInvalidAsync(() =>
+    PrivateDeliveryKeySchedule.restore(
+      new ProtectedPrivateDeliveryKeySchedule(nonCanonicalScheduleState),
+      root,
+      DeliveryBase64Url.encode(new Uint8Array(32)),
+    ),
+  );
+  const partiallyRestoredScheduleState = RootProtectedEnvelope.protect(
+    bytes(canonicalize({
+      entries: [
+        validScheduleState.entries[0],
+        { ...validScheduleState.entries[1], privateKey: 'AA==' },
+      ],
+      version: 1,
+    })),
+    root,
+    'pigeon.private-delivery-key-schedule.v1',
+    32768,
+  );
+  await expectInvalidAsync(() =>
+    PrivateDeliveryKeySchedule.restore(
+      new ProtectedPrivateDeliveryKeySchedule(partiallyRestoredScheduleState),
+      root,
+      DeliveryBase64Url.encode(new Uint8Array(32)),
+    ),
+  );
   const invalidScheduleDomain = 'pigeon.private-delivery-key-schedule.v1';
   for (const state of [
     canonicalize({ entries: Array.from({ length: 9 }, () => null), version: 1 }),
@@ -571,6 +657,41 @@ const run = async () => {
       1,
     ),
   );
+  const authenticatedDocument = JSON.parse(authenticatedSchedule.valueOf());
+  await expectInvalidAsync(() =>
+    AuthenticatedPrivateDeliverySchedule.verify(
+      null,
+      founderIdentity.credential,
+      1,
+    ),
+  );
+  await expectInvalidAsync(() =>
+    AuthenticatedPrivateDeliverySchedule.verify(
+      JSON.stringify({
+        version: authenticatedDocument.version,
+        descriptors: authenticatedDocument.descriptors,
+        signature: authenticatedDocument.signature,
+        signerIdentity: authenticatedDocument.signerIdentity,
+        signerPublicKey: authenticatedDocument.signerPublicKey,
+      }),
+      founderIdentity.credential,
+      1,
+    ),
+  );
+  await expectInvalidAsync(() =>
+    AuthenticatedPrivateDeliverySchedule.verify(
+      canonicalize({ ...authenticatedDocument, signature: null }),
+      founderIdentity.credential,
+      1,
+    ),
+  );
+  await expectInvalidAsync(() =>
+    AuthenticatedPrivateDeliverySchedule.verify(
+      canonicalize({ ...authenticatedDocument, signature: 'AA' }),
+      founderIdentity.credential,
+      1,
+    ),
+  );
   await expectInvalidAsync(() =>
     AuthenticatedPrivateDeliverySchedule.verify(
       authenticatedSchedule.valueOf(),
@@ -586,6 +707,46 @@ const run = async () => {
     ),
   );
   signedSchedule.destroy();
+
+  assert.equal(
+    await validateMlsCredential(
+      { credentialType: 'x509', identity: bytes('ignored') },
+      new Uint8Array(32),
+      trusted,
+    ),
+    false,
+  );
+  assert.equal(
+    await validateMlsCredential(
+      { credentialType: 'basic', identity: bytes('accepted') },
+      new Uint8Array(32),
+      trusted,
+    ),
+    true,
+  );
+  assert.equal(
+    acceptsMlsMemberCount(128, { kind: 'proposal', proposal: {} }, 128),
+    true,
+  );
+  assert.equal(
+    acceptsMlsMemberCount(
+      127,
+      { kind: 'commit', proposals: [], senderLeafIndex: undefined },
+      128,
+    ),
+    true,
+  );
+  assert.equal(
+    acceptsMlsMemberCount(
+      128,
+      { kind: 'commit', proposals: [], senderLeafIndex: 0 },
+      128,
+    ),
+    true,
+  );
+  expectInvalid(() => requireMlsWelcome(undefined));
+  const welcomeValue = {};
+  assert.equal(requireMlsWelcome(welcomeValue), welcomeValue);
   await expectInvalidAsync(() =>
     AuthenticatedPrivateDeliverySchedule.verify('{}', founderIdentity.credential, 1),
   );

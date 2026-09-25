@@ -201,9 +201,6 @@ export class PrivateDeliveryEnvelope {
           Buffer.from(encrypted.ct),
         ]);
 
-        if (wire.length !== bucketBytes)
-          throw new InvalidPrivateDeliveryError();
-
         return { ...header, ciphertext: wire.toString('base64') };
       } finally {
         aad.fill(0);

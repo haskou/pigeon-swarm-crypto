@@ -328,6 +328,22 @@ const run = async () => {
   const beforeRejectedCommitment = cappedObserver.stateCommitment;
   await assert.rejects(() => cappedObserver.applyCommit(overCapCommit));
   assert.equal(cappedObserver.stateCommitment, beforeRejectedCommitment);
+  for (const invalidApplicationLength of [0, 128 * 1024 + 1]) {
+    const invalidApplication = await mls.createApplicationMessage(
+      rawState,
+      new Uint8Array(invalidApplicationLength),
+      suite,
+    );
+    const invalidApplicationFrame = MlsApplicationFrame.create(
+      mls.encodeMlsMessage({
+        privateMessage: invalidApplication.privateMessage,
+        version: 'mls10',
+        wireformat: 'mls_private_message',
+      }),
+    );
+    await assert.rejects(() => cappedObserver.decrypt(invalidApplicationFrame));
+    assert.equal(cappedObserver.stateCommitment, beforeRejectedCommitment);
+  }
   const afterRejectedCommit = await cappedGroup.encrypt(
     text.encode('after rejected over-cap commit'),
   );

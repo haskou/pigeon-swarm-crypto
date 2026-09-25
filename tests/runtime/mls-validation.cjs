@@ -751,6 +751,14 @@ const run = async () => {
       }),
     ]),
   );
+  await expectInvalidAsync(() =>
+    founderIdentity.authenticateDeliverySchedule([
+      descriptorWith(signedDescriptors[0], {
+        maxCiphertextExpiresAt:
+          signedDescriptors[0].writeValidUntil + 30 * 24 * 60 * 60 * 1000 + 1,
+      }),
+    ]),
+  );
   const authenticatedSchedule = await founderIdentity.authenticateDeliverySchedule(signedDescriptors);
   const emptyAuthenticatedSchedule = canonicalize({
     ...JSON.parse(authenticatedSchedule.valueOf()),

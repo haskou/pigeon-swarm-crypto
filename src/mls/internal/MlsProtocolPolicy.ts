@@ -5,6 +5,7 @@ import { MlsCredentialVerifier } from '../MlsCredentialVerifier';
 
 type IncomingMessage = Parameters<IncomingMessageCallback>[0];
 const MAX_IDENTITY_BYTES = 1024;
+export const MAX_MLS_APPLICATION_BYTES = 128 * 1024;
 
 export const validateMlsCredential = async (
   credential: Credential,

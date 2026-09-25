@@ -3,6 +3,10 @@ import canonicalize from 'canonicalize';
 
 import { DeliveryBase64Url } from './internal/DeliveryBase64Url';
 import { getMlsCiphersuite } from './internal/MlsRuntime';
+import {
+  MAX_PRIVATE_DELIVERY_RETENTION_MS,
+  PRIVATE_DELIVERY_DAY_MS,
+} from './internal/PrivateDeliveryPolicy';
 import { InvalidPrivateDeliveryError } from './InvalidPrivateDeliveryError';
 import { MlsCredential } from './MlsCredential';
 import { PrivateDeliveryDescriptor } from './PrivateDeliveryDescriptor';
@@ -10,7 +14,6 @@ import { PrivateDeliveryScheduleDocument } from './PrivateDeliveryScheduleDocume
 
 const DOMAIN = 'pigeon.private-delivery-schedule.v1\0';
 const MAX_BYTES = 32768;
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 const encodeIdentity = (value: Uint8Array): string =>
   DeliveryBase64Url.encode(value);
@@ -80,8 +83,15 @@ const validateDescriptorSequence = (
   }
   const retention =
     descriptors[0].maxCiphertextExpiresAt - descriptors[0].writeValidUntil;
+
+  if (retention > MAX_PRIVATE_DELIVERY_RETENTION_MS) {
+    throw new InvalidPrivateDeliveryError();
+  }
   descriptors.forEach((descriptor, index) => {
-    if (descriptor.writeValidUntil - descriptor.validFrom !== DAY_MS) {
+    if (
+      descriptor.writeValidUntil - descriptor.validFrom !==
+      PRIVATE_DELIVERY_DAY_MS
+    ) {
       throw new InvalidPrivateDeliveryError();
     }
 

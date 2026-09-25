@@ -27,6 +27,7 @@ import {
 import { MLS_JOIN_PACKAGE_USE } from './internal/MlsJoinPackageUse';
 import {
   acceptsMlsMemberCount,
+  MAX_MLS_APPLICATION_BYTES,
   requireMlsWelcome,
   validateMlsCredential,
 } from './internal/MlsProtocolPolicy';
@@ -56,7 +57,6 @@ const MAX_GROUP_ID_BYTES = 1024;
 const MAX_GROUP_MEMBERS = 128;
 const MAX_PUBLIC_PACKAGE_BYTES = 65536;
 const MAX_IDENTITY_BYTES = 1024;
-const MAX_APPLICATION_BYTES = 128 * 1024;
 
 const memberCount = (state: ClientState): number =>
   state.ratchetTree.filter((node) => node?.nodeType === 'leaf').length;
@@ -497,7 +497,7 @@ export class MlsGroupSession {
       if (
         !(plaintext instanceof Uint8Array) ||
         plaintext.length === 0 ||
-        plaintext.length > MAX_APPLICATION_BYTES
+        plaintext.length > MAX_MLS_APPLICATION_BYTES
       ) {
         throw new InvalidMlsFrameError();
       }
@@ -534,16 +534,24 @@ export class MlsGroupSession {
       if (result.kind !== 'applicationMessage') {
         throw new InvalidMlsFrameError();
       }
-      const plaintext = new Uint8Array(result.message);
-      result.message.fill(0);
+      try {
+        if (
+          result.message.length === 0 ||
+          result.message.length > MAX_MLS_APPLICATION_BYTES
+        ) {
+          throw new InvalidMlsFrameError();
+        }
 
-      return {
-        consumed: result.consumed,
-        value: {
-          plaintext,
-          session: new MlsGroupSession(result.newState, this.#verify),
-        },
-      };
+        return {
+          consumed: result.consumed,
+          value: {
+            plaintext: new Uint8Array(result.message),
+            session: new MlsGroupSession(result.newState, this.#verify),
+          },
+        };
+      } finally {
+        result.message.fill(0);
+      }
     });
   }
 }

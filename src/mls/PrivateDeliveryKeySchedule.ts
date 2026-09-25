@@ -7,6 +7,10 @@ import { CryptoAdapter } from '../internal/CryptoAdapter';
 import { UserRootKey } from '../UserRootKey';
 import { DeliveryBase64Url } from './internal/DeliveryBase64Url';
 import { getMlsCiphersuite } from './internal/MlsRuntime';
+import {
+  MAX_PRIVATE_DELIVERY_RETENTION_MS,
+  PRIVATE_DELIVERY_DAY_MS,
+} from './internal/PrivateDeliveryPolicy';
 import { InvalidPrivateDeliveryError } from './InvalidPrivateDeliveryError';
 import { PrivateDeliveryDescriptor } from './PrivateDeliveryDescriptor';
 import { PrivateDeliveryEnvelope } from './PrivateDeliveryEnvelope';
@@ -16,9 +20,7 @@ import { PrivateDeliveryScheduleEntry } from './PrivateDeliveryScheduleEntry';
 import { PrivateDeliveryScheduleState } from './PrivateDeliveryScheduleState';
 import { ProtectedPrivateDeliveryKeySchedule } from './ProtectedPrivateDeliveryKeySchedule';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const SCHEDULE_DAYS = 8;
-const MAX_RETENTION_MS = 30 * DAY_MS;
 
 const randomMailboxId = (): string => {
   const value = CryptoAdapter.randomBytes(32);
@@ -138,15 +140,15 @@ export class PrivateDeliveryKeySchedule {
         authorizationRevision < 0 ||
         !Number.isSafeInteger(maximumRetentionMs) ||
         maximumRetentionMs < 0 ||
-        maximumRetentionMs > MAX_RETENTION_MS
+        maximumRetentionMs > MAX_PRIVATE_DELIVERY_RETENTION_MS
       ) {
         throw new InvalidPrivateDeliveryError();
       }
       const firstDay = startOfUtcDay(now);
       const suite = await getMlsCiphersuite();
       for (let index = 0; index < SCHEDULE_DAYS; index += 1) {
-        const validFrom = firstDay + index * DAY_MS;
-        const writeValidUntil = validFrom + DAY_MS;
+        const validFrom = firstDay + index * PRIVATE_DELIVERY_DAY_MS;
+        const writeValidUntil = validFrom + PRIVATE_DELIVERY_DAY_MS;
         const pair = await suite.hpke.generateKeyPair();
         const publicKey = await suite.hpke.exportPublicKey(pair.publicKey);
         const privateKey = await suite.hpke.exportPrivateKey(pair.privateKey);

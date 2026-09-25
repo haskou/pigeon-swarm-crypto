@@ -57,6 +57,9 @@ const MAX_PUBLIC_PACKAGE_BYTES = 65536;
 const MAX_IDENTITY_BYTES = 1024;
 const MAX_APPLICATION_BYTES = 1024 * 1024 - 4096;
 
+const memberCount = (state: ClientState): number =>
+  state.ratchetTree.filter((node) => node?.nodeType === 'leaf').length;
+
 const eraseConsumed = (consumed: Uint8Array[]): void => {
   consumed.forEach(zeroOutUint8Array);
 };
@@ -193,6 +196,9 @@ export class MlsGroupSession {
   }
 
   private constructor(state: ClientState, verify: MlsCredentialVerifier) {
+    if (memberCount(state) > MAX_GROUP_MEMBERS) {
+      throw new InvalidMlsStateError();
+    }
     this.#state = state;
     this.#verify = verify;
   }
@@ -250,13 +256,11 @@ export class MlsGroupSession {
     readonly commit: MlsCommitFrame;
     readonly welcome: MlsWelcomeFrame;
   }> {
-    const memberCount = this.#state.ratchetTree.filter(
-      (node) => node?.nodeType === 'leaf',
-    ).length;
+    const currentMemberCount = memberCount(this.#state);
 
     if (
       publicPackages.length === 0 ||
-      publicPackages.length > MAX_GROUP_MEMBERS - memberCount
+      publicPackages.length > MAX_GROUP_MEMBERS - currentMemberCount
     ) {
       throw new InvalidMlsStateError();
     }

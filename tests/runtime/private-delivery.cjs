@@ -203,6 +203,10 @@ const run = async () => {
     bufferModule.Buffer.from = originalBufferFrom;
   }
   assert.equal(decodedOversizedIdentifier, false);
+  await assert.rejects(
+    () => schedule.open(null, now),
+    (error) => error.message === 'Invalid private delivery',
+  );
 
   const protectedSchedule = schedule.protect(root);
   const scheduleCommitment = schedule.commitment;

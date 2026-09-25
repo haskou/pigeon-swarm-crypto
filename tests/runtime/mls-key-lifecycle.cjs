@@ -214,6 +214,90 @@ const run = async () => {
   assert.throws(() => MlsApplicationFrame.fromBytes(commitBytes));
   assert.throws(() => MlsApplicationFrame.fromBytes(new Uint8Array(0)));
 
+  const mls = await import('ts-mls');
+  const capRoot = UserRootKey.generate();
+  const capFounder = await MlsDeviceIdentity.generate(text.encode('cap-founder'));
+  const capFounderPackage = await capFounder.createJoinPackage();
+  trusted.set(
+    key(capFounder.credential.identity),
+    key(capFounder.credential.signaturePublicKey),
+  );
+  const capMembers = await Promise.all(
+    Array.from({ length: 127 }, async (_, index) => {
+      const identity = await MlsDeviceIdentity.generate(
+        text.encode(`cap-member-${index}`),
+      );
+      trusted.set(
+        key(identity.credential.identity),
+        key(identity.credential.signaturePublicKey),
+      );
+
+      return {
+        identity,
+        package: await identity.createJoinPackage(),
+      };
+    }),
+  );
+  let cappedGroup = await MlsGroupSession.create(
+    text.encode('member-cap'),
+    capFounderPackage,
+    verifyCredential,
+  );
+  const cappedAddition = await cappedGroup.addMembers(
+    capMembers.map((member) => member.package.publicBytes),
+  );
+  cappedGroup = cappedAddition.session;
+  const cappedObserver = await MlsGroupSession.join(
+    cappedAddition.welcome,
+    capMembers[0].package,
+    verifyCredential,
+  );
+  const outsider = await MlsDeviceIdentity.generate(text.encode('cap-outsider'));
+  const outsiderPackage = await outsider.createJoinPackage();
+  trusted.set(
+    key(outsider.credential.identity),
+    key(outsider.credential.signaturePublicKey),
+  );
+  const protectedCappedState = cappedGroup.protectState(capRoot);
+  const encodedCappedState = protectedCappedState.unlock(capRoot);
+  const decodedCappedState = mls.decodeGroupState(encodedCappedState, 0);
+  assert.ok(decodedCappedState);
+  const rawState = decodedCappedState[0];
+  rawState.clientConfig = {
+    authService: { validateCredential: async () => true },
+    keyPackageEqualityConfig: mls.defaultKeyPackageEqualityConfig,
+    keyRetentionConfig: mls.defaultKeyRetentionConfig,
+    lifetimeConfig: mls.defaultLifetimeConfig,
+    paddingConfig: mls.defaultPaddingConfig,
+  };
+  const decodedOutsiderPackage = mls.decodeMlsMessage(
+    outsiderPackage.publicBytes,
+    0,
+  );
+  assert.equal(decodedOutsiderPackage[0].wireformat, 'mls_key_package');
+  const suite = await mls.getCiphersuiteImpl(
+    mls.getCiphersuiteFromName(
+      'MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519',
+    ),
+  );
+  const overCap = await mls.createCommit(
+    { cipherSuite: suite, state: rawState },
+    {
+      extraProposals: [
+        {
+          add: { keyPackage: decodedOutsiderPackage[0].keyPackage },
+          proposalType: 'add',
+        },
+      ],
+      ratchetTreeExtension: true,
+    },
+  );
+  const overCapCommit = MlsCommitFrame.create(
+    mls.encodeMlsMessage(overCap.commit),
+  );
+  await assert.rejects(() => cappedObserver.applyCommit(overCapCommit));
+  encodedCappedState.fill(0);
+
   console.log('PASS MLS device keys, membership changes, rotation, recovery, persistence, replay and frame separation.');
 };
 

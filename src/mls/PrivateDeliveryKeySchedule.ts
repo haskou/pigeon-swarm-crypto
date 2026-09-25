@@ -249,20 +249,32 @@ export class PrivateDeliveryKeySchedule {
     envelope: PrivateDeliveryEnvelopeData,
     now: number,
   ): Promise<PrivateDeliveryFrame> {
-    this.ensureActive();
-    const entry = this.#entries.find(
-      (candidate) => candidate.descriptor.mailboxId === envelope.mailboxId,
-    );
+    try {
+      this.ensureActive();
 
-    if (
-      !entry ||
-      now > entry.descriptor.maxCiphertextExpiresAt ||
-      envelope.expiresAt > entry.descriptor.maxCiphertextExpiresAt
-    ) {
+      if (!envelope || typeof envelope !== 'object') {
+        throw new InvalidPrivateDeliveryError();
+      }
+      const entry = this.#entries.find(
+        (candidate) => candidate.descriptor.mailboxId === envelope.mailboxId,
+      );
+
+      if (
+        !entry ||
+        now > entry.descriptor.maxCiphertextExpiresAt ||
+        envelope.expiresAt > entry.descriptor.maxCiphertextExpiresAt
+      ) {
+        throw new InvalidPrivateDeliveryError();
+      }
+
+      return await PrivateDeliveryEnvelope.open(
+        envelope,
+        entry.privateKey,
+        now,
+      );
+    } catch {
       throw new InvalidPrivateDeliveryError();
     }
-
-    return PrivateDeliveryEnvelope.open(envelope, entry.privateKey, now);
   }
 
   public protect(rootKey: UserRootKey): ProtectedPrivateDeliveryKeySchedule {

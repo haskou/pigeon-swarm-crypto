@@ -138,25 +138,28 @@ export class MlsGroupSession {
       throw new InvalidMlsStateError();
     }
 
-    const publicPackage = founder.copyPublicPackage();
+    const state = await founder[MLS_JOIN_PACKAGE_USE](
+      async (publicPackage, privatePackage) => {
+        if (
+          !(await validateMlsCredential(
+            publicPackage.leafNode.credential,
+            publicPackage.leafNode.signaturePublicKey,
+            verify,
+          ))
+        ) {
+          throw new InvalidMlsStateError();
+        }
+        const suite = await getMlsCiphersuite();
 
-    if (
-      !(await validateMlsCredential(
-        publicPackage.leafNode.credential,
-        publicPackage.leafNode.signaturePublicKey,
-        verify,
-      ))
-    ) {
-      throw new InvalidMlsStateError();
-    }
-    const suite = await getMlsCiphersuite();
-    const state = await createGroup(
-      new Uint8Array(groupId),
-      publicPackage,
-      founder.consumePrivatePackage(),
-      [],
-      suite,
-      createConfig(verify),
+        return createGroup(
+          new Uint8Array(groupId),
+          publicPackage,
+          privatePackage,
+          [],
+          suite,
+          createConfig(verify),
+        );
+      },
     );
 
     return new MlsGroupSession(state, verify);

@@ -45,8 +45,9 @@ reintroduce linkable metadata even though message content remains encrypted.
 changes return a replacement session. The application authenticates the signed
 control transition first, applies its Commit, compares the resulting
 `contextHash` and epoch with the control record, then atomically persists the
-replacement protected session and trusted control checkpoint before
-acknowledging it.
+replacement protected session and its `stateCommitment` in the trusted control
+checkpoint before acknowledging it. The commitment changes for application
+ratchet advances even when the epoch does not.
 
 `refresh()` advances the epoch without changing membership. Removing a device
 advances the epoch and prevents a holder of that device's previous state from
@@ -57,8 +58,9 @@ at most 128 devices.
 `protectState` is the only public MLS state export. Device signing identities,
 one-use join packages and private delivery schedules also have root-protected
 forms. Each uses a separate HKDF domain and fresh salt and nonce with
-AES-256-GCM. `restore` requires an application-trusted epoch; mismatches in
-either interrupted-write order fail instead of silently restoring old state.
+AES-256-GCM. `restore` requires an application-trusted epoch and exact state
+commitment; mismatches in either interrupted-write order and same-epoch snapshot
+rollback fail instead of silently restoring old state.
 Delete superseded local snapshots after atomic adoption.
 
 Root keys, second factors, live device identities, join packages, MLS sessions

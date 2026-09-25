@@ -108,18 +108,32 @@ const run = async () => {
 
   const beforeRemoval = await alice.encrypt(text.encode('before removal'));
   alice = beforeRemoval.session;
+  const bobPreMessageState = bob.protectState(bobRoot);
+  const bobPreMessageCommitment = bob.stateCommitment;
   await assert.rejects(() =>
     bob.applyCommit(MlsCommitFrame.create(beforeRemoval.frame.payloadBytes())),
   );
   const bobBefore = await bob.decrypt(beforeRemoval.frame);
   bob = bobBefore.session;
   assert.equal(read.decode(bobBefore.plaintext), 'before removal');
+  assert.notEqual(bob.stateCommitment, bobPreMessageCommitment);
+  assert.throws(() =>
+    MlsGroupSession.restore(
+      bobPreMessageState,
+      bobRoot,
+      verifyCredential,
+      1n,
+      bob.stateCommitment,
+    ),
+  );
   const carolBefore = await carol.decrypt(beforeRemoval.frame);
   carol = carolBefore.session;
   assert.equal(read.decode(carolBefore.plaintext), 'before removal');
 
   const stolenBobState = bob.protectState(bobRoot);
+  const stolenBobCommitment = bob.stateCommitment;
   const offlineCarolState = carol.protectState(carolRoot);
+  const offlineCarolCommitment = carol.stateCommitment;
   assert.equal(stolenBobState.valueOf().includes('before removal'), false);
   assert.throws(() =>
     MlsGroupSession.restore(
@@ -127,18 +141,21 @@ const run = async () => {
       UserRootKey.generate(),
       verifyCredential,
       1n,
+      stolenBobCommitment,
     ),
   );
   const removed = await alice.removeMembers([bobIdentity.credential.identity]);
   alice = removed.session;
   assert.notEqual(alice.contextHash, preRemovalContextHash);
   const postRemovalState = alice.protectState(identityRoot);
+  const postRemovalCommitment = alice.stateCommitment;
   assert.throws(() =>
     MlsGroupSession.restore(
       postRemovalState,
       identityRoot,
       verifyCredential,
       1n,
+      postRemovalCommitment,
     ),
   );
   assert.throws(() =>
@@ -147,6 +164,7 @@ const run = async () => {
       carolRoot,
       verifyCredential,
       2n,
+      offlineCarolCommitment,
     ),
   );
   const removedBob = await bob.applyCommit(removed.commit);
@@ -156,6 +174,7 @@ const run = async () => {
     carolRoot,
     verifyCredential,
     1n,
+    offlineCarolCommitment,
   );
   carol = await carol.applyCommit(removed.commit);
 
@@ -175,6 +194,7 @@ const run = async () => {
     bobRoot,
     verifyCredential,
     1n,
+    stolenBobCommitment,
   );
   await assert.rejects(() => stolenBob.decrypt(afterRemoval.frame));
   await assert.rejects(() => carol.decrypt(afterRemoval.frame));
@@ -186,6 +206,7 @@ const run = async () => {
     carolRoot,
     verifyCredential,
     1n,
+    offlineCarolCommitment,
   );
   await assert.rejects(
     () => outOfOrderCarol.applyCommit(refreshed.commit),
@@ -197,11 +218,14 @@ const run = async () => {
     (error) => error.message === 'Invalid MLS frame',
   );
   assert.equal(alice.epoch, 3n);
+  const currentCarolState = carol.protectState(carolRoot);
+  const currentCarolCommitment = carol.stateCommitment;
   const restoredCarol = await MlsGroupSession.restore(
-    carol.protectState(carolRoot),
+    currentCarolState,
     carolRoot,
     verifyCredential,
     3n,
+    currentCarolCommitment,
   );
   const afterRefresh = await alice.encrypt(text.encode('after refresh'));
   alice = afterRefresh.session;
@@ -300,7 +324,9 @@ const run = async () => {
   const overCapCommit = MlsCommitFrame.create(
     mls.encodeMlsMessage(overCap.commit),
   );
+  const beforeRejectedCommitment = cappedObserver.stateCommitment;
   await assert.rejects(() => cappedObserver.applyCommit(overCapCommit));
+  assert.equal(cappedObserver.stateCommitment, beforeRejectedCommitment);
   const afterRejectedCommit = await cappedGroup.encrypt(
     text.encode('after rejected over-cap commit'),
   );

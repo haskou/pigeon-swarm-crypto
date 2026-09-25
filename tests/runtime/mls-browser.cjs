@@ -99,7 +99,13 @@ const {
         verify,
       );
       const root = UserRootKey.generate();
-      bob = MlsGroupSession.restore(bob.protectState(root), root, verify, 1n);
+      bob = MlsGroupSession.restore(
+        bob.protectState(root),
+        root,
+        verify,
+        1n,
+        bob.stateCommitment,
+      );
       const encrypted = await alice.encrypt(text.encode('browser secret'));
       alice = encrypted.session;
       const decrypted = await bob.decrypt(encrypted.frame);

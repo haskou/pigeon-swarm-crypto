@@ -60,6 +60,16 @@ const MAX_APPLICATION_BYTES = 128 * 1024;
 const memberCount = (state: ClientState): number =>
   state.ratchetTree.filter((node) => node?.nodeType === 'leaf').length;
 
+const stateCommitment = (state: ClientState): string => {
+  const bytes = encodeState(state);
+
+  try {
+    return DeliveryBase64Url.encode(sha256(bytes));
+  } finally {
+    bytes.fill(0);
+  }
+};
+
 const eraseConsumed = (consumed: Uint8Array[]): void => {
   consumed.forEach(zeroOutUint8Array);
 };
@@ -72,7 +82,7 @@ const identityKey = (identity: Uint8Array): string => {
 };
 
 export class MlsGroupSession {
-  #state: ClientState;
+  readonly #state: ClientState;
 
   readonly #verify: MlsCredentialVerifier;
 
@@ -175,6 +185,7 @@ export class MlsGroupSession {
     rootKey: UserRootKey,
     verify: MlsCredentialVerifier,
     expectedEpoch: bigint,
+    expectedStateCommitment: string,
   ): MlsGroupSession {
     const bytes = protectedState.unlock(rootKey);
 
@@ -182,7 +193,17 @@ export class MlsGroupSession {
       const decoded = decodeState(bytes);
       const owned = decodeState(encodeState(decoded));
 
-      if (owned.groupContext.epoch !== expectedEpoch) {
+      try {
+        DeliveryBase64Url.decode(expectedStateCommitment, 32).fill(0);
+      } catch {
+        throw new InvalidMlsStateError();
+      }
+
+      if (
+        owned.groupContext.epoch !== expectedEpoch ||
+        stateCommitment({ ...owned, clientConfig: createConfig(verify) }) !==
+          expectedStateCommitment
+      ) {
         throw new InvalidMlsStateError();
       }
 
@@ -249,8 +270,6 @@ export class MlsGroupSession {
       );
 
       if (rejectedByMemberLimit) {
-        this.#state = result.newState;
-        eraseConsumed(result.consumed);
         throw new InvalidMlsFrameError();
       }
 
@@ -272,6 +291,10 @@ export class MlsGroupSession {
     return DeliveryBase64Url.encode(
       sha256(encodeGroupContext(this.#state.groupContext)),
     );
+  }
+
+  public get stateCommitment(): string {
+    return stateCommitment(this.#state);
   }
 
   public protectState(rootKey: UserRootKey): ProtectedMlsGroupState {

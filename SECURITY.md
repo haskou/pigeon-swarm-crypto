@@ -23,9 +23,10 @@ protection of traffic patterns, recipient relationships or timing is provided.
 The MLS entry point provides forward secrecy within message generations and
 epoch-based post-compromise recovery when valid commits are applied and obsolete
 state is deleted. It does not authenticate devices by itself: callers must supply
-a verifier bound to their authorization state. It also cannot prevent rollback
-when an attacker can replace the protected session snapshot and its application
-checkpoint with an older valid pair.
+a verifier bound to their authorization state. Restore requires the trusted MLS
+epoch and full state commitment, including same-epoch ratchet advances. Rollback
+remains possible if an attacker can replace the protected session snapshot and
+its application checkpoint with an older valid pair.
 
 IPFS publication can leave ciphertext and metadata available indefinitely.
 Deleting a local copy, changing a database or rotating a key does not erase copies

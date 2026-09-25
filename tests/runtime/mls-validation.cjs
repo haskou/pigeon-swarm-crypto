@@ -305,6 +305,32 @@ const run = async () => {
     deliveryPackage.publicBytes,
   ]);
   expectInvalid(() => decodePublicKeyPackage(deliveryAddition.welcome.payloadBytes()));
+  let releaseJoinVerification;
+  let reportJoinVerification;
+  const joinVerificationStarted = new Promise((resolve) => {
+    reportJoinVerification = resolve;
+  });
+  const joinVerificationGate = new Promise((resolve) => {
+    releaseJoinVerification = resolve;
+  });
+  const pendingJoin = MlsGroupSession.join(
+    deliveryAddition.welcome,
+    deliveryPackage,
+    async () => {
+      reportJoinVerification();
+      await joinVerificationGate;
+
+      return true;
+    },
+  );
+  await joinVerificationStarted;
+  await expectInvalidAsync(() =>
+    MlsGroupSession.join(deliveryAddition.welcome, deliveryPackage, trusted),
+  );
+  expectInvalid(() => deliveryPackage.consumePrivatePackage());
+  expectInvalid(() => deliveryPackage.protect(root));
+  releaseJoinVerification();
+  await pendingJoin;
   const mismatchedJoinIdentity = await MlsDeviceIdentity.generate(
     bytes('mismatched-join'),
   );
@@ -341,6 +367,28 @@ const run = async () => {
   }
   const preservedMessage = await preservedSession.encrypt(bytes('still active'));
   assert.deepEqual(preservedMessage.frame.payloadBytes().length > 0, true);
+  const concurrentSession = preservedMessage.session;
+  const concurrentEncryptions = await Promise.allSettled([
+    concurrentSession.encrypt(bytes('first concurrent message')),
+    concurrentSession.encrypt(bytes('second concurrent message')),
+  ]);
+  assert.equal(
+    concurrentEncryptions.filter(({ status }) => status === 'fulfilled').length,
+    1,
+  );
+  assert.equal(
+    concurrentEncryptions.filter(({ status }) => status === 'rejected').length,
+    1,
+  );
+  assert.throws(() => concurrentSession.protectState(root));
+  const concurrentSuccess = concurrentEncryptions.find(
+    ({ status }) => status === 'fulfilled',
+  ).value;
+  assert.equal(
+    (await concurrentSuccess.session.encrypt(bytes('next generation'))).frame
+      .payloadBytes().length > 0,
+    true,
+  );
 
   const protectedGroup = founder.protectState(root);
   assert.equal(typeof protectedGroup.valueOf(), 'string');

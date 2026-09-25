@@ -26,6 +26,8 @@ const equal = (left: Uint8Array, right: Uint8Array): boolean =>
 export class MlsJoinPackage {
   #consumed = false;
 
+  #inUse = false;
+
   readonly #privatePackage: PrivateKeyPackage;
 
   readonly #publicPackage: KeyPackage;
@@ -128,7 +130,7 @@ export class MlsJoinPackage {
   }
 
   public consumePrivatePackage(): PrivateKeyPackage {
-    if (this.#consumed) throw new InvalidMlsStateError();
+    if (this.#consumed || this.#inUse) throw new InvalidMlsStateError();
     const privatePackage = clonePrivateKeyPackage(this.#privatePackage);
     this.destroy();
 
@@ -138,25 +140,28 @@ export class MlsJoinPackage {
   public async [MLS_JOIN_PACKAGE_USE]<T>(
     operation: MlsJoinPackageOperation<T>,
   ): Promise<T> {
-    if (this.#consumed) throw new InvalidMlsStateError();
+    if (this.#consumed || this.#inUse) throw new InvalidMlsStateError();
     const publicPackage = this.copyPublicPackage();
     const privatePackage = clonePrivateKeyPackage(this.#privatePackage);
+    this.#inUse = true;
 
     try {
       const result = await operation(publicPackage, privatePackage);
       this.destroy();
+      this.#inUse = false;
 
       return result;
     } catch (error) {
       privatePackage.initPrivateKey.fill(0);
       privatePackage.hpkePrivateKey.fill(0);
       privatePackage.signaturePrivateKey.fill(0);
+      this.#inUse = false;
       throw error;
     }
   }
 
   public protect(rootKey: UserRootKey): ProtectedMlsJoinPackage {
-    if (this.#consumed) throw new InvalidMlsStateError();
+    if (this.#consumed || this.#inUse) throw new InvalidMlsStateError();
     const state = BinarySecretCodec.encode(
       [
         this.publicBytes,

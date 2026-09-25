@@ -83,7 +83,11 @@ const identityKey = (identity: Uint8Array): string => {
 };
 
 export class MlsGroupSession {
+  #consumed = false;
+
   readonly #state: ClientState;
+
+  #transitioning = false;
 
   readonly #verify: MlsCredentialVerifier;
 
@@ -226,6 +230,32 @@ export class MlsGroupSession {
     this.#verify = verify;
   }
 
+  private ensureAvailable(): void {
+    if (this.#consumed || this.#transitioning) {
+      throw new InvalidMlsStateError();
+    }
+  }
+
+  private async transition<T>(
+    operation: () => Promise<{
+      readonly consumed: Uint8Array[];
+      readonly value: T;
+    }>,
+  ): Promise<T> {
+    this.ensureAvailable();
+    this.#transitioning = true;
+
+    try {
+      const result = await operation();
+      this.#consumed = true;
+      eraseConsumed(result.consumed);
+
+      return result.value;
+    } finally {
+      this.#transitioning = false;
+    }
+  }
+
   private async process(
     bytes: Uint8Array,
     expectedContentType: 'application' | 'commit',
@@ -276,24 +306,33 @@ export class MlsGroupSession {
   }
 
   public get epoch(): bigint {
+    this.ensureAvailable();
+
     return this.#state.groupContext.epoch;
   }
 
   public get active(): boolean {
+    this.ensureAvailable();
+
     return this.#state.groupActiveState.kind === 'active';
   }
 
   public get contextHash(): string {
+    this.ensureAvailable();
+
     return DeliveryBase64Url.encode(
       sha256(encodeGroupContext(this.#state.groupContext)),
     );
   }
 
   public get stateCommitment(): string {
+    this.ensureAvailable();
+
     return stateCommitment(this.#state);
   }
 
   public protectState(rootKey: UserRootKey): ProtectedMlsGroupState {
+    this.ensureAvailable();
     const state = encodeState(this.#state);
 
     try {
@@ -308,167 +347,182 @@ export class MlsGroupSession {
     readonly commit: MlsCommitFrame;
     readonly welcome: MlsWelcomeFrame;
   }> {
-    const currentMemberCount = memberCount(this.#state);
+    return this.transition(async () => {
+      const currentMemberCount = memberCount(this.#state);
 
-    if (
-      publicPackages.length === 0 ||
-      publicPackages.length > MAX_GROUP_MEMBERS - currentMemberCount
-    ) {
-      throw new InvalidMlsStateError();
-    }
-    const packages = MlsGroupSession.decodeAndVerifyPackages(
-      publicPackages,
-      this.#verify,
-    );
-    const verifiedPackages = await Promise.all(packages);
-    const suite = await getMlsCiphersuite();
-    const result = await createCommit(
-      { cipherSuite: suite, state: this.#state },
-      {
-        extraProposals: verifiedPackages.map((keyPackage) => ({
-          add: { keyPackage },
-          proposalType: 'add' as const,
-        })),
-        ratchetTreeExtension: true,
-      },
-    );
-    const welcome = requireMlsWelcome(result.welcome);
-    const transition = {
-      commit: MlsCommitFrame.create(encodeMessage(result.commit)),
-      session: new MlsGroupSession(result.newState, this.#verify),
-      welcome: MlsWelcomeFrame.create(
-        encodeMessage({
-          version: 'mls10',
-          welcome,
-          wireformat: 'mls_welcome',
-        }),
-      ),
-    };
-    eraseConsumed(result.consumed);
+      if (
+        publicPackages.length === 0 ||
+        publicPackages.length > MAX_GROUP_MEMBERS - currentMemberCount
+      ) {
+        throw new InvalidMlsStateError();
+      }
+      const packages = MlsGroupSession.decodeAndVerifyPackages(
+        publicPackages,
+        this.#verify,
+      );
+      const verifiedPackages = await Promise.all(packages);
+      const suite = await getMlsCiphersuite();
+      const result = await createCommit(
+        { cipherSuite: suite, state: this.#state },
+        {
+          extraProposals: verifiedPackages.map((keyPackage) => ({
+            add: { keyPackage },
+            proposalType: 'add' as const,
+          })),
+          ratchetTreeExtension: true,
+        },
+      );
+      const welcome = requireMlsWelcome(result.welcome);
 
-    return transition;
+      return {
+        consumed: result.consumed,
+        value: {
+          commit: MlsCommitFrame.create(encodeMessage(result.commit)),
+          session: new MlsGroupSession(result.newState, this.#verify),
+          welcome: MlsWelcomeFrame.create(
+            encodeMessage({
+              version: 'mls10',
+              welcome,
+              wireformat: 'mls_welcome',
+            }),
+          ),
+        },
+      };
+    });
   }
 
   public async removeMembers(identities: Uint8Array[]): Promise<{
     readonly session: MlsGroupSession;
     readonly commit: MlsCommitFrame;
   }> {
-    if (
-      identities.length === 0 ||
-      identities.length > MAX_GROUP_MEMBERS ||
-      identities.some(
-        (identity) =>
-          !(identity instanceof Uint8Array) ||
-          identity.length === 0 ||
-          identity.length > MAX_IDENTITY_BYTES,
-      )
-    ) {
-      throw new InvalidMlsStateError();
-    }
-    const targets = new Set(identities.map(identityKey));
-
-    if (targets.size !== identities.length) throw new InvalidMlsStateError();
-    const removed: number[] = [];
-    this.#state.ratchetTree.forEach((node, nodeIndex) => {
-      if (node?.nodeType !== 'leaf') return;
-      const credential = node.leaf.credential;
-
+    return this.transition(async () => {
       if (
-        credential.credentialType === 'basic' &&
-        targets.has(identityKey(credential.identity))
+        identities.length === 0 ||
+        identities.length > MAX_GROUP_MEMBERS ||
+        identities.some(
+          (identity) =>
+            !(identity instanceof Uint8Array) ||
+            identity.length === 0 ||
+            identity.length > MAX_IDENTITY_BYTES,
+        )
       ) {
-        removed.push(nodeIndex / 2);
+        throw new InvalidMlsStateError();
       }
+      const targets = new Set(identities.map(identityKey));
+
+      if (targets.size !== identities.length) throw new InvalidMlsStateError();
+      const removed: number[] = [];
+      this.#state.ratchetTree.forEach((node, nodeIndex) => {
+        if (node?.nodeType !== 'leaf') return;
+        const credential = node.leaf.credential;
+
+        if (
+          credential.credentialType === 'basic' &&
+          targets.has(identityKey(credential.identity))
+        ) {
+          removed.push(nodeIndex / 2);
+        }
+      });
+
+      if (removed.length !== targets.size) throw new InvalidMlsStateError();
+      const suite = await getMlsCiphersuite();
+      const result = await createCommit(
+        { cipherSuite: suite, state: this.#state },
+        {
+          extraProposals: removed.map((leafIndex) => ({
+            proposalType: 'remove' as const,
+            remove: { removed: leafIndex },
+          })),
+          ratchetTreeExtension: true,
+        },
+      );
+
+      return {
+        consumed: result.consumed,
+        value: {
+          commit: MlsCommitFrame.create(encodeMessage(result.commit)),
+          session: new MlsGroupSession(result.newState, this.#verify),
+        },
+      };
     });
-
-    if (removed.length !== targets.size) throw new InvalidMlsStateError();
-    const suite = await getMlsCiphersuite();
-    const result = await createCommit(
-      { cipherSuite: suite, state: this.#state },
-      {
-        extraProposals: removed.map((leafIndex) => ({
-          proposalType: 'remove' as const,
-          remove: { removed: leafIndex },
-        })),
-        ratchetTreeExtension: true,
-      },
-    );
-    const transition = {
-      commit: MlsCommitFrame.create(encodeMessage(result.commit)),
-      session: new MlsGroupSession(result.newState, this.#verify),
-    };
-    eraseConsumed(result.consumed);
-
-    return transition;
   }
 
   public async refresh(): Promise<{
     readonly session: MlsGroupSession;
     readonly commit: MlsCommitFrame;
   }> {
-    const suite = await getMlsCiphersuite();
-    const result = await createCommit(
-      { cipherSuite: suite, state: this.#state },
-      { ratchetTreeExtension: true },
-    );
-    const transition = {
-      commit: MlsCommitFrame.create(encodeMessage(result.commit)),
-      session: new MlsGroupSession(result.newState, this.#verify),
-    };
-    eraseConsumed(result.consumed);
+    return this.transition(async () => {
+      const suite = await getMlsCiphersuite();
+      const result = await createCommit(
+        { cipherSuite: suite, state: this.#state },
+        { ratchetTreeExtension: true },
+      );
 
-    return transition;
+      return {
+        consumed: result.consumed,
+        value: {
+          commit: MlsCommitFrame.create(encodeMessage(result.commit)),
+          session: new MlsGroupSession(result.newState, this.#verify),
+        },
+      };
+    });
   }
 
   public async applyCommit(commit: MlsCommitFrame): Promise<MlsGroupSession> {
-    const result = await this.process(commit.payloadBytes(), 'commit');
-    try {
+    return this.transition(async () => {
+      const result = await this.process(commit.payloadBytes(), 'commit');
+
       if (result.kind !== 'newState') throw new InvalidMlsFrameError();
 
-      return new MlsGroupSession(result.newState, this.#verify);
-    } finally {
-      eraseConsumed(result.consumed);
-    }
+      return {
+        consumed: result.consumed,
+        value: new MlsGroupSession(result.newState, this.#verify),
+      };
+    });
   }
 
   public async encrypt(plaintext: Uint8Array): Promise<{
     readonly session: MlsGroupSession;
     readonly frame: MlsApplicationFrame;
   }> {
-    if (
-      !(plaintext instanceof Uint8Array) ||
-      plaintext.length === 0 ||
-      plaintext.length > MAX_APPLICATION_BYTES
-    ) {
-      throw new InvalidMlsFrameError();
-    }
-    const suite = await getMlsCiphersuite();
-    const result = await createApplicationMessage(
-      this.#state,
-      new Uint8Array(plaintext),
-      suite,
-    );
-    const transition = {
-      frame: MlsApplicationFrame.create(
-        encodeMessage({
-          privateMessage: result.privateMessage,
-          version: 'mls10',
-          wireformat: 'mls_private_message',
-        }),
-      ),
-      session: new MlsGroupSession(result.newState, this.#verify),
-    };
-    eraseConsumed(result.consumed);
+    return this.transition(async () => {
+      if (
+        !(plaintext instanceof Uint8Array) ||
+        plaintext.length === 0 ||
+        plaintext.length > MAX_APPLICATION_BYTES
+      ) {
+        throw new InvalidMlsFrameError();
+      }
+      const suite = await getMlsCiphersuite();
+      const result = await createApplicationMessage(
+        this.#state,
+        new Uint8Array(plaintext),
+        suite,
+      );
 
-    return transition;
+      return {
+        consumed: result.consumed,
+        value: {
+          frame: MlsApplicationFrame.create(
+            encodeMessage({
+              privateMessage: result.privateMessage,
+              version: 'mls10',
+              wireformat: 'mls_private_message',
+            }),
+          ),
+          session: new MlsGroupSession(result.newState, this.#verify),
+        },
+      };
+    });
   }
 
   public async decrypt(frame: MlsApplicationFrame): Promise<{
     readonly session: MlsGroupSession;
     readonly plaintext: Uint8Array;
   }> {
-    const result = await this.process(frame.payloadBytes(), 'application');
-    try {
+    return this.transition(async () => {
+      const result = await this.process(frame.payloadBytes(), 'application');
+
       if (result.kind !== 'applicationMessage') {
         throw new InvalidMlsFrameError();
       }
@@ -476,11 +530,12 @@ export class MlsGroupSession {
       result.message.fill(0);
 
       return {
-        plaintext,
-        session: new MlsGroupSession(result.newState, this.#verify),
+        consumed: result.consumed,
+        value: {
+          plaintext,
+          session: new MlsGroupSession(result.newState, this.#verify),
+        },
       };
-    } finally {
-      eraseConsumed(result.consumed);
-    }
+    });
   }
 }

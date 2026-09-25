@@ -6,6 +6,7 @@ const {
   MlsDeviceIdentity,
   MlsGroupSession,
   MlsJoinPackage,
+  MlsWelcomeFrame,
   PrivateDeliveryEnvelope,
   PrivateDeliveryFrame,
 } = require('../../dist/mls/index.cjs');
@@ -269,6 +270,76 @@ const run = async () => {
       'MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519',
     ),
   );
+  const oversizedFounderSigningKey = await suite.signature.keygen();
+  const oversizedFounderIdentity = text.encode('oversized-founder');
+  const oversizedFounderPackage = await mls.generateKeyPackageWithKey(
+    { credentialType: 'basic', identity: oversizedFounderIdentity },
+    mls.defaultCapabilities(),
+    mls.defaultLifetime,
+    [],
+    oversizedFounderSigningKey,
+    suite,
+  );
+  trusted.set(
+    key(oversizedFounderIdentity),
+    key(oversizedFounderSigningKey.publicKey),
+  );
+  const preservedJoinSigningKey = await suite.signature.keygen();
+  const preservedJoinIdentity = text.encode('preserved-join-package');
+  const preservedJoinGenerated = await mls.generateKeyPackageWithKey(
+    { credentialType: 'basic', identity: preservedJoinIdentity },
+    mls.defaultCapabilities(),
+    mls.defaultLifetime,
+    [],
+    preservedJoinSigningKey,
+    suite,
+  );
+  trusted.set(
+    key(preservedJoinIdentity),
+    key(preservedJoinSigningKey.publicKey),
+  );
+  const oversizedGroup = await mls.createGroup(
+    new Uint8Array(1025),
+    oversizedFounderPackage.publicPackage,
+    oversizedFounderPackage.privatePackage,
+    [],
+    suite,
+  );
+  const oversizedAddition = await mls.createCommit(
+    { cipherSuite: suite, state: oversizedGroup },
+    {
+      extraProposals: [
+        {
+          add: { keyPackage: preservedJoinGenerated.publicPackage },
+          proposalType: 'add',
+        },
+      ],
+      ratchetTreeExtension: true,
+    },
+  );
+  const oversizedWelcome = MlsWelcomeFrame.create(
+    mls.encodeMlsMessage({
+      version: 'mls10',
+      welcome: oversizedAddition.welcome,
+      wireformat: 'mls_welcome',
+    }),
+  );
+  const preservedJoinPackage = MlsJoinPackage.fromGenerated(
+    preservedJoinGenerated.publicPackage,
+    preservedJoinGenerated.privatePackage,
+  );
+  await assert.rejects(() =>
+    MlsGroupSession.join(
+      oversizedWelcome,
+      preservedJoinPackage,
+      verifyCredential,
+    ),
+  );
+  assert.equal(
+    typeof preservedJoinPackage.protect(UserRootKey.generate()).valueOf(),
+    'string',
+  );
+
   const largePackages = await Promise.all(
     Array.from({ length: 10 }, async (_, index) => {
       const identity = text.encode(`large-package-${index}`);

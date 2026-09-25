@@ -196,21 +196,23 @@ export class MlsGroupSession {
         throw new InvalidMlsFrameError();
       }
       const suite = await getMlsCiphersuite();
-      const state = await joinPackage[MLS_JOIN_PACKAGE_USE](
-        (publicPackage, privatePackage) =>
-          joinGroup(
-            message.welcome,
-            publicPackage,
-            privatePackage,
-            emptyPskIndex,
-            suite,
-            undefined,
-            undefined,
-            createConfig(verify),
+
+      return await joinPackage[MLS_JOIN_PACKAGE_USE](
+        async (publicPackage, privatePackage) =>
+          new MlsGroupSession(
+            await joinGroup(
+              message.welcome,
+              publicPackage,
+              privatePackage,
+              emptyPskIndex,
+              suite,
+              undefined,
+              undefined,
+              createConfig(verify),
+            ),
+            verify,
           ),
       );
-
-      return new MlsGroupSession(state, verify);
     } catch {
       throw new InvalidMlsFrameError();
     }

@@ -56,6 +56,9 @@ jobs:
       - name: Verify control quorum in Node and Chromium
         run: yarn test:private-control
 
+      - name: Verify user root key protection in Node and Chromium
+        run: yarn test:user-root-key
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:

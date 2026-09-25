@@ -20,6 +20,10 @@ export * from './SymmetricEncryptedPayload';
 export * from './SymmetricKey';
 export * from './SymmetricKeyCryptOptions';
 export * from './SymmetricKeyDerivationOptions';
+export * from './UserRootKey';
+export * from './UserRootKeySecondFactor';
+export * from './ProtectedUserRootKey';
+export * from './errors/InvalidProtectedUserRootKeyError';
 
 export { PrivateOperationSignature } from './PrivateOperationSignature';
 export { InvalidPrivateOperationError } from './errors/InvalidPrivateOperationError';

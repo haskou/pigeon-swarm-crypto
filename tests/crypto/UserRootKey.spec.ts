@@ -1,4 +1,5 @@
 import { NullObject, Password } from '@haskou/value-objects';
+import { inspect } from 'node:util';
 
 import {
   InvalidProtectedUserRootKeyError,
@@ -133,6 +134,16 @@ describe('UserRootKey', () => {
         new UserRootKeySecondFactor(undefined as unknown as string),
       ),
     ).toBeTrue();
+  });
+
+  it('requires explicit export and does not serialize or inspect secrets', () => {
+    const rootKey = UserRootKey.generate();
+    const factor = UserRootKeySecondFactor.generate();
+
+    expect(() => JSON.stringify(rootKey)).toThrow();
+    expect(() => JSON.stringify(factor)).toThrow();
+    expect(inspect(rootKey)).not.toContain(rootKey.valueOf());
+    expect(inspect(factor)).not.toContain(factor.valueOf());
   });
 
   it('rejects oversized envelopes before deriving a password key', async () => {

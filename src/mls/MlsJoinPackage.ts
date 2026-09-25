@@ -1,0 +1,157 @@
+import { x25519 } from '@noble/curves/ed25519.js';
+import { KeyPackage, PrivateKeyPackage } from 'ts-mls';
+
+import { UserRootKey } from '../UserRootKey';
+import { BinarySecretCodec } from './internal/BinarySecretCodec';
+import {
+  clonePrivateKeyPackage,
+  decodePublicKeyPackage,
+  encodePublicKeyPackage,
+} from './internal/MlsCodec';
+import { getMlsCiphersuite } from './internal/MlsRuntime';
+import { InvalidMlsStateError } from './InvalidMlsStateError';
+import { MlsCredential } from './MlsCredential';
+import { ProtectedMlsJoinPackage } from './ProtectedMlsJoinPackage';
+
+const MAX_SERIALIZED_BYTES = 16384;
+const PROOF = new TextEncoder().encode('pigeon.mls-join-package-proof.v1');
+const equal = (left: Uint8Array, right: Uint8Array): boolean =>
+  left.length === right.length &&
+  left.every((value, index) => value === right[index]);
+
+export class MlsJoinPackage {
+  #consumed = false;
+
+  readonly #privatePackage: PrivateKeyPackage;
+
+  readonly #publicPackage: KeyPackage;
+
+  public static fromGenerated(
+    publicPackage: KeyPackage,
+    privatePackage: PrivateKeyPackage,
+  ): MlsJoinPackage {
+    return new MlsJoinPackage(publicPackage, privatePackage);
+  }
+
+  public static publicPackageFromBytes(bytes: Uint8Array): KeyPackage {
+    return decodePublicKeyPackage(bytes);
+  }
+
+  public static async restore(
+    protectedPackage: ProtectedMlsJoinPackage,
+    rootKey: UserRootKey,
+  ): Promise<MlsJoinPackage> {
+    const state = protectedPackage.unlock(rootKey);
+
+    try {
+      const [publicBytes, initPrivateKey, hpkePrivateKey, signaturePrivateKey] =
+        BinarySecretCodec.decode(state, 4, MAX_SERIALIZED_BYTES);
+      const publicPackage = decodePublicKeyPackage(publicBytes);
+      const suite = await getMlsCiphersuite();
+      const initPublicKey = x25519.getPublicKey(initPrivateKey);
+      const leafPublicKey = x25519.getPublicKey(hpkePrivateKey);
+      const signature = await suite.signature.sign(signaturePrivateKey, PROOF);
+
+      try {
+        if (
+          !equal(initPublicKey, publicPackage.initKey) ||
+          !equal(leafPublicKey, publicPackage.leafNode.hpkePublicKey) ||
+          !(await suite.signature.verify(
+            publicPackage.leafNode.signaturePublicKey,
+            PROOF,
+            signature,
+          ))
+        ) {
+          throw new InvalidMlsStateError();
+        }
+
+        return new MlsJoinPackage(publicPackage, {
+          hpkePrivateKey,
+          initPrivateKey,
+          signaturePrivateKey,
+        });
+      } finally {
+        initPublicKey.fill(0);
+        leafPublicKey.fill(0);
+        signature.fill(0);
+      }
+    } catch {
+      throw new InvalidMlsStateError();
+    } finally {
+      state.fill(0);
+    }
+  }
+
+  private constructor(
+    publicPackage: KeyPackage,
+    privatePackage: PrivateKeyPackage,
+  ) {
+    this.#publicPackage = publicPackage;
+    this.#privatePackage = privatePackage;
+  }
+
+  public get publicBytes(): Uint8Array {
+    return encodePublicKeyPackage(this.#publicPackage);
+  }
+
+  public get initPublicKey(): Uint8Array {
+    return new Uint8Array(this.#publicPackage.initKey);
+  }
+
+  public get leafPublicKey(): Uint8Array {
+    return new Uint8Array(this.#publicPackage.leafNode.hpkePublicKey);
+  }
+
+  public credential(): MlsCredential {
+    const credential = this.#publicPackage.leafNode.credential;
+
+    if (credential.credentialType !== 'basic') {
+      throw new InvalidMlsStateError();
+    }
+
+    return {
+      identity: new Uint8Array(credential.identity),
+      signaturePublicKey: new Uint8Array(
+        this.#publicPackage.leafNode.signaturePublicKey,
+      ),
+    };
+  }
+
+  public copyPublicPackage(): KeyPackage {
+    return decodePublicKeyPackage(this.publicBytes);
+  }
+
+  public consumePrivatePackage(): PrivateKeyPackage {
+    if (this.#consumed) throw new InvalidMlsStateError();
+    const privatePackage = clonePrivateKeyPackage(this.#privatePackage);
+    this.destroy();
+
+    return privatePackage;
+  }
+
+  public protect(rootKey: UserRootKey): ProtectedMlsJoinPackage {
+    if (this.#consumed) throw new InvalidMlsStateError();
+    const state = BinarySecretCodec.encode(
+      [
+        this.publicBytes,
+        this.#privatePackage.initPrivateKey,
+        this.#privatePackage.hpkePrivateKey,
+        this.#privatePackage.signaturePrivateKey,
+      ],
+      MAX_SERIALIZED_BYTES,
+    );
+
+    try {
+      return ProtectedMlsJoinPackage.protect(state, rootKey);
+    } finally {
+      state.fill(0);
+    }
+  }
+
+  public destroy(): void {
+    this.#privatePackage.initPrivateKey.fill(0);
+    this.#privatePackage.hpkePrivateKey.fill(0);
+    this.#privatePackage.signaturePrivateKey.fill(0);
+    this.#consumed = true;
+  }
+}

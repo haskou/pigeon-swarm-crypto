@@ -6,6 +6,14 @@ This is a focused source review and regression report, not an independent
 cryptographic audit. It covers the package's current key APIs and the boundary
 between its primitives and the planned private messaging protocol.
 
+The gaps recorded below describe the reviewed baseline. The package now includes
+the RFC 9420 and RFC 9180 lifecycle boundary documented in
+[MLS key lifecycle](mls-key-lifecycle.md): independent signing, MLS and delivery
+keys; typed protocol frames; authenticated daily recipient schedules; epoch
+refresh and removal; offline catch-up; replay rejection; and root-key-protected
+state. Application-level authorization, atomic persistence, mailbox enforcement
+and deployment integration remain outside this package.
+
 ## What the current package provides
 
 - `SymmetricKey` generates random 256-bit keys and encrypts with AES-GCM and a

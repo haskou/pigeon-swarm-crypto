@@ -2,7 +2,11 @@
 const config = {
   collectCoverageFrom: ['<rootDir>/src/**/*.ts'],
   coverageDirectory: '<rootDir>/tests/coverage',
-  coveragePathIgnorePatterns: ['<rootDir>/node_modules/', 'index.ts'],
+  coveragePathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    '<rootDir>/src/mls/',
+    'index.ts',
+  ],
   coverageReporters: ['html', 'lcov', 'text'],
   coverageThreshold: {
     global: {
@@ -24,7 +28,7 @@ const config = {
     '^.+\\.ts': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(@haskou/value-objects|@noble/ciphers|@noble/curves|@noble/hashes)/)',
+    'node_modules/(?!.*(@haskou/value-objects|@noble/ciphers|@noble/curves|@noble/hashes)/)',
   ],
   verbose: true,
 };

@@ -91,13 +91,7 @@ const validateHeaderShape = (value: PrivateDeliveryHeader): void => {
   }
 };
 
-const decodeFrame = (
-  plaintext: Uint8Array,
-  bucketBytes: number,
-): PrivateDeliveryFrame => {
-  if (plaintext.length !== bucketBytes - 48) {
-    throw new InvalidPrivateDeliveryError();
-  }
+const decodeFrame = (plaintext: Uint8Array): PrivateDeliveryFrame => {
   const length = new DataView(
     plaintext.buffer,
     plaintext.byteOffset,
@@ -253,7 +247,7 @@ export class PrivateDeliveryEnvelope {
           aad,
         );
 
-        return decodeFrame(plaintext, value.bucketBytes);
+        return decodeFrame(plaintext);
       } finally {
         aad.fill(0);
         wire.fill(0);

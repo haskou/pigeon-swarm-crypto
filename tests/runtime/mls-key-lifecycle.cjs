@@ -321,6 +321,7 @@ const run = async () => {
       ratchetTreeExtension: true,
     },
   );
+  assert.throws(() => new MlsGroupSession(overCap.newState, verifyCredential));
   const overCapCommit = MlsCommitFrame.create(
     mls.encodeMlsMessage(overCap.commit),
   );
@@ -350,6 +351,17 @@ const run = async () => {
     ).length,
     262096,
   );
+  const publicCommit = await mls.createCommit(
+    { cipherSuite: suite, state: rawState },
+    { ratchetTreeExtension: true, wireAsPublicMessage: true },
+  );
+  const publicCommitFrame = MlsCommitFrame.create(
+    mls.encodeMlsMessage(publicCommit.commit),
+  );
+  const observerAfterPublicCommit = await observerAfterRejectedCommit.session.applyCommit(
+    publicCommitFrame,
+  );
+  assert.equal(observerAfterPublicCommit.epoch, 2n);
   encodedCappedState.fill(0);
 
   console.log('PASS MLS device keys, membership changes, rotation, recovery, persistence, replay and frame separation.');

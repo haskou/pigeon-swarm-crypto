@@ -19,10 +19,6 @@ const decodeIdentity = (value: unknown, maximumLength: number): Uint8Array => {
   if (typeof value !== 'string') throw new InvalidPrivateDeliveryError();
   const bytes = DeliveryBase64Url.decodeAtMost(value, maximumLength);
 
-  if (bytes.length === 0 || bytes.length > maximumLength) {
-    throw new InvalidPrivateDeliveryError();
-  }
-
   return bytes;
 };
 

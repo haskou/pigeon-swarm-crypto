@@ -157,10 +157,6 @@ export class RootProtectedEnvelope {
           Buffer.from([...parts.slice(0, 4), domain].join('.'), 'utf8'),
         );
 
-        if (plaintext.length > maxPlaintextBytes) {
-          throw new InvalidMlsStateError();
-        }
-
         return new Uint8Array(plaintext);
       } finally {
         salt.fill(0);

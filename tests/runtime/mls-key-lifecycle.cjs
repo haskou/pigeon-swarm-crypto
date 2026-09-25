@@ -264,6 +264,67 @@ const run = async () => {
   assert.throws(() => MlsApplicationFrame.fromBytes(new Uint8Array(0)));
 
   const mls = await import('ts-mls');
+  const suite = await mls.getCiphersuiteImpl(
+    mls.getCiphersuiteFromName(
+      'MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519',
+    ),
+  );
+  const largePackages = await Promise.all(
+    Array.from({ length: 10 }, async (_, index) => {
+      const identity = text.encode(`large-package-${index}`);
+      const signingKey = await suite.signature.keygen();
+      const capabilities = mls.defaultCapabilities();
+      capabilities.extensions = [...capabilities.extensions, 0xff01];
+      const generated = await mls.generateKeyPackageWithKey(
+        { credentialType: 'basic', identity },
+        capabilities,
+        mls.defaultLifetime,
+        [
+          {
+            extensionData: new Uint8Array(20000),
+            extensionType: 0xff01,
+          },
+        ],
+        signingKey,
+        suite,
+      );
+      trusted.set(key(identity), key(signingKey.publicKey));
+
+      return MlsJoinPackage.fromGenerated(
+        generated.publicPackage,
+        generated.privatePackage,
+      );
+    }),
+  );
+  const deliveryFounder = await MlsDeviceIdentity.generate(
+    text.encode('delivery-founder'),
+  );
+  trusted.set(
+    key(deliveryFounder.credential.identity),
+    key(deliveryFounder.credential.signaturePublicKey),
+  );
+  const createDeliveryGroup = async (groupId) =>
+    MlsGroupSession.create(
+      text.encode(groupId),
+      await deliveryFounder.createJoinPackage(),
+      verifyCredential,
+    );
+  const ordinaryDeliveryGroup = await createDeliveryGroup('ordinary-delivery');
+  await ordinaryDeliveryGroup.addMembers([largePackages[0].publicBytes]);
+  const oversizedDeliveryGroup = await createDeliveryGroup(
+    'oversized-delivery',
+  );
+  const beforeOversizedDelivery = oversizedDeliveryGroup.stateCommitment;
+  await assert.rejects(() =>
+    oversizedDeliveryGroup.addMembers(
+      largePackages.map((joinPackage) => joinPackage.publicBytes),
+    ),
+  );
+  assert.equal(
+    oversizedDeliveryGroup.stateCommitment,
+    beforeOversizedDelivery,
+  );
+
   const capRoot = UserRootKey.generate();
   const capFounder = await MlsDeviceIdentity.generate(text.encode('cap-founder'));
   const capFounderPackage = await capFounder.createJoinPackage();
@@ -312,6 +373,19 @@ const run = async () => {
   const decodedCappedState = mls.decodeGroupState(encodedCappedState, 0);
   assert.ok(decodedCappedState);
   const rawState = decodedCappedState[0];
+  assert.throws(
+    () =>
+      new MlsGroupSession(
+        {
+          ...rawState,
+          groupContext: {
+            ...rawState.groupContext,
+            groupId: new Uint8Array(1025),
+          },
+        },
+        verifyCredential,
+      ),
+  );
   rawState.clientConfig = {
     authService: { validateCredential: async () => true },
     keyPackageEqualityConfig: mls.defaultKeyPackageEqualityConfig,
@@ -324,11 +398,6 @@ const run = async () => {
     0,
   );
   assert.equal(decodedOutsiderPackage[0].wireformat, 'mls_key_package');
-  const suite = await mls.getCiphersuiteImpl(
-    mls.getCiphersuiteFromName(
-      'MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519',
-    ),
-  );
   const overCap = await mls.createCommit(
     { cipherSuite: suite, state: rawState },
     {

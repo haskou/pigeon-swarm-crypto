@@ -32,6 +32,7 @@ import {
   validateMlsCredential,
 } from './internal/MlsProtocolPolicy';
 import { getMlsCiphersuite } from './internal/MlsRuntime';
+import { MAX_PRIVATE_DELIVERY_BUCKET_BYTES } from './internal/PrivateDeliveryPolicy';
 import { InvalidMlsFrameError } from './InvalidMlsFrameError';
 import { InvalidMlsStateError } from './InvalidMlsStateError';
 import { MlsApplicationFrame } from './MlsApplicationFrame';
@@ -39,6 +40,8 @@ import { MlsCommitFrame } from './MlsCommitFrame';
 import { MlsCredentialVerifier } from './MlsCredentialVerifier';
 import { MlsJoinPackage } from './MlsJoinPackage';
 import { MlsWelcomeFrame } from './MlsWelcomeFrame';
+import { PrivateDeliveryEnvelope } from './PrivateDeliveryEnvelope';
+import { PrivateDeliveryFrame } from './PrivateDeliveryFrame';
 import { ProtectedMlsGroupState } from './ProtectedMlsGroupState';
 
 const createConfig = (verify: MlsCredentialVerifier): ClientConfig => ({
@@ -80,6 +83,22 @@ const identityKey = (identity: Uint8Array): string => {
   for (const byte of identity) key += String.fromCharCode(byte);
 
   return key;
+};
+
+const requirePrivateDeliveryCapacity = (
+  kind: 'application' | 'commit' | 'welcome',
+  bytes: Uint8Array,
+): void => {
+  try {
+    const frame = PrivateDeliveryFrame[kind](bytes);
+    const plaintext = PrivateDeliveryEnvelope.framePlaintext(
+      frame,
+      MAX_PRIVATE_DELIVERY_BUCKET_BYTES,
+    );
+    plaintext.fill(0);
+  } catch {
+    throw new InvalidMlsStateError();
+  }
 };
 
 export class MlsGroupSession {
@@ -234,7 +253,12 @@ export class MlsGroupSession {
   }
 
   private constructor(state: ClientState, verify: MlsCredentialVerifier) {
-    if (memberCount(state) > MAX_GROUP_MEMBERS) {
+    if (
+      !(state.groupContext.groupId instanceof Uint8Array) ||
+      state.groupContext.groupId.length === 0 ||
+      state.groupContext.groupId.length > MAX_GROUP_ID_BYTES ||
+      memberCount(state) > MAX_GROUP_MEMBERS
+    ) {
       throw new InvalidMlsStateError();
     }
     this.#state = state;
@@ -384,19 +408,23 @@ export class MlsGroupSession {
         },
       );
       const welcome = requireMlsWelcome(result.welcome);
+      const commitFrame = MlsCommitFrame.create(encodeMessage(result.commit));
+      const welcomeFrame = MlsWelcomeFrame.create(
+        encodeMessage({
+          version: 'mls10',
+          welcome,
+          wireformat: 'mls_welcome',
+        }),
+      );
+      requirePrivateDeliveryCapacity('commit', commitFrame.toBytes());
+      requirePrivateDeliveryCapacity('welcome', welcomeFrame.toBytes());
 
       return {
         consumed: result.consumed,
         value: {
-          commit: MlsCommitFrame.create(encodeMessage(result.commit)),
+          commit: commitFrame,
           session: new MlsGroupSession(result.newState, this.#verify),
-          welcome: MlsWelcomeFrame.create(
-            encodeMessage({
-              version: 'mls10',
-              welcome,
-              wireformat: 'mls_welcome',
-            }),
-          ),
+          welcome: welcomeFrame,
         },
       };
     });
@@ -447,11 +475,13 @@ export class MlsGroupSession {
           ratchetTreeExtension: true,
         },
       );
+      const commitFrame = MlsCommitFrame.create(encodeMessage(result.commit));
+      requirePrivateDeliveryCapacity('commit', commitFrame.toBytes());
 
       return {
         consumed: result.consumed,
         value: {
-          commit: MlsCommitFrame.create(encodeMessage(result.commit)),
+          commit: commitFrame,
           session: new MlsGroupSession(result.newState, this.#verify),
         },
       };
@@ -468,11 +498,13 @@ export class MlsGroupSession {
         { cipherSuite: suite, state: this.#state },
         { ratchetTreeExtension: true },
       );
+      const commitFrame = MlsCommitFrame.create(encodeMessage(result.commit));
+      requirePrivateDeliveryCapacity('commit', commitFrame.toBytes());
 
       return {
         consumed: result.consumed,
         value: {
-          commit: MlsCommitFrame.create(encodeMessage(result.commit)),
+          commit: commitFrame,
           session: new MlsGroupSession(result.newState, this.#verify),
         },
       };
@@ -510,17 +542,19 @@ export class MlsGroupSession {
         new Uint8Array(plaintext),
         suite,
       );
+      const applicationFrame = MlsApplicationFrame.create(
+        encodeMessage({
+          privateMessage: result.privateMessage,
+          version: 'mls10',
+          wireformat: 'mls_private_message',
+        }),
+      );
+      requirePrivateDeliveryCapacity('application', applicationFrame.toBytes());
 
       return {
         consumed: result.consumed,
         value: {
-          frame: MlsApplicationFrame.create(
-            encodeMessage({
-              privateMessage: result.privateMessage,
-              version: 'mls10',
-              wireformat: 'mls_private_message',
-            }),
-          ),
+          frame: applicationFrame,
           session: new MlsGroupSession(result.newState, this.#verify),
         },
       };

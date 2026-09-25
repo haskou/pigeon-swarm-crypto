@@ -138,13 +138,21 @@ export class MlsGroupSession {
       throw new InvalidMlsStateError();
     }
 
-    if (!(await verify(founder.credential()))) {
+    const publicPackage = founder.copyPublicPackage();
+
+    if (
+      !(await validateMlsCredential(
+        publicPackage.leafNode.credential,
+        publicPackage.leafNode.signaturePublicKey,
+        verify,
+      ))
+    ) {
       throw new InvalidMlsStateError();
     }
     const suite = await getMlsCiphersuite();
     const state = await createGroup(
       new Uint8Array(groupId),
-      founder.copyPublicPackage(),
+      publicPackage,
       founder.consumePrivatePackage(),
       [],
       suite,

@@ -212,6 +212,7 @@ const run = async () => {
 
   const founderIdentity = await MlsDeviceIdentity.generate(bytes('founder-validation'));
   const founderPackage = await founderIdentity.createJoinPackage();
+  assert.deepEqual(founderPackage.credential(), founderIdentity.credential);
   const trusted = async () => true;
   await expectInvalidAsync(() =>
     MlsGroupSession.create(new Uint8Array(), founderPackage, trusted),
@@ -220,6 +221,25 @@ const run = async () => {
   await expectInvalidAsync(() =>
     MlsGroupSession.create(bytes('rejected'), rejectedFounderPackage, async () => false),
   );
+  const mls = await import('ts-mls');
+  const suite = await getMlsCiphersuite();
+  const invalidFounderSigningKey = await suite.signature.keygen();
+  const invalidFounderGenerated = await mls.generateKeyPackageWithKey(
+    { credentialType: 'basic', identity: new Uint8Array() },
+    mls.defaultCapabilities(),
+    mls.defaultLifetime,
+    [],
+    invalidFounderSigningKey,
+    suite,
+  );
+  const invalidFounderPackage = MlsJoinPackage.fromGenerated(
+    invalidFounderGenerated.publicPackage,
+    invalidFounderGenerated.privatePackage,
+  );
+  await expectInvalidAsync(() =>
+    MlsGroupSession.create(bytes('invalid-founder'), invalidFounderPackage, trusted),
+  );
+  assert.equal(typeof invalidFounderPackage.protect(root).valueOf(), 'string');
   let founder = await MlsGroupSession.create(
     bytes('validation-group'),
     founderPackage,

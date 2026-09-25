@@ -21,6 +21,16 @@ protected high-entropy recovery path and must rotate affected device credentials
 random root key. It does not rotate device credentials, conversation epochs or
 history keys. Those lifecycles remain independent by design.
 
+`UserRootKey` and `UserRootKeySecondFactor` keep their material in native private
+fields. JSON serialization fails and ordinary object inspection does not expose
+the bytes. `valueOf()` is an explicit secret export intended only for controlled
+backup or transfer code.
+
+This release intentionally removes their inheritance from the generic value
+object abstraction. Code that depended on generic serialization or reflective
+access must use the explicit secret export at a reviewed trust boundary. The
+`valueOf()` and `isEqual()` operations remain available.
+
 An attacker holding only a protected envelope cannot test passwords without the
 second factor. Code executing in the same client origin while the user is
 unlocked can still invoke cryptographic operations or read application memory.

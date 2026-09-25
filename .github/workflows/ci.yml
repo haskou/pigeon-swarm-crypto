@@ -59,6 +59,18 @@ jobs:
       - name: Verify user root key protection in Node and Chromium
         run: yarn test:user-root-key
 
+      - name: Verify MLS key lifecycle in Node
+        run: yarn test:mls-key-lifecycle
+
+      - name: Verify MLS Working Group wire vectors
+        run: yarn test:mls-standard-vectors
+
+      - name: Verify recipient-specific private delivery
+        run: yarn test:private-delivery
+
+      - name: Verify MLS key lifecycle in Chromium
+        run: yarn test:mls-browser
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:

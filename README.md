@@ -14,6 +14,11 @@ yarn add @haskou/pigeon-swarm-crypto @haskou/value-objects@7
 Import public APIs from the package root. Internal adapters are implementation
 details and are not exported.
 
+Import the MLS lifecycle API from `@haskou/pigeon-swarm-crypto/mls`. That entry
+point provides separate ESM and bundled CommonJS builds for browser and Node.js
+consumers. Import `UserRootKey` from the package root so every component uses
+the same runtime constructor.
+
 The package currently publishes CommonJS JavaScript and TypeScript declarations.
 It requires Node.js 20.20.2 or newer. Browser applications need a bundler with
 CommonJS and `buffer` support, and a secure context providing Web Crypto. Validate
@@ -102,6 +107,15 @@ the next integration milestone.
 Moving encryption into this package does not provide forward secrecy, metadata
 privacy, anonymous communication or deletion of data already replicated through
 IPFS.
+
+Private groups can use the [MLS key lifecycle](docs/mls-key-lifecycle.md) for
+independent device keys, epoch rotation, device removal, authenticated daily
+recipient HPKE schedules and root-key-protected persistence. The application
+must still authorize each control transition and atomically adopt its verified
+checkpoint with the matching MLS epoch and state commitment. Persist each
+one-use join package's `packageId` in rollback-resistant trusted state;
+restoration requires that exact checkpoint, and successful creation or joining
+must replace it with a consumed tombstone atomically with the new session.
 
 ## Development
 

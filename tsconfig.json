@@ -16,7 +16,8 @@
     "strictNullChecks": true,
     "preserveConstEnums": true,
     "lib": [
-      "ES2022"
+      "ES2022",
+      "DOM"
     ],
     "types": [
       "node",

@@ -10,6 +10,11 @@
       "require": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./mls": {
+      "types": "./dist/mls/index.d.ts",
+      "import": "./dist/mls/index.mjs",
+      "require": "./dist/mls/index.cjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -21,7 +26,8 @@
     "docs/private-operation-signatures.md",
     "docs/private-genesis-signatures.md",
     "docs/private-control-signatures.md",
-    "docs/user-root-key.md"
+    "docs/user-root-key.md",
+    "docs/mls-key-lifecycle.md"
   ],
   "sideEffects": false,
   "license": "MIT",
@@ -53,21 +59,28 @@
     "lint:fix": "eslint ./src --ext .ts --fix",
     "test": "yarn lint && yarn test:unit",
     "test:unit": "jest --runInBand",
-    "test:coverage": "NODE_ENV=test jest --collect-coverage",
-    "build": "rm -rf dist/ && tsc",
+    "test:coverage": "yarn test:coverage:unit && yarn test:coverage:mls",
+    "test:coverage:unit": "NODE_ENV=test jest --collect-coverage",
+    "test:coverage:mls": "yarn build && node tests/runtime/mls-create-transaction.cjs && c8 --clean=true --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/mls-key-lifecycle.cjs && c8 --clean=false --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/private-delivery.cjs && c8 --clean=false --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/mls-validation.cjs && c8 report --temp-directory=tests/.coverage-mls --report-dir=tests/coverage-mls --reporter=text --reporter=lcov --exclude-after-remap --exclude=node_modules/** --exclude=src/*.ts --exclude=src/errors/** --exclude=src/hashes/** --exclude=src/internal/** --exclude=src/mls/index.ts --exclude=tests/** --check-coverage --branches=100 --functions=100 --lines=100 --statements=100",
+    "build": "rm -rf dist/ && tsc && esbuild src/mls/index.ts --bundle --platform=browser --format=esm --target=es2022 --sourcemap --outfile=dist/mls/index.mjs && esbuild src/mls/index.ts --bundle --platform=node --format=cjs --target=node20 --sourcemap --outfile=dist/mls/index.cjs",
     "test:runtime": "node --stack_size=256 tests/runtime/base64.cjs",
     "test:private-signatures": "node tests/runtime/private-signatures.cjs",
     "test:private-genesis": "node tests/runtime/private-genesis.cjs",
     "test:private-control": "node tests/runtime/private-control.cjs",
-    "test:user-root-key": "node tests/runtime/user-root-key.cjs"
+    "test:user-root-key": "node tests/runtime/user-root-key.cjs",
+    "test:mls-key-lifecycle": "node tests/runtime/mls-key-lifecycle.cjs",
+    "test:mls-browser": "node tests/runtime/mls-browser.cjs",
+    "test:mls-standard-vectors": "node tests/runtime/mls-standard-vectors.mjs",
+    "test:private-delivery": "node tests/runtime/private-delivery.cjs"
   },
   "dependencies": {
-    "@noble/ciphers": "^2.2.0",
-    "@noble/curves": "^2.2.0",
+    "@noble/ciphers": "2.1.1",
+    "@noble/curves": "2.0.1",
     "@noble/hashes": "^2.2.0",
     "buffer": "^6.0.3",
     "canonicalize": "2.1.0",
     "jsonc-parser": "3.3.1",
+    "ts-mls": "1.6.4",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
@@ -75,6 +88,7 @@
     "@haskou/value-objects": "7.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.4.1",
+    "c8": "12.0.0",
     "esbuild": "^0.28.2",
     "eslint": "^10.10.0",
     "jest": "^30.5.1",

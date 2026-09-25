@@ -6,6 +6,14 @@ This is a focused source review and regression report, not an independent
 cryptographic audit. It covers the package's current key APIs and the boundary
 between its primitives and the planned private messaging protocol.
 
+The gaps recorded below describe the reviewed baseline. The package now includes
+the RFC 9420 and RFC 9180 lifecycle boundary documented in
+[MLS key lifecycle](mls-key-lifecycle.md): independent signing, MLS and delivery
+keys; typed protocol frames; authenticated daily recipient schedules; epoch
+refresh and removal; offline catch-up; replay rejection; and root-key-protected
+state. Application-level authorization, atomic persistence, mailbox enforcement
+and deployment integration remain outside this package.
+
 ## What the current package provides
 
 - `SymmetricKey` generates random 256-bit keys and encrypts with AES-GCM and a
@@ -72,6 +80,12 @@ an older checkpoint after restart or accepting two conflicting transitions.
 persisted authorization, replay handling and atomic adoption with MLS state.
 Device enrollment and revocation belong to
 [node #292](https://github.com/haskou/pigeon-swarm-node/issues/292).
+
+Protected one-use MLS join packages have the same rollback boundary. Persist
+their public `packageId` in trusted state and replace it with a consumed
+tombstone atomically with successful group creation or joining. Restoration
+requires the current trusted identifier; a protected package snapshot alone is
+not sufficient authority to reactivate its private keys.
 
 ### Compatibility is not a strict new-protocol policy
 

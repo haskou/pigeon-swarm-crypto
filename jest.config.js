@@ -1,8 +1,18 @@
 /** @type {import('@jest/types').Config.InitialOptions} */
 const config = {
-  collectCoverageFrom: ['<rootDir>/src/**/*.ts'],
+  collectCoverageFrom: [
+    '<rootDir>/src/*.ts',
+    '<rootDir>/src/errors/**/*.ts',
+    '<rootDir>/src/hashes/**/*.ts',
+    '<rootDir>/src/internal/**/*.ts',
+    '!<rootDir>/src/index.ts',
+    '!<rootDir>/src/ts-mls-group-context.d.ts',
+  ],
   coverageDirectory: '<rootDir>/tests/coverage',
-  coveragePathIgnorePatterns: ['<rootDir>/node_modules/', 'index.ts'],
+  coveragePathIgnorePatterns: [
+    '<rootDir>/node_modules/',
+    'index.ts',
+  ],
   coverageReporters: ['html', 'lcov', 'text'],
   coverageThreshold: {
     global: {
@@ -24,7 +34,7 @@ const config = {
     '^.+\\.ts': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(@haskou/value-objects|@noble/ciphers|@noble/curves|@noble/hashes)/)',
+    'node_modules/(?!.*(@haskou/value-objects|@noble/ciphers|@noble/curves|@noble/hashes)/)',
   ],
   verbose: true,
 };

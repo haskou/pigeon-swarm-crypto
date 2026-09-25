@@ -1,8 +1,10 @@
 import { x25519 } from '@noble/curves/ed25519.js';
+import { sha256 } from '@noble/hashes/sha2.js';
 import { KeyPackage, PrivateKeyPackage } from 'ts-mls';
 
 import { UserRootKey } from '../UserRootKey';
 import { BinarySecretCodec } from './internal/BinarySecretCodec';
+import { DeliveryBase64Url } from './internal/DeliveryBase64Url';
 import {
   clonePrivateKeyPackage,
   decodePublicKeyPackage,
@@ -22,6 +24,15 @@ const PROOF = new TextEncoder().encode('pigeon.mls-join-package-proof.v1');
 const equal = (left: Uint8Array, right: Uint8Array): boolean =>
   left.length === right.length &&
   left.every((value, index) => value === right[index]);
+const packageIdBytes = (publicPackage: KeyPackage): Uint8Array => {
+  const bytes = encodePublicKeyPackage(publicPackage);
+
+  try {
+    return sha256(bytes);
+  } finally {
+    bytes.fill(0);
+  }
+};
 
 export class MlsJoinPackage {
   #consumed = false;
@@ -46,6 +57,7 @@ export class MlsJoinPackage {
   public static async restore(
     protectedPackage: ProtectedMlsJoinPackage,
     rootKey: UserRootKey,
+    expectedPackageId: string,
   ): Promise<MlsJoinPackage> {
     const state = protectedPackage.unlock(rootKey);
 
@@ -53,6 +65,20 @@ export class MlsJoinPackage {
       const [publicBytes, initPrivateKey, hpkePrivateKey, signaturePrivateKey] =
         BinarySecretCodec.decode(state, 4, MAX_SERIALIZED_BYTES);
       const publicPackage = decodePublicKeyPackage(publicBytes);
+      const expectedPackageIdBytes = DeliveryBase64Url.decode(
+        expectedPackageId,
+        32,
+      );
+      const restoredPackageIdBytes = packageIdBytes(publicPackage);
+
+      try {
+        if (!equal(expectedPackageIdBytes, restoredPackageIdBytes)) {
+          throw new InvalidMlsStateError();
+        }
+      } finally {
+        expectedPackageIdBytes.fill(0);
+        restoredPackageIdBytes.fill(0);
+      }
       const suite = await getMlsCiphersuite();
       const initPublicKey = x25519.getPublicKey(initPrivateKey);
       const leafPublicKey = x25519.getPublicKey(hpkePrivateKey);
@@ -100,6 +126,16 @@ export class MlsJoinPackage {
 
   public get publicBytes(): Uint8Array {
     return encodePublicKeyPackage(this.#publicPackage);
+  }
+
+  public get packageId(): string {
+    const value = packageIdBytes(this.#publicPackage);
+
+    try {
+      return DeliveryBase64Url.encode(value);
+    } finally {
+      value.fill(0);
+    }
   }
 
   public get initPublicKey(): Uint8Array {

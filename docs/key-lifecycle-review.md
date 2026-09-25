@@ -81,6 +81,12 @@ persisted authorization, replay handling and atomic adoption with MLS state.
 Device enrollment and revocation belong to
 [node #292](https://github.com/haskou/pigeon-swarm-node/issues/292).
 
+Protected one-use MLS join packages have the same rollback boundary. Persist
+their public `packageId` in trusted state and replace it with a consumed
+tombstone atomically with successful group creation or joining. Restoration
+requires the current trusted identifier; a protected package snapshot alone is
+not sufficient authority to reactivate its private keys.
+
 ### Compatibility is not a strict new-protocol policy
 
 The symmetric decryptor retains compatibility with legacy ciphertext without

@@ -50,12 +50,32 @@ const run = async () => {
   let bobPackage = await bobIdentity.createJoinPackage();
   const carolPackage = await carolIdentity.createJoinPackage();
   const joinRoot = UserRootKey.generate();
+  const bobPackageId = bobPackage.packageId;
+  assert.equal(bobPackageId.length, 43);
   const protectedBobPackage = bobPackage.protect(joinRoot);
   const originalBobPackage = bobPackage;
-  bobPackage = await MlsJoinPackage.restore(protectedBobPackage, joinRoot);
+  await assert.rejects(() =>
+    MlsJoinPackage.restore(protectedBobPackage, joinRoot),
+  );
+  await assert.rejects(() =>
+    MlsJoinPackage.restore(
+      protectedBobPackage,
+      joinRoot,
+      Buffer.alloc(32).toString('base64url'),
+    ),
+  );
+  bobPackage = await MlsJoinPackage.restore(
+    protectedBobPackage,
+    joinRoot,
+    bobPackageId,
+  );
   originalBobPackage.destroy();
   await assert.rejects(() =>
-    MlsJoinPackage.restore(protectedBobPackage, UserRootKey.generate()),
+    MlsJoinPackage.restore(
+      protectedBobPackage,
+      UserRootKey.generate(),
+      bobPackageId,
+    ),
   );
 
   assert.notDeepEqual(

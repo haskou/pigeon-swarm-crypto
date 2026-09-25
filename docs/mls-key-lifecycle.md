@@ -63,6 +63,17 @@ commitment; mismatches in either interrupted-write order and same-epoch snapshot
 rollback fail instead of silently restoring old state.
 Delete superseded local snapshots after atomic adoption.
 
+Every one-use join package exposes a public `packageId`, the SHA-256 commitment
+of its canonical MLS KeyPackage. Store that identifier in rollback-resistant
+application-trusted state, separately from the protected package blob.
+`MlsJoinPackage.restore` requires the expected identifier and rejects a missing
+or different checkpoint. After `create` or `join` succeeds, atomically replace
+the live identifier with a consumed tombstone when persisting the returned MLS
+session. Never recover the expected identifier from the protected blob itself;
+doing so would allow an attacker to roll both values back together. If the
+trusted checkpoint is unavailable, discard the protected package and issue a
+new one.
+
 Root keys, second factors, live device identities, join packages, MLS sessions
 and delivery schedules keep secrets in native private fields. Generic JSON
 serialization and ordinary object inspection do not expose them. Exporting a

@@ -112,7 +112,10 @@ Private groups can use the [MLS key lifecycle](docs/mls-key-lifecycle.md) for
 independent device keys, epoch rotation, device removal, authenticated daily
 recipient HPKE schedules and root-key-protected persistence. The application
 must still authorize each control transition and atomically adopt its verified
-checkpoint with the matching MLS epoch and state commitment.
+checkpoint with the matching MLS epoch and state commitment. Persist each
+one-use join package's `packageId` in rollback-resistant trusted state;
+restoration requires that exact checkpoint, and successful creation or joining
+must replace it with a consumed tombstone atomically with the new session.
 
 ## Development
 

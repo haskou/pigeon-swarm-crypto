@@ -463,6 +463,7 @@ const run = async () => {
     MlsJoinPackage.restore(
       new ProtectedMlsJoinPackage(corruptedPackageState),
       root,
+      packageToCorrupt.packageId,
     ),
   );
   const generatedPackage = await founderIdentity.createJoinPackage();

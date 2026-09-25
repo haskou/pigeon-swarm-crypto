@@ -55,7 +55,7 @@ const MAX_GROUP_ID_BYTES = 1024;
 const MAX_GROUP_MEMBERS = 128;
 const MAX_PUBLIC_PACKAGE_BYTES = 65536;
 const MAX_IDENTITY_BYTES = 1024;
-const MAX_APPLICATION_BYTES = 1024 * 1024 - 4096;
+const MAX_APPLICATION_BYTES = 128 * 1024;
 
 const memberCount = (state: ClientState): number =>
   state.ratchetTree.filter((node) => node?.nodeType === 'leaf').length;
@@ -72,7 +72,7 @@ const identityKey = (identity: Uint8Array): string => {
 };
 
 export class MlsGroupSession {
-  readonly #state: ClientState;
+  #state: ClientState;
 
   readonly #verify: MlsCredentialVerifier;
 
@@ -203,7 +203,10 @@ export class MlsGroupSession {
     this.#verify = verify;
   }
 
-  private async process(bytes: Uint8Array) {
+  private async process(
+    bytes: Uint8Array,
+    expectedContentType: 'application' | 'commit',
+  ) {
     try {
       const message = decodeMessage(bytes);
 
@@ -213,15 +216,45 @@ export class MlsGroupSession {
       ) {
         throw new InvalidMlsFrameError();
       }
-      const suite = await getMlsCiphersuite();
+      const contentType =
+        message.wireformat === 'mls_private_message'
+          ? message.privateMessage.contentType
+          : message.publicMessage.content.contentType;
 
-      return await processMessage(
+      if (contentType !== expectedContentType) {
+        throw new InvalidMlsFrameError();
+      }
+      const suite = await getMlsCiphersuite();
+      let rejectedByMemberLimit = false;
+      const result = await processMessage(
         message,
         this.#state,
         emptyPskIndex,
-        () => 'accept',
+        (incoming) => {
+          if (incoming.kind !== 'commit') return 'accept';
+          const additions = incoming.proposals.filter(
+            ({ proposal }) => proposal.proposalType === 'add',
+          ).length;
+          const removals = incoming.proposals.filter(
+            ({ proposal }) => proposal.proposalType === 'remove',
+          ).length;
+          const externalJoin = incoming.senderLeafIndex === undefined ? 1 : 0;
+          rejectedByMemberLimit =
+            memberCount(this.#state) + additions - removals + externalJoin >
+            MAX_GROUP_MEMBERS;
+
+          return rejectedByMemberLimit ? 'reject' : 'accept';
+        },
         suite,
       );
+
+      if (rejectedByMemberLimit) {
+        this.#state = result.newState;
+        eraseConsumed(result.consumed);
+        throw new InvalidMlsFrameError();
+      }
+
+      return result;
     } catch {
       throw new InvalidMlsFrameError();
     }
@@ -373,7 +406,7 @@ export class MlsGroupSession {
   }
 
   public async applyCommit(commit: MlsCommitFrame): Promise<MlsGroupSession> {
-    const result = await this.process(commit.payloadBytes());
+    const result = await this.process(commit.payloadBytes(), 'commit');
     try {
       if (result.kind !== 'newState') throw new InvalidMlsFrameError();
 
@@ -420,7 +453,7 @@ export class MlsGroupSession {
     readonly session: MlsGroupSession;
     readonly plaintext: Uint8Array;
   }> {
-    const result = await this.process(frame.payloadBytes());
+    const result = await this.process(frame.payloadBytes(), 'application');
     try {
       if (result.kind !== 'applicationMessage') {
         throw new InvalidMlsFrameError();

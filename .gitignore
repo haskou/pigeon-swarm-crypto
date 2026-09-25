@@ -1,6 +1,8 @@
 node_modules/
 dist/
 tests/coverage/
+tests/.coverage-mls/
+tests/coverage-mls/
 .env
 .npmrc
 .DS_Store

@@ -1,10 +1,16 @@
 /** @type {import('@jest/types').Config.InitialOptions} */
 const config = {
-  collectCoverageFrom: ['<rootDir>/src/**/*.ts'],
+  collectCoverageFrom: [
+    '<rootDir>/src/*.ts',
+    '<rootDir>/src/errors/**/*.ts',
+    '<rootDir>/src/hashes/**/*.ts',
+    '<rootDir>/src/internal/**/*.ts',
+    '!<rootDir>/src/index.ts',
+    '!<rootDir>/src/ts-mls-group-context.d.ts',
+  ],
   coverageDirectory: '<rootDir>/tests/coverage',
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',
-    '<rootDir>/src/mls/',
     'index.ts',
   ],
   coverageReporters: ['html', 'lcov', 'text'],

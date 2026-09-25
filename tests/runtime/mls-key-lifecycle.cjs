@@ -6,6 +6,8 @@ const {
   MlsDeviceIdentity,
   MlsGroupSession,
   MlsJoinPackage,
+  PrivateDeliveryEnvelope,
+  PrivateDeliveryFrame,
 } = require('../../dist/mls/index.cjs');
 const { UserRootKey } = require('../../dist');
 
@@ -106,6 +108,9 @@ const run = async () => {
 
   const beforeRemoval = await alice.encrypt(text.encode('before removal'));
   alice = beforeRemoval.session;
+  await assert.rejects(() =>
+    bob.applyCommit(MlsCommitFrame.create(beforeRemoval.frame.payloadBytes())),
+  );
   const bobBefore = await bob.decrypt(beforeRemoval.frame);
   bob = bobBefore.session;
   assert.equal(read.decode(bobBefore.plaintext), 'before removal');
@@ -296,6 +301,29 @@ const run = async () => {
     mls.encodeMlsMessage(overCap.commit),
   );
   await assert.rejects(() => cappedObserver.applyCommit(overCapCommit));
+  const afterRejectedCommit = await cappedGroup.encrypt(
+    text.encode('after rejected over-cap commit'),
+  );
+  const observerAfterRejectedCommit = await cappedObserver.decrypt(
+    afterRejectedCommit.frame,
+  );
+  assert.equal(
+    read.decode(observerAfterRejectedCommit.plaintext),
+    'after rejected over-cap commit',
+  );
+  await assert.rejects(() =>
+    afterRejectedCommit.session.encrypt(new Uint8Array(128 * 1024 + 1)),
+  );
+  const maximumApplication = await afterRejectedCommit.session.encrypt(
+    new Uint8Array(128 * 1024),
+  );
+  assert.equal(
+    PrivateDeliveryEnvelope.framePlaintext(
+      PrivateDeliveryFrame.application(maximumApplication.frame.toBytes()),
+      262144,
+    ).length,
+    262096,
+  );
   encodedCappedState.fill(0);
 
   console.log('PASS MLS device keys, membership changes, rotation, recovery, persistence, replay and frame separation.');

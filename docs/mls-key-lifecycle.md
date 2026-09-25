@@ -81,6 +81,8 @@ DHKEM(X25519, HKDF-SHA-256), HKDF-SHA-256 and AES-128-GCM. Every recipient copy
 uses a fresh context and encapsulated key. The exact JCS AAD contains only
 `version`, `mailboxId`, `deliveryId`, `expiresAt` and `bucketBytes`. The four
 wire buckets are 4,096, 16,384, 65,536 and 262,144 bytes. The encrypted plaintext
+accepts MLS application payloads up to 128 KiB so every accepted payload fits the
+largest bucket after MLS and canonical delivery framing overhead. The plaintext
 contains a four-byte frame length, the canonical protected frame and zero
 padding. Header substitution, noncanonical identifiers, padding changes,
 recipient mismatch and content tampering fail with the same public error.

@@ -12,7 +12,12 @@ export class DeliveryBase64Url {
   }
 
   public static decode(value: unknown, length: number): Uint8Array {
-    if (typeof value !== 'string') throw new InvalidPrivateDeliveryError();
+    if (
+      typeof value !== 'string' ||
+      value.length !== Math.ceil((length * 4) / 3)
+    ) {
+      throw new InvalidPrivateDeliveryError();
+    }
     const bytes = Buffer.from(
       value.replace(/-/g, '+').replace(/_/g, '/'),
       'base64',
@@ -29,7 +34,13 @@ export class DeliveryBase64Url {
     value: unknown,
     maximumLength: number,
   ): Uint8Array {
-    if (typeof value !== 'string') throw new InvalidPrivateDeliveryError();
+    if (
+      typeof value !== 'string' ||
+      value.length < 2 ||
+      value.length > Math.ceil((maximumLength * 4) / 3)
+    ) {
+      throw new InvalidPrivateDeliveryError();
+    }
     const bytes = Buffer.from(
       value.replace(/-/g, '+').replace(/_/g, '/'),
       'base64',

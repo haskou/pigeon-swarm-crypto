@@ -185,6 +185,25 @@ const run = async () => {
   }
   assert.equal(decodedOversizedCiphertext, false);
 
+  const oversizedIdentifier = {
+    ...envelope,
+    deliveryId: 'A'.repeat(1024),
+  };
+  let decodedOversizedIdentifier = false;
+  bufferModule.Buffer.from = function (...arguments_) {
+    if (arguments_[0] === oversizedIdentifier.deliveryId) {
+      decodedOversizedIdentifier = true;
+    }
+
+    return originalBufferFrom.apply(this, arguments_);
+  };
+  try {
+    await assert.rejects(() => schedule.open(oversizedIdentifier, now));
+  } finally {
+    bufferModule.Buffer.from = originalBufferFrom;
+  }
+  assert.equal(decodedOversizedIdentifier, false);
+
   const protectedSchedule = schedule.protect(root);
   const scheduleCommitment = schedule.commitment;
   schedule.destroy();

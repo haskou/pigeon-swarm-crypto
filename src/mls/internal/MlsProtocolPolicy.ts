@@ -4,13 +4,20 @@ import { InvalidMlsStateError } from '../InvalidMlsStateError';
 import { MlsCredentialVerifier } from '../MlsCredentialVerifier';
 
 type IncomingMessage = Parameters<IncomingMessageCallback>[0];
+const MAX_IDENTITY_BYTES = 1024;
 
 export const validateMlsCredential = async (
   credential: Credential,
   signaturePublicKey: Uint8Array,
   verify: MlsCredentialVerifier,
 ): Promise<boolean> => {
-  if (credential.credentialType !== 'basic') return false;
+  if (
+    credential.credentialType !== 'basic' ||
+    credential.identity.length === 0 ||
+    credential.identity.length > MAX_IDENTITY_BYTES
+  ) {
+    return false;
+  }
 
   return verify({
     identity: new Uint8Array(credential.identity),

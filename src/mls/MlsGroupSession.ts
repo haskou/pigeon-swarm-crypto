@@ -24,6 +24,7 @@ import {
   encodeMessage,
   encodeState,
 } from './internal/MlsCodec';
+import { MLS_JOIN_PACKAGE_USE } from './internal/MlsJoinPackageUse';
 import {
   acceptsMlsMemberCount,
   requireMlsWelcome,
@@ -103,13 +104,11 @@ export class MlsGroupSession {
         const credential = keyPackage.leafNode.credential;
 
         if (
-          credential.credentialType !== 'basic' ||
-          !(await verify({
-            identity: new Uint8Array(credential.identity),
-            signaturePublicKey: new Uint8Array(
-              keyPackage.leafNode.signaturePublicKey,
-            ),
-          }))
+          !(await validateMlsCredential(
+            credential,
+            keyPackage.leafNode.signaturePublicKey,
+            verify,
+          ))
         ) {
           throw new InvalidMlsStateError();
         }
@@ -163,15 +162,18 @@ export class MlsGroupSession {
         throw new InvalidMlsFrameError();
       }
       const suite = await getMlsCiphersuite();
-      const state = await joinGroup(
-        message.welcome,
-        joinPackage.copyPublicPackage(),
-        joinPackage.consumePrivatePackage(),
-        emptyPskIndex,
-        suite,
-        undefined,
-        undefined,
-        createConfig(verify),
+      const state = await joinPackage[MLS_JOIN_PACKAGE_USE](
+        (publicPackage, privatePackage) =>
+          joinGroup(
+            message.welcome,
+            publicPackage,
+            privatePackage,
+            emptyPskIndex,
+            suite,
+            undefined,
+            undefined,
+            createConfig(verify),
+          ),
       );
 
       return new MlsGroupSession(state, verify);
@@ -330,23 +332,21 @@ export class MlsGroupSession {
         ratchetTreeExtension: true,
       },
     );
-    try {
-      const welcome = requireMlsWelcome(result.welcome);
+    const welcome = requireMlsWelcome(result.welcome);
+    const transition = {
+      commit: MlsCommitFrame.create(encodeMessage(result.commit)),
+      session: new MlsGroupSession(result.newState, this.#verify),
+      welcome: MlsWelcomeFrame.create(
+        encodeMessage({
+          version: 'mls10',
+          welcome,
+          wireformat: 'mls_welcome',
+        }),
+      ),
+    };
+    eraseConsumed(result.consumed);
 
-      return {
-        commit: MlsCommitFrame.create(encodeMessage(result.commit)),
-        session: new MlsGroupSession(result.newState, this.#verify),
-        welcome: MlsWelcomeFrame.create(
-          encodeMessage({
-            version: 'mls10',
-            welcome,
-            wireformat: 'mls_welcome',
-          }),
-        ),
-      };
-    } finally {
-      eraseConsumed(result.consumed);
-    }
+    return transition;
   }
 
   public async removeMembers(identities: Uint8Array[]): Promise<{
@@ -393,14 +393,13 @@ export class MlsGroupSession {
         ratchetTreeExtension: true,
       },
     );
-    try {
-      return {
-        commit: MlsCommitFrame.create(encodeMessage(result.commit)),
-        session: new MlsGroupSession(result.newState, this.#verify),
-      };
-    } finally {
-      eraseConsumed(result.consumed);
-    }
+    const transition = {
+      commit: MlsCommitFrame.create(encodeMessage(result.commit)),
+      session: new MlsGroupSession(result.newState, this.#verify),
+    };
+    eraseConsumed(result.consumed);
+
+    return transition;
   }
 
   public async refresh(): Promise<{
@@ -412,14 +411,13 @@ export class MlsGroupSession {
       { cipherSuite: suite, state: this.#state },
       { ratchetTreeExtension: true },
     );
-    try {
-      return {
-        commit: MlsCommitFrame.create(encodeMessage(result.commit)),
-        session: new MlsGroupSession(result.newState, this.#verify),
-      };
-    } finally {
-      eraseConsumed(result.consumed);
-    }
+    const transition = {
+      commit: MlsCommitFrame.create(encodeMessage(result.commit)),
+      session: new MlsGroupSession(result.newState, this.#verify),
+    };
+    eraseConsumed(result.consumed);
+
+    return transition;
   }
 
   public async applyCommit(commit: MlsCommitFrame): Promise<MlsGroupSession> {
@@ -450,20 +448,19 @@ export class MlsGroupSession {
       new Uint8Array(plaintext),
       suite,
     );
-    try {
-      return {
-        frame: MlsApplicationFrame.create(
-          encodeMessage({
-            privateMessage: result.privateMessage,
-            version: 'mls10',
-            wireformat: 'mls_private_message',
-          }),
-        ),
-        session: new MlsGroupSession(result.newState, this.#verify),
-      };
-    } finally {
-      eraseConsumed(result.consumed);
-    }
+    const transition = {
+      frame: MlsApplicationFrame.create(
+        encodeMessage({
+          privateMessage: result.privateMessage,
+          version: 'mls10',
+          wireformat: 'mls_private_message',
+        }),
+      ),
+      session: new MlsGroupSession(result.newState, this.#verify),
+    };
+    eraseConsumed(result.consumed);
+
+    return transition;
   }
 
   public async decrypt(frame: MlsApplicationFrame): Promise<{

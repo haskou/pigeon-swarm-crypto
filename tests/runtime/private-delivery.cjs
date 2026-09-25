@@ -259,10 +259,24 @@ const run = async () => {
     futureDescriptor.writeValidUntil,
     4096,
   );
+  await assert.rejects(() =>
+    schedule.open(futureEnvelope, futureDescriptor.validFrom - 1),
+  );
   const futureMailbox = futureDescriptor.mailboxId;
   schedule = schedule.revoke([futureMailbox]);
   assert.equal(schedule.descriptors.some((value) => value.mailboxId === futureMailbox), false);
   await assert.rejects(() => schedule.open(futureEnvelope, futureDescriptor.validFrom));
+
+  const retirementSchedule = await PrivateDeliveryKeySchedule.generate(
+    now,
+    7,
+    retentionMs,
+  );
+  for (const invalidNow of [-1, Number.NaN, Number.POSITIVE_INFINITY]) {
+    assert.throws(() => retirementSchedule.retire(invalidNow));
+    assert.equal(retirementSchedule.descriptors.length, 8);
+  }
+  retirementSchedule.destroy();
 
   schedule = schedule.revoke(
     schedule.descriptors.map((value) => value.mailboxId),

@@ -16,7 +16,8 @@ details and are not exported.
 
 Import the MLS lifecycle API from `@haskou/pigeon-swarm-crypto/mls`. That entry
 point provides separate ESM and bundled CommonJS builds for browser and Node.js
-consumers.
+consumers. Import `UserRootKey` from the package root so every component uses
+the same runtime constructor.
 
 The package currently publishes CommonJS JavaScript and TypeScript declarations.
 It requires Node.js 20.20.2 or newer. Browser applications need a bundler with

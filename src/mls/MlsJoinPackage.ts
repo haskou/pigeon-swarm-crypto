@@ -8,6 +8,10 @@ import {
   decodePublicKeyPackage,
   encodePublicKeyPackage,
 } from './internal/MlsCodec';
+import {
+  MLS_JOIN_PACKAGE_USE,
+  MlsJoinPackageOperation,
+} from './internal/MlsJoinPackageUse';
 import { getMlsCiphersuite } from './internal/MlsRuntime';
 import { InvalidMlsStateError } from './InvalidMlsStateError';
 import { MlsCredential } from './MlsCredential';
@@ -129,6 +133,26 @@ export class MlsJoinPackage {
     this.destroy();
 
     return privatePackage;
+  }
+
+  public async [MLS_JOIN_PACKAGE_USE]<T>(
+    operation: MlsJoinPackageOperation<T>,
+  ): Promise<T> {
+    if (this.#consumed) throw new InvalidMlsStateError();
+    const publicPackage = this.copyPublicPackage();
+    const privatePackage = clonePrivateKeyPackage(this.#privatePackage);
+
+    try {
+      const result = await operation(publicPackage, privatePackage);
+      this.destroy();
+
+      return result;
+    } catch (error) {
+      privatePackage.initPrivateKey.fill(0);
+      privatePackage.hpkePrivateKey.fill(0);
+      privatePackage.signaturePrivateKey.fill(0);
+      throw error;
+    }
   }
 
   public protect(rootKey: UserRootKey): ProtectedMlsJoinPackage {

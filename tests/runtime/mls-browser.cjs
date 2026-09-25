@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { readFile } = require('node:fs/promises');
 const { createServer } = require('node:http');
+const { build } = require('esbuild');
 const { chromium } = require('playwright');
 const {
   PrivateDeliveryEnvelope,
@@ -10,10 +11,25 @@ const {
 
 (async () => {
   const bundle = await readFile('dist/mls/index.mjs');
+  const rootBundle = await build({
+    stdin: {
+      contents: "export { UserRootKey } from './dist/index.js';",
+      resolveDir: process.cwd(),
+    },
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    write: false,
+  });
   const server = createServer((request, response) => {
     if (request.url === '/mls.mjs') {
       response.setHeader('Content-Type', 'text/javascript');
       response.end(bundle);
+      return;
+    }
+    if (request.url === '/root.mjs') {
+      response.setHeader('Content-Type', 'text/javascript');
+      response.end(rootBundle.outputFiles[0].text);
       return;
     }
     response.setHeader('Content-Type', 'text/html');
@@ -28,7 +44,8 @@ const {
     await page.goto('http://127.0.0.1:' + server.address().port);
     const now = Date.UTC(2026, 8, 25, 12);
     const browserDelivery = await page.evaluate(async (timestamp) => {
-      const { PrivateDeliveryKeySchedule, UserRootKey } = await import('/mls.mjs');
+      const { PrivateDeliveryKeySchedule } = await import('/mls.mjs');
+      const { UserRootKey } = await import('/root.mjs');
       const root = UserRootKey.generate();
       const schedule = await PrivateDeliveryKeySchedule.generate(
         timestamp,
@@ -57,10 +74,10 @@ const {
       const {
         MlsDeviceIdentity,
         MlsGroupSession,
-        UserRootKey,
         PrivateDeliveryKeySchedule,
         ProtectedPrivateDeliveryKeySchedule,
       } = await import('/mls.mjs');
+      const { UserRootKey } = await import('/root.mjs');
       const text = new TextEncoder();
       const read = new TextDecoder();
       const key = (bytes) => {

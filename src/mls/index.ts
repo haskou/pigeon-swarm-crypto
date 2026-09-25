@@ -1,4 +1,3 @@
-export { UserRootKey } from '../UserRootKey';
 export * from './AuthenticatedPrivateDeliverySchedule';
 export * from './InvalidMlsFrameError';
 export * from './InvalidMlsStateError';

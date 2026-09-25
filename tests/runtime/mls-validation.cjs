@@ -19,8 +19,8 @@ const {
   ProtectedMlsGroupState,
   ProtectedMlsJoinPackage,
   ProtectedPrivateDeliveryKeySchedule,
-  UserRootKey,
 } = require('../../dist/mls/index.cjs');
+const { UserRootKey } = require('../../dist');
 const {
   BinarySecretCodec,
 } = require('../../dist/mls/internal/BinarySecretCodec.js');
@@ -62,6 +62,7 @@ const run = async () => {
   assert.equal(typeof InvalidMlsStateError, 'function');
   assert.equal(typeof InvalidPrivateDeliveryError, 'function');
   assert.equal(typeof MlsCodec.encodeGroupContext, 'function');
+  assert.equal('UserRootKey' in require('../../dist/mls/index.cjs'), false);
   const root = UserRootKey.generate();
   const nullRoot = new UserRootKey();
 
@@ -251,6 +252,7 @@ const run = async () => {
       trusted,
     ),
   );
+  assert.equal(typeof wrongWelcomeJoiner.protect(root).valueOf(), 'string');
   await expectInvalidAsync(() =>
     founder.applyCommit(MlsCommitFrame.create(wrongWelcomePackage.publicBytes)),
   );
@@ -303,6 +305,42 @@ const run = async () => {
     deliveryPackage.publicBytes,
   ]);
   expectInvalid(() => decodePublicKeyPackage(deliveryAddition.welcome.payloadBytes()));
+  const mismatchedJoinIdentity = await MlsDeviceIdentity.generate(
+    bytes('mismatched-join'),
+  );
+  const mismatchedJoinPackage = await mismatchedJoinIdentity.createJoinPackage();
+  await expectInvalidAsync(() =>
+    MlsGroupSession.join(
+      deliveryAddition.welcome,
+      mismatchedJoinPackage,
+      trusted,
+    ),
+  );
+  assert.equal(typeof mismatchedJoinPackage.protect(root).valueOf(), 'string');
+
+  const preservedFounderPackage = await founderIdentity.createJoinPackage();
+  const preservedSession = await MlsGroupSession.create(
+    bytes('preserved-session'),
+    preservedFounderPackage,
+    trusted,
+  );
+  const preservedMemberIdentity = await MlsDeviceIdentity.generate(
+    bytes('preserved-member'),
+  );
+  const preservedMemberPackage = await preservedMemberIdentity.createJoinPackage();
+  const originalCommitCreate = MlsCommitFrame.create;
+  MlsCommitFrame.create = () => {
+    throw new Error('serialization failed');
+  };
+  try {
+    await expectInvalidAsync(() =>
+      preservedSession.addMembers([preservedMemberPackage.publicBytes]),
+    );
+  } finally {
+    MlsCommitFrame.create = originalCommitCreate;
+  }
+  const preservedMessage = await preservedSession.encrypt(bytes('still active'));
+  assert.deepEqual(preservedMessage.frame.payloadBytes().length > 0, true);
 
   const protectedGroup = founder.protectState(root);
   assert.equal(typeof protectedGroup.valueOf(), 'string');
@@ -711,6 +749,22 @@ const run = async () => {
   assert.equal(
     await validateMlsCredential(
       { credentialType: 'x509', identity: bytes('ignored') },
+      new Uint8Array(32),
+      trusted,
+    ),
+    false,
+  );
+  assert.equal(
+    await validateMlsCredential(
+      { credentialType: 'basic', identity: new Uint8Array() },
+      new Uint8Array(32),
+      trusted,
+    ),
+    false,
+  );
+  assert.equal(
+    await validateMlsCredential(
+      { credentialType: 'basic', identity: new Uint8Array(1025) },
       new Uint8Array(32),
       trusted,
     ),

@@ -262,6 +262,7 @@ export class PrivateDeliveryKeySchedule {
 
       if (
         !entry ||
+        now < entry.descriptor.validFrom ||
         now > entry.descriptor.maxCiphertextExpiresAt ||
         envelope.expiresAt > entry.descriptor.maxCiphertextExpiresAt
       ) {
@@ -297,6 +298,10 @@ export class PrivateDeliveryKeySchedule {
   }
 
   public retire(now: number): PrivateDeliveryKeySchedule {
+    if (!Number.isSafeInteger(now) || now < 0) {
+      throw new InvalidPrivateDeliveryError();
+    }
+
     return this.transition(
       this.#entries.filter(
         (entry) => now <= entry.descriptor.maxCiphertextExpiresAt,

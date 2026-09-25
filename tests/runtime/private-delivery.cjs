@@ -164,6 +164,27 @@ const run = async () => {
   corrupted.ciphertext = corruptedWire.toString('base64');
   await assert.rejects(() => schedule.open(corrupted, now));
 
+  const oversized = {
+    ...envelope,
+    ciphertext: `${envelope.ciphertext}AAAA`,
+  };
+  const bufferModule = require('buffer');
+  const originalBufferFrom = bufferModule.Buffer.from;
+  let decodedOversizedCiphertext = false;
+  bufferModule.Buffer.from = function (...arguments_) {
+    if (arguments_[0] === oversized.ciphertext) {
+      decodedOversizedCiphertext = true;
+    }
+
+    return originalBufferFrom.apply(this, arguments_);
+  };
+  try {
+    await assert.rejects(() => schedule.open(oversized, now));
+  } finally {
+    bufferModule.Buffer.from = originalBufferFrom;
+  }
+  assert.equal(decodedOversizedCiphertext, false);
+
   const protectedSchedule = schedule.protect(root);
   const scheduleCommitment = schedule.commitment;
   schedule.destroy();
@@ -219,6 +240,20 @@ const run = async () => {
   schedule = schedule.revoke([futureMailbox]);
   assert.equal(schedule.descriptors.some((value) => value.mailboxId === futureMailbox), false);
   await assert.rejects(() => schedule.open(futureEnvelope, futureDescriptor.validFrom));
+
+  schedule = schedule.revoke(
+    schedule.descriptors.map((value) => value.mailboxId),
+  );
+  assert.equal(schedule.descriptors.length, 0);
+  const emptyCommitment = schedule.commitment;
+  const protectedEmptySchedule = schedule.protect(root);
+  schedule.destroy();
+  schedule = await PrivateDeliveryKeySchedule.restore(
+    protectedEmptySchedule,
+    root,
+    emptyCommitment,
+  );
+  assert.equal(schedule.descriptors.length, 0);
 
   assert.throws(() => PrivateDeliveryFrame.fromCanonicalJson('{"kind":"unknown"}'));
   assert.throws(() =>

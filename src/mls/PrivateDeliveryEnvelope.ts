@@ -45,6 +45,11 @@ const validateOpenInputs = (
 };
 
 const decodeWire = (value: PrivateDeliveryEnvelopeData): Buffer => {
+  const encodedLength = Math.ceil(value.bucketBytes / 3) * 4;
+
+  if (value.ciphertext.length !== encodedLength) {
+    throw new InvalidPrivateDeliveryError();
+  }
   const wire = Buffer.from(value.ciphertext, 'base64');
 
   if (wire.length !== value.bucketBytes)

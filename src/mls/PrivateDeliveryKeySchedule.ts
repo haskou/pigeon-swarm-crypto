@@ -72,7 +72,7 @@ const parseScheduleState = (
     throw new InvalidPrivateDeliveryError();
   }
 
-  if (value.entries.length === 0 || value.entries.length > SCHEDULE_DAYS) {
+  if (value.entries.length > SCHEDULE_DAYS) {
     throw new InvalidPrivateDeliveryError();
   }
 

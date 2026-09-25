@@ -44,7 +44,13 @@ export class CryptoAdapter {
     tag: Uint8Array,
     aad?: Uint8Array,
   ): Buffer {
-    return Buffer.from(gcm(key, iv, aad).decrypt(concatBytes(cipherText, tag)));
+    const decrypted = gcm(key, iv, aad).decrypt(concatBytes(cipherText, tag));
+
+    return Buffer.from(
+      decrypted.buffer as ArrayBuffer,
+      decrypted.byteOffset,
+      decrypted.byteLength,
+    );
   }
 
   public static deriveEncryptionKey(

@@ -20,7 +20,8 @@
     "SECURITY.md",
     "docs/private-operation-signatures.md",
     "docs/private-genesis-signatures.md",
-    "docs/private-control-signatures.md"
+    "docs/private-control-signatures.md",
+    "docs/user-root-key.md"
   ],
   "sideEffects": false,
   "license": "MIT",
@@ -57,7 +58,8 @@
     "test:runtime": "node --stack_size=256 tests/runtime/base64.cjs",
     "test:private-signatures": "node tests/runtime/private-signatures.cjs",
     "test:private-genesis": "node tests/runtime/private-genesis.cjs",
-    "test:private-control": "node tests/runtime/private-control.cjs"
+    "test:private-control": "node tests/runtime/private-control.cjs",
+    "test:user-root-key": "node tests/runtime/user-root-key.cjs"
   },
   "dependencies": {
     "@noble/ciphers": "^2.2.0",

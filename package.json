@@ -26,6 +26,7 @@
     "docs/private-operation-signatures.md",
     "docs/private-genesis-signatures.md",
     "docs/private-control-signatures.md",
+    "docs/private-freshness-proofs.md",
     "docs/user-root-key.md",
     "docs/mls-key-lifecycle.md"
   ],
@@ -67,6 +68,7 @@
     "test:private-signatures": "node tests/runtime/private-signatures.cjs",
     "test:private-genesis": "node tests/runtime/private-genesis.cjs",
     "test:private-control": "node tests/runtime/private-control.cjs",
+    "test:private-freshness": "node tests/runtime/private-freshness.cjs",
     "test:user-root-key": "node tests/runtime/user-root-key.cjs",
     "test:mls-key-lifecycle": "node tests/runtime/mls-key-lifecycle.cjs",
     "test:mls-browser": "node tests/runtime/mls-browser.cjs",

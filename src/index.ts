@@ -31,3 +31,5 @@ export { PrivateGenesisSignature } from './PrivateGenesisSignature';
 export { InvalidPrivateGenesisError } from './errors/InvalidPrivateGenesisError';
 export { PrivateControlSignature } from './PrivateControlSignature';
 export { InvalidPrivateControlError } from './errors/InvalidPrivateControlError';
+export { PrivateFreshnessProof } from './PrivateFreshnessProof';
+export { InvalidPrivateFreshnessProofError } from './errors/InvalidPrivateFreshnessProofError';

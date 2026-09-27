@@ -58,12 +58,28 @@ const { PrivateControlSignature } = require('../../dist');
   };
   const messageHash = encoded(4);
   const contextHash = encoded(3);
+  const operation = {
+    version: 1,
+    operationId: Buffer.alloc(16, 1).toString('base64url'),
+    scopeId: checkpoint.scopeId,
+    authorizationRevision: checkpoint.revision,
+    authorDeviceKey: owners[0],
+    kind: 'device.revoke',
+    previousOperationIds: [],
+    payload: { deviceKey: owners[1] },
+  };
+  const operationBindingHash = createHash('sha256')
+    .update(
+      'pigeon.private-operation-binding.v1\0' + canonicalize(operation),
+    )
+    .digest('base64url');
   const head = {
     scopeId: checkpoint.scopeId,
     revision: 4,
     parentHeadHash: checkpoint.headHash,
     mlsEpoch: 4,
     mlsContextHash: contextHash,
+    operationBindingHash,
     policyHash: hash(nextPolicy),
   };
   const unsigned = {
@@ -73,7 +89,7 @@ const { PrivateControlSignature } = require('../../dist');
     policy: nextPolicy,
   };
   const bytes = Buffer.from(
-    'pigeon.private-control.v1\0' + canonicalize(unsigned),
+    'pigeon.private-control.v2\0' + canonicalize(unsigned),
   );
   const signed = canonicalize({
     ...unsigned,
@@ -84,11 +100,16 @@ const { PrivateControlSignature } = require('../../dist');
       ]),
     ),
   });
+  const operationJson = JSON.stringify({
+    ...operation,
+    payload: { ...operation.payload, resultingHeadHash: unsigned.headHash },
+  });
   const checkpointJson = JSON.stringify(checkpoint);
   assert.equal(
     PrivateControlSignature.verify(
       signed,
       checkpointJson,
+      operationJson,
       messageHash,
       contextHash,
     ),
@@ -122,6 +143,7 @@ const { PrivateControlSignature } = require('../../dist');
       async ({
         signed,
         checkpointJson,
+        operationJson,
         messageHash,
         contextHash,
         owners,
@@ -133,11 +155,13 @@ const { PrivateControlSignature } = require('../../dist');
         const authenticated = PrivateControlSignature.authenticate(
           signed,
           checkpointJson,
+          operationJson,
           messageHash,
         );
         const accepted = PrivateControlSignature.verify(
           signed,
           checkpointJson,
+          operationJson,
           messageHash,
           contextHash,
         );
@@ -172,6 +196,7 @@ const { PrivateControlSignature } = require('../../dist');
         const nativeAccepted = PrivateControlSignature.verify(
           nativeRecord([0, 1]),
           checkpointJson,
+          operationJson,
           messageHash,
           contextHash,
         );
@@ -181,6 +206,7 @@ const { PrivateControlSignature } = require('../../dist');
               PrivateControlSignature.authenticate(
                 record,
                 checkpointJson,
+                operationJson,
                 messageHash,
               );
               return false;
@@ -194,6 +220,7 @@ const { PrivateControlSignature } = require('../../dist');
       {
         signed,
         checkpointJson,
+        operationJson,
         messageHash,
         contextHash,
         owners,

@@ -6,6 +6,7 @@ import { CanonicalBase64Url } from './internal/CanonicalBase64Url';
 import { PrivateControlEncoding } from './internal/PrivateControlEncoding';
 import { PrivateControlRecord } from './internal/PrivateControlRecord';
 import { StrictCanonicalJson } from './internal/StrictCanonicalJson';
+import { PrivateOperationSignature } from './PrivateOperationSignature';
 
 export class PrivateControlSignature {
   private static checkSignatures(
@@ -26,7 +27,7 @@ export class PrivateControlSignature {
     )
       throw new InvalidPrivateControlError();
     const bytes = Buffer.from(
-      'pigeon.private-control.v1\0' + StrictCanonicalJson.serialize(unsigned),
+      'pigeon.private-control.v2\0' + StrictCanonicalJson.serialize(unsigned),
       'utf8',
     );
     for (const [key, signature] of entries) {
@@ -46,16 +47,24 @@ export class PrivateControlSignature {
   public static authenticate(
     signedJson: string,
     trustedCheckpointJson: string,
+    authenticatedOperationJson: string,
     expectedMlsMessageHash: string,
   ): string {
     try {
       const value = StrictCanonicalJson.parse(signedJson);
       const previous = StrictCanonicalJson.parse(trustedCheckpointJson);
+      const operation = PrivateOperationSignature.controlBinding(
+        authenticatedOperationJson,
+      );
       const policy = PrivateControlEncoding.validate(
         value,
         previous,
+        operation.operationBindingHash,
         expectedMlsMessageHash,
       );
+
+      if (value.headHash !== operation.resultingHeadHash)
+        throw new InvalidPrivateControlError();
       this.checkSignatures(value, policy);
 
       return StrictCanonicalJson.serialize(value);
@@ -67,12 +76,14 @@ export class PrivateControlSignature {
   public static verify(
     signedJson: string,
     trustedCheckpointJson: string,
+    authenticatedOperationJson: string,
     expectedMlsMessageHash: string,
     expectedMlsContextHash: string,
   ): string {
     const canonical = this.authenticate(
       signedJson,
       trustedCheckpointJson,
+      authenticatedOperationJson,
       expectedMlsMessageHash,
     );
     const value = StrictCanonicalJson.parse(canonical);

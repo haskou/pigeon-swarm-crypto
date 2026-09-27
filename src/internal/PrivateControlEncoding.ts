@@ -14,6 +14,7 @@ export class PrivateControlEncoding {
     'parentHeadHash',
     'mlsEpoch',
     'mlsContextHash',
+    'operationBindingHash',
     'policyHash',
   ];
 
@@ -79,6 +80,7 @@ export class PrivateControlEncoding {
   public static validate(
     value: Record<string, unknown>,
     trustedCheckpoint: Record<string, unknown>,
+    expectedOperationBindingHash: string,
     expectedMlsMessageHash: string,
   ): Record<string, unknown> {
     PrivateControlRecord.read(value, [
@@ -92,8 +94,12 @@ export class PrivateControlEncoding {
     this.checkParent(value, previous);
     CanonicalBase64Url.decode(value.mlsMessageHash, 32);
     CanonicalBase64Url.decode(value.mlsContextHash, 32);
+    CanonicalBase64Url.decode(value.operationBindingHash, 32);
 
-    if (value.mlsMessageHash !== expectedMlsMessageHash)
+    if (
+      value.operationBindingHash !== expectedOperationBindingHash ||
+      value.mlsMessageHash !== expectedMlsMessageHash
+    )
       throw new InvalidPrivateControlError();
     const policy = PrivateAuthorizationPolicyEncoding.validate(value.policy);
     this.checkHashes(value, policy);

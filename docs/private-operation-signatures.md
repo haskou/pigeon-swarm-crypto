@@ -18,6 +18,21 @@ must come from an independently authenticated scope policy or verified device
 binding. Never obtain the expected key solely from the same untrusted envelope.
 A valid signature establishes authorship by that key, not membership or permission.
 
+`PrivateOperationSignature.bindingHash(operationJson)` returns a canonical
+base64url SHA-256 binding for a valid signed or unsigned operation. It covers the
+operation identity, scope, author, revision, kind, causal links and payload while
+excluding `payload.resultingHeadHash`. A control transition can therefore commit
+to the operation before its own head hash exists. Callers may use any valid
+32-byte placeholder for `resultingHeadHash` while constructing the transition,
+then replace it with the verified child head before signing the final operation.
+The binding bytes use the `pigeon.private-operation-binding.v1` domain followed
+by a zero byte and canonical JSON.
+
+`PrivateOperationSignature.controlBinding(operationJson)` additionally requires
+a canonical 32-byte `payload.resultingHeadHash` and returns it beside the derived
+operation binding hash. `PrivateControlSignature` uses this boundary to require
+that the claimed resulting head equals the quorum-authenticated transition head.
+
 All failures throw `InvalidPrivateOperationError` with a fixed message. It contains
 no input, key, nested parser exception or underlying cause. Callers must likewise
 avoid logging the submitted JSON or including it in telemetry.

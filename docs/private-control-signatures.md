@@ -1,6 +1,6 @@
 # Private control signatures
 
-`PrivateControlSignature` verifies the v1 authorization binding carried by an MLS
+`PrivateControlSignature` verifies the v2 authorization binding carried by an MLS
 Commit or Welcome. Candidate administrators cannot authorize their own admission:
 verification uses the previously accepted policy, including its quorum and exact
 sequencer. This implements the signature boundary in the
@@ -28,22 +28,30 @@ import { PrivateControlSignature } from '@haskou/pigeon-swarm-crypto';
 const authenticatedBinding = PrivateControlSignature.authenticate(
   receivedAuthorizationJson,
   trustedCheckpointJson,
+  authenticatedOperationJson,
   actualMlsMessageHash,
 );
 
 const verifiedBinding = PrivateControlSignature.verify(
   authenticatedBinding,
   trustedCheckpointJson,
+  authenticatedOperationJson,
   actualMlsMessageHash,
   resultingMlsContextHash,
 );
 ```
 
 `authenticate` checks the binding before the MLS adapter processes the supplied
-message. Calculate `actualMlsMessageHash` as SHA-256 of the exact decoded control
+message. Pass the canonical operation returned by the separate signature and
+authorization boundary. The library derives its binding hash, checks it against
+the transition and requires `payload.resultingHeadHash` to equal the authenticated
+transition head. The binding covers the operation identity, author, revision,
+causal links, kind and mutation while excluding only the resulting head to avoid
+a circular hash. Calculate
+`actualMlsMessageHash` as SHA-256 of the exact decoded control
 message bytes, encoded as canonical unpadded base64url. Validate the enclosing
-frame's version, kind, encoding and size separately. Do not substitute a hash
-copied from the received binding.
+frame's version, kind, encoding and size separately. Do not pass the received
+operation before authenticating and authorizing it.
 
 After authentication, process MLS on a temporary state copy. Calculate
 `resultingMlsContextHash` from the complete final GroupContext TLS encoding, then
@@ -62,8 +70,11 @@ than overwriting it. A successful `authenticate` alone is not adoption permissio
   64-byte signature encodings, existing strict JSON size/depth/token limits.
 - Exact scope and parent head; revision and epoch advance by one using safe
   integers. Missing intermediate transitions must be recovered first.
-- Recomputed JCS/SHA-256 policy and head hashes. The entire unsigned binding is
-  signed under `pigeon.private-control.v1` followed by a zero byte.
+- Recomputed JCS/SHA-256 policy and head hashes. The head commits to the
+  authenticated operation binding hash, and the operation's resulting head must
+  equal that authenticated head. This prevents one control frame from authorizing
+  a different projection mutation or claimed checkpoint. The entire unsigned
+  binding is signed under `pigeon.private-control.v2` followed by a zero byte.
 - One to 128 distinct devices and credential hashes. Administrators are distinct
   admitted devices, the sequencer is an administrator, the freshness authority
   is admitted, and the threshold is satisfiable.
@@ -91,6 +102,10 @@ signatures and provides no leader election or recovery bypass. Freshness proofs,
 device revocation and operation-specific domain permissions remain required.
 Keep bindings inside participant-encrypted scopes: signatures do not hide
 membership, device keys or the social graph.
+
+The v2 binding is intentionally incompatible with v1. Consumers must create new
+protected scopes or migrate them through an application-defined trusted
+checkpoint; this package does not accept v1 transition signatures.
 
 ## Validation
 

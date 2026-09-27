@@ -26,6 +26,19 @@ const owners = keys.map((key) =>
 const encoded = (byte: number) => Buffer.alloc(32, byte).toString('base64url');
 const hash = (value: unknown) =>
   createHash('sha256').update(canonicalize(value)!).digest('base64url');
+const operation = (resultingHeadHash: string) => ({
+  version: 1,
+  operationId: Buffer.alloc(16, 1).toString('base64url'),
+  scopeId: encoded(1),
+  authorizationRevision: 3,
+  authorDeviceKey: owners[0],
+  kind: 'device.revoke',
+  previousOperationIds: [],
+  payload: { deviceKey: owners[2], resultingHeadHash },
+});
+const operationBindingHash = Crypto.PrivateOperationSignature.bindingHash(
+  JSON.stringify(operation(encoded(0))),
+);
 const policy = () => ({
   version: 1,
   devices: owners.map((deviceKey, i) => ({
@@ -54,6 +67,7 @@ const control = (change: Record<string, unknown> = {}) => {
     parentHeadHash: previous.headHash,
     mlsEpoch: 4,
     mlsContextHash: encoded(3),
+    operationBindingHash,
     policyHash: hash(policy()),
   };
   const value = {
@@ -77,7 +91,7 @@ const control = (change: Record<string, unknown> = {}) => {
 const signed = (
   value: object,
   signers = [0, 1],
-  domain = 'pigeon.private-control.v1',
+  domain = 'pigeon.private-control.v2',
 ) =>
   JSON.stringify({
     ...value,
@@ -93,8 +107,18 @@ const signed = (
     ),
   });
 const api = Crypto.PrivateControlSignature;
-const accept = (json: string, previous: object = checkpoint()) =>
-  api.verify(json, JSON.stringify(previous), encoded(4), encoded(3));
+const accept = (
+  json: string,
+  previous: object = checkpoint(),
+  operationJson = JSON.stringify(operation(JSON.parse(json).headHash)),
+) =>
+  api.verify(
+    json,
+    JSON.stringify(previous),
+    operationJson,
+    encoded(4),
+    encoded(3),
+  );
 
 describe('PrivateControlSignature', () => {
   it('exports the control verification boundary', () =>
@@ -102,15 +126,32 @@ describe('PrivateControlSignature', () => {
   it('authenticates before MLS processing and requires the actual final context before adoption', () => {
     const input = signed(control());
     expect(
-      api.authenticate(input, JSON.stringify(checkpoint()), encoded(4)),
+      api.authenticate(
+        input,
+        JSON.stringify(checkpoint()),
+        JSON.stringify(operation(control().headHash)),
+        encoded(4),
+      ),
     ).toBe(canonicalize(JSON.parse(input)));
     expect(() =>
-      api.verify(input, JSON.stringify(checkpoint()), encoded(4), encoded(9)),
+      api.verify(
+        input,
+        JSON.stringify(checkpoint()),
+        JSON.stringify(operation(control().headHash)),
+        encoded(4),
+        encoded(9),
+      ),
     ).toThrow('Invalid private control');
   });
   it('accepts a native-signed previous quorum including the previous sequencer', () => {
     const input = signed(control());
     expect(accept(input)).toBe(canonicalize(JSON.parse(input)));
+  });
+  it('rejects reuse by an operation that claims a different resulting head', () => {
+    const input = signed(control());
+    expect(() =>
+      accept(input, checkpoint(), JSON.stringify(operation(encoded(9)))),
+    ).toThrow('Invalid private control');
   });
   it('accepts replacement of administrators only when the previous authorities sign', () => {
     const nextPolicy = {
@@ -143,6 +184,7 @@ describe('PrivateControlSignature', () => {
     { mlsEpoch: 3 },
     { mlsEpoch: 5 },
     { mlsMessageHash: encoded(9) },
+    { operationBindingHash: encoded(9) },
     { mlsContextHash: encoded(9) },
     { extra: true },
   ])('rejects signed and rehashed wrong transition %j', (change) => {
@@ -278,7 +320,7 @@ describe('PrivateControlSignature', () => {
     };
     const value = control({ policy: fullPolicy });
     const bytes = Buffer.from(
-      'pigeon.private-control.v1\0' + canonicalize(value),
+      'pigeon.private-control.v2\0' + canonicalize(value),
     );
     const input = JSON.stringify({
       ...value,

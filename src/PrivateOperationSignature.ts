@@ -1,4 +1,5 @@
 import { ed25519 } from '@noble/curves/ed25519.js';
+import { sha256 } from '@noble/hashes/sha2.js';
 import { Buffer } from 'buffer';
 
 import { InvalidPrivateOperationError } from './errors/InvalidPrivateOperationError';
@@ -9,6 +10,35 @@ import { StrictCanonicalJson } from './internal/StrictCanonicalJson';
 import { PrivateKey } from './PrivateKey';
 
 export class PrivateOperationSignature {
+  private static readBinding(operationJson: string): Readonly<{
+    operationBindingHash: string;
+    resultingHeadHash?: unknown;
+  }> {
+    const value = StrictCanonicalJson.parse(operationJson);
+    PrivateOperationEncoding.validate(value, Object.hasOwn(value, 'signature'));
+    const unsigned = { ...value };
+    delete unsigned.signature;
+    const payload = { ...(unsigned.payload as Record<string, unknown>) };
+    const resultingHeadHash = payload.resultingHeadHash;
+    delete payload.resultingHeadHash;
+    const binding = StrictCanonicalJson.serialize({
+      ...unsigned,
+      payload,
+    });
+
+    return Object.freeze({
+      operationBindingHash: CanonicalBase64Url.encode(
+        sha256(
+          Buffer.from(
+            `pigeon.private-operation-binding.v1\0${binding}`,
+            'utf8',
+          ),
+        ),
+      ),
+      resultingHeadHash,
+    });
+  }
+
   private static signingBytes(value: Record<string, unknown>): Uint8Array {
     return Buffer.from(
       'pigeon.private-operation.v1\0' + StrictCanonicalJson.serialize(value),
@@ -34,6 +64,36 @@ export class PrivateOperationSignature {
       StrictCanonicalJson.parse(signed);
 
       return signed;
+    } catch {
+      throw new InvalidPrivateOperationError();
+    }
+  }
+
+  public static bindingHash(operationJson: string): string {
+    try {
+      return this.readBinding(operationJson).operationBindingHash;
+    } catch {
+      throw new InvalidPrivateOperationError();
+    }
+  }
+
+  public static controlBinding(operationJson: string): Readonly<{
+    operationBindingHash: string;
+    resultingHeadHash: string;
+  }> {
+    try {
+      const binding = this.readBinding(operationJson);
+      const resultingHeadHash = binding.resultingHeadHash;
+
+      if (typeof resultingHeadHash !== 'string')
+        throw new InvalidPrivateOperationError();
+
+      CanonicalBase64Url.decode(resultingHeadHash, 32);
+
+      return Object.freeze({
+        operationBindingHash: binding.operationBindingHash,
+        resultingHeadHash,
+      });
     } catch {
       throw new InvalidPrivateOperationError();
     }

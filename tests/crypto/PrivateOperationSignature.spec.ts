@@ -75,6 +75,63 @@ describe('PrivateOperationSignature', () => {
       ),
     ).toThrow('Invalid private operation');
   });
+
+  it('binds the operation fields while excluding the resulting control head', () => {
+    const first = {
+      ...operation(),
+      kind: 'device.revoke',
+      payload: {
+        deviceKey: Buffer.alloc(32, 3).toString('base64url'),
+        resultingHeadHash: Buffer.alloc(32, 4).toString('base64url'),
+      },
+    };
+    const siblingHead = {
+      ...first,
+      payload: {
+        ...first.payload,
+        resultingHeadHash: Buffer.alloc(32, 5).toString('base64url'),
+      },
+    };
+    const differentMutation = {
+      ...first,
+      payload: {
+        ...first.payload,
+        deviceKey: Buffer.alloc(32, 6).toString('base64url'),
+      },
+    };
+
+    expect(
+      PrivateOperationSignature.bindingHash(JSON.stringify(first)),
+    ).toBe(
+      PrivateOperationSignature.bindingHash(JSON.stringify(siblingHead)),
+    );
+    expect(
+      PrivateOperationSignature.bindingHash(JSON.stringify(first)),
+    ).not.toBe(
+      PrivateOperationSignature.bindingHash(
+        JSON.stringify(differentMutation),
+      ),
+    );
+    expect(
+      PrivateOperationSignature.controlBinding(JSON.stringify(first)),
+    ).toEqual({
+      operationBindingHash:
+        PrivateOperationSignature.bindingHash(JSON.stringify(first)),
+      resultingHeadHash: first.payload.resultingHeadHash,
+    });
+  });
+
+  it('rejects an invalid operation when deriving its binding hash', () => {
+    expect(() => PrivateOperationSignature.bindingHash('{}')).toThrow(
+      'Invalid private operation',
+    );
+  });
+
+  it('requires a resulting head for a control binding', () => {
+    expect(() =>
+      PrivateOperationSignature.controlBinding(JSON.stringify(operation())),
+    ).toThrow('Invalid private operation');
+  });
 });
 
 describe('private operation rejection boundary', () => {

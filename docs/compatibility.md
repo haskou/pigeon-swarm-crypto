@@ -34,6 +34,7 @@ standard Base64 unless stated otherwise.
 | Symmetric payload | `v1.aes-256-gcm.iv.ciphertext.tag` | Reader also supports existing envelopes without the default header AAD when no custom AAD is supplied |
 | Asymmetric payload | `v2.x25519-hkdf-sha256-aes-256-gcm.ephemeralPublicKey.iv.ciphertext.tag` | Reader also accepts the earlier four-component asymmetric envelope |
 | Protected private key | `v3.scrypt.N16384.r8.p5.salt.iv.tag.ciphertext` | Reader also accepts supported v2 and legacy PBKDF2 envelopes |
+| Private control transition | `pigeon.private-control.v2` signed canonical JSON | v2 derives the binding from the authenticated operation and requires its claimed resulting head to equal the signed checkpoint head without creating a circular hash; v1 transitions require a new protected scope or an application-defined trusted migration |
 
 The asymmetric HKDF context remains
 `@haskou/value-objects/asymmetric-payload/v2`. That string is part of the existing

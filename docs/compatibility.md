@@ -5,8 +5,8 @@
 Import keys, signatures, encrypted envelopes and digest-computation factories from
 `@haskou/pigeon-swarm-crypto`. Keep generic types such as `Media`, `Password`,
 `StringValueObject`, `Timestamp` and identifiers in `@haskou/value-objects`.
-Install version 8.3.3 or a compatible 8.x release as a direct dependency of the application. The crypto package
-declares it as a peer dependency so `^8.3.3` so compatible 8.x updates share the consumer's
+Install version 8.3.3 or a later 8.x release as a direct dependency of the application. The crypto package
+declares it as a peer dependency (`^8.3.3`) so compatible 8.x updates share the consumer's
 runtime classes.
 Multiple incompatible copies can break class identity and `instanceof Media`.
 

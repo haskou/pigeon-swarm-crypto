@@ -70,7 +70,7 @@ export class SymmetricKey extends ValueObject<string> {
 
   private static getPayloadBytes(payload: CryptoPayload): Buffer {
     return payload instanceof Media
-      ? payload.getBuffer()
+      ? Buffer.from(payload.getBuffer())
       : Buffer.from(payload.valueOf());
   }
 

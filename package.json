@@ -87,7 +87,7 @@
   },
   "devDependencies": {
     "@haskou/eslint-config": "^0.2.2",
-    "@haskou/value-objects": "7.0.0",
+    "@haskou/value-objects": "8.3.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.4.1",
     "c8": "12.0.0",
@@ -103,7 +103,7 @@
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "@haskou/value-objects": "^7.0.0"
+    "@haskou/value-objects": "^8.3.3"
   },
   "browser": {
     "jsonc-parser": "jsonc-parser/lib/esm/main.js"

@@ -95,8 +95,6 @@
     "eslint": "^10.10.0",
     "jest": "^30.5.1",
     "jest-extended": "^7.0.0",
-    "legacy-value-objects-v2": "npm:@haskou/value-objects@2.10.0",
-    "legacy-value-objects-v3": "npm:@haskou/value-objects@3.0.1",
     "playwright": "^1.63.0",
     "prettier": "^3.9.6",
     "ts-jest": "^29.4.12",

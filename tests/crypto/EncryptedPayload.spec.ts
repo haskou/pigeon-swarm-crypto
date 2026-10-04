@@ -21,12 +21,6 @@ describe('EncryptedPayload', () => {
   });
 
   describe('getScheme', () => {
-    it('should identify legacy asymmetric payloads', () => {
-      expect(new EncryptedPayload('eph.iv.cipher.tag').getScheme()).toBe(
-        'asymmetric',
-      );
-    });
-
     it('should identify versioned asymmetric payloads', () => {
       expect(
         new EncryptedPayload(

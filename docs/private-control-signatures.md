@@ -5,7 +5,7 @@ Commit or Welcome. Candidate administrators cannot authorize their own admission
 verification uses the previously accepted policy, including its quorum and exact
 sequencer. This implements the signature boundary in the
 [private protocol contract](https://github.com/haskou/pigeon-swarm/blob/main/docs/privacy/CONTRACTS.md#protected-operation-boundary).
-It does not change legacy OrbitDB acceptance or implement MLS.
+It does not implement MLS.
 
 ## Trusted checkpoint
 
@@ -103,9 +103,7 @@ device revocation and operation-specific domain permissions remain required.
 Keep bindings inside participant-encrypted scopes: signatures do not hide
 membership, device keys or the social graph.
 
-The v2 binding is intentionally incompatible with v1. Consumers must create new
-protected scopes or migrate them through an application-defined trusted
-checkpoint; this package does not accept v1 transition signatures.
+This package accepts only v2 transition signatures.
 
 ## Validation
 

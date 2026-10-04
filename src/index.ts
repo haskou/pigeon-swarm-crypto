@@ -8,7 +8,6 @@ export * from './errors/InvalidEncryptedPrivateKeyFormatError';
 export * from './errors/InvalidKeyError';
 export * from './errors/InvalidSignatureError';
 export * from './hashes/HashPayload';
-export * from './hashes/MD5Hash';
 export * from './hashes/SHA256Hash';
 export * from './hashes/SHA512Hash';
 export * from './Key';

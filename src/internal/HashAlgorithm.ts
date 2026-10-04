@@ -1,1 +1,1 @@
-export type HashAlgorithm = 'md5' | 'sha256' | 'sha512';
+export type HashAlgorithm = 'sha256' | 'sha512';

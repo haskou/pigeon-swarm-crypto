@@ -10,7 +10,6 @@ import {
 } from '../../src';
 import { CryptoAdapter } from '../../src/internal/CryptoAdapter';
 import { CryptoDerivation } from '../../src/internal/CryptoDerivation';
-import { EncryptedPrivateKeyV2 } from '../../src/internal/EncryptedPrivateKeyV2';
 import { EncryptedPrivateKeyV3 } from '../../src/internal/EncryptedPrivateKeyV3';
 
 describe('EncryptedPrivateKey', () => {
@@ -93,63 +92,6 @@ describe('EncryptedPrivateKey', () => {
     }
   });
 
-  it('preserves v2 format and reports it as needing re-encryption', async () => {
-    const privateKey = new PrivateKey(privatePem);
-    const v2 = await EncryptedPrivateKeyV2.encrypt(privateKey, password);
-    const parts = v2.split('.');
-    const key = await SymmetricKey.fromPassword(password, {
-      N: 16384,
-      p: 1,
-      r: 8,
-      salt: Buffer.from(parts[5], 'base64'),
-    });
-    const payload = new SymmetricEncryptedPayload(
-      ['v1', 'aes-256-gcm', parts[6], parts[8], parts[7]].join('.'),
-    );
-
-    expect(key.decrypt(payload).toString()).toBe(privatePem);
-    expect((await new EncryptedPrivateKey(v2).decrypt(password)).valueOf()).toBe(
-      privatePem,
-    );
-    expect(new EncryptedPrivateKey(v2).needsReEncryption()).toBeTrue();
-
-    parts[4] = 'p2';
-    await expect(
-      new EncryptedPrivateKeyV2().decrypt(parts, password),
-    ).rejects.toThrow(InvalidEncryptedPrivateKeyFormatError);
-  });
-
-  it('decrypts old v2 payloads created without AAD', async () => {
-    const salt = Buffer.alloc(16, 3);
-    const iv = Buffer.alloc(12, 4);
-    const key = await SymmetricKey.fromPassword(password, {
-      N: 16384,
-      p: 1,
-      r: 8,
-      salt,
-    });
-    const { cipherText, tag } = CryptoAdapter.encryptAes256Gcm(
-      key.getBuffer(),
-      iv,
-      Buffer.from(privatePem),
-    );
-    const encrypted = [
-      'v2',
-      'scrypt',
-      'N16384',
-      'r8',
-      'p1',
-      salt.toString('base64'),
-      iv.toString('base64'),
-      Buffer.from(tag).toString('base64'),
-      Buffer.from(cipherText).toString('base64'),
-    ].join('.');
-
-    expect((await new EncryptedPrivateKey(encrypted).decrypt(password)).valueOf()).toBe(
-      privatePem,
-    );
-  });
-
   it('keeps v3 fields compatible with SymmetricKey and authenticates AAD', async () => {
     const encrypted = await EncryptedPrivateKey.create(
       new PrivateKey(privatePem),
@@ -204,38 +146,7 @@ describe('EncryptedPrivateKey', () => {
     }
   });
 
-  it('decrypts legacy PBKDF2 private-key format', async () => {
-    const salt = crypto.randomBytes(16);
-    const iv = crypto.randomBytes(12);
-    const key = await new Promise<Buffer>((resolve, reject) => {
-      crypto.pbkdf2(
-        password.valueOf(),
-        salt,
-        100000,
-        32,
-        'sha256',
-        (error, derived) => (error ? reject(error) : resolve(derived)),
-      );
-    });
-    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
-    const encryptedData = Buffer.concat([
-      cipher.update(privatePem),
-      cipher.final(),
-    ]);
-    const legacy = [
-      encryptedData.toString('base64'),
-      iv.toString('base64'),
-      salt.toString('base64'),
-      cipher.getAuthTag().toString('base64'),
-    ].join('.');
-
-    expect((await new EncryptedPrivateKey(legacy).decrypt(password)).valueOf()).toBe(
-      privatePem,
-    );
-    expect(new EncryptedPrivateKey(legacy).needsReEncryption()).toBeTrue();
-  });
-
-  it('returns correct re-encryption state and produces functional decrypted keys', async () => {
+  it('produces functional decrypted keys', async () => {
     const encrypted = await EncryptedPrivateKey.create(
       new PrivateKey(privatePem),
       password,
@@ -243,8 +154,6 @@ describe('EncryptedPrivateKey', () => {
     const decrypted = await encrypted.decrypt(new StringValueObject(password));
     const signature = decrypted.sign('test payload');
 
-    expect(encrypted.needsReEncryption()).toBeFalse();
-    expect(new EncryptedPrivateKey('invalid.format').needsReEncryption()).toBeFalse();
     expect(
       crypto.verify(
         null,

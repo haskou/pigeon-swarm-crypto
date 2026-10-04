@@ -122,9 +122,7 @@ IPFS blocks. Retained history keys weaken forward-secrecy claims for that saved
 history. The suite is not post-quantum secure.
 
 This entry point is a new versioned protocol boundary. It deliberately has no
-fallback to the legacy shared network key or old asymmetric envelope. Existing
-published data is outside this migration and may remain readable under its old
-keys indefinitely.
+fallback to a shared network key or an earlier asymmetric envelope.
 
 ## Verification
 

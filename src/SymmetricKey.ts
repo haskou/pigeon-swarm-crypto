@@ -246,25 +246,12 @@ export class SymmetricKey extends ValueObject<string> {
         ? SymmetricKey.getDefaultAad(version, algorithm)
         : SymmetricKey.getAadBytes(options.aad);
 
-    try {
-      return CryptoAdapter.decryptAes256Gcm(
-        this.getBuffer(),
-        iv,
-        cipherText,
-        tag,
-        aad,
-      );
-    } catch (error) {
-      if (options.aad !== undefined) {
-        throw error;
-      }
-
-      return CryptoAdapter.decryptAes256Gcm(
-        this.getBuffer(),
-        iv,
-        cipherText,
-        tag,
-      );
-    }
+    return CryptoAdapter.decryptAes256Gcm(
+      this.getBuffer(),
+      iv,
+      cipherText,
+      tag,
+      aad,
+    );
   }
 }

@@ -18,7 +18,6 @@ import { Signature } from './Signature';
 
 export class PrivateKey extends Key {
   private static readonly LENGTH = 119;
-  private static readonly LEGACY_ENCRYPTED_PAYLOAD_PARTS = 4;
   private static readonly OWASP_ENCRYPTED_PAYLOAD_PARTS = 6;
   private static readonly EPHEMERAL_PUBLIC_KEY_LENGTH = 32;
   private static readonly IV_LENGTH = 12;
@@ -104,7 +103,7 @@ export class PrivateKey extends Key {
     ivB64: string,
     cipherTextB64: string,
     tagB64: string,
-    options: { useHkdf: boolean; aad?: Buffer },
+    options: { aad: Buffer },
   ): Buffer {
     const cipherTextLength = StrictBase64.getDecodedLength(cipherTextB64);
     assert(
@@ -146,13 +145,11 @@ export class PrivateKey extends Key {
       x25519Priv,
       ephemeralPub,
     );
-    const aesKey = options.useHkdf
-      ? CryptoAdapter.deriveEncryptionKeyWithHkdf(
-          sharedSecret,
-          ephemeralPub,
-          CryptoAdapter.x25519PublicKey(x25519Priv),
-        )
-      : CryptoAdapter.deriveEncryptionKey(sharedSecret, ephemeralPub);
+    const aesKey = CryptoAdapter.deriveEncryptionKeyWithHkdf(
+      sharedSecret,
+      ephemeralPub,
+      CryptoAdapter.x25519PublicKey(x25519Priv),
+    );
 
     return CryptoAdapter.decryptAes256Gcm(
       aesKey,
@@ -181,19 +178,6 @@ export class PrivateKey extends Key {
   public decrypt(encryptedPayload: EncryptedPayload): Buffer {
     const parts = encryptedPayload.valueOf().split('.');
 
-    if (parts.length === PrivateKey.LEGACY_ENCRYPTED_PAYLOAD_PARTS) {
-      const [ephPubB64, ivB64, cipherTextB64, tagB64] = parts;
-
-      return this.decryptPayload(
-        encryptedPayload,
-        ephPubB64,
-        ivB64,
-        cipherTextB64,
-        tagB64,
-        { useHkdf: false },
-      );
-    }
-
     assert(
       parts.length === PrivateKey.OWASP_ENCRYPTED_PAYLOAD_PARTS,
       new InvalidFormatError(encryptedPayload.valueOf()),
@@ -212,7 +196,7 @@ export class PrivateKey extends Key {
       ivB64,
       cipherTextB64,
       tagB64,
-      { aad: PrivateKey.getPayloadAad(), useHkdf: true },
+      { aad: PrivateKey.getPayloadAad() },
     );
   }
 }

@@ -62,7 +62,7 @@ describe('SymmetricKey', () => {
     expect(custom.getBuffer()).toHaveLength(32);
   });
 
-  it('uses legacy and OWASP scrypt defaults', async () => {
+  it('uses default and OWASP scrypt parameters', async () => {
     const spy = jest
       .spyOn(CryptoDerivation, 'scryptAsync')
       .mockResolvedValue(Buffer.alloc(32, 9));
@@ -153,26 +153,6 @@ describe('SymmetricKey', () => {
     const bufferAad = Buffer.from('domain.header');
     const encrypted = key.encrypt('secret', { aad: bufferAad });
     expect(key.decrypt(encrypted, { aad: bufferAad }).toString()).toBe('secret');
-  });
-
-  it('decrypts legacy symmetric payloads without AAD', () => {
-    const key = new SymmetricKey(keyBase64);
-    const iv = Buffer.alloc(12, 2);
-    const { cipherText, tag } = CryptoAdapter.encryptAes256Gcm(
-      key.getBuffer(),
-      iv,
-      Buffer.from('legacy secret'),
-    );
-    const payload = new SymmetricEncryptedPayload(
-      [
-        'v1',
-        'aes-256-gcm',
-        iv.toString('base64'),
-        Buffer.from(cipherText).toString('base64'),
-        Buffer.from(tag).toString('base64'),
-      ].join('.'),
-    );
-    expect(key.decrypt(payload).toString()).toBe('legacy secret');
   });
 
   it('validates encrypted payload structure and field lengths', () => {

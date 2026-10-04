@@ -55,7 +55,7 @@ const plaintext = key.decrypt(encrypted).toString('utf8');
 `encrypt` generates a fresh nonce and returns a versioned envelope. Keep the key
 separate from the ciphertext. When supplying application-specific authenticated
 data through `aad`, supply exactly the same bytes during decryption. Do not invent
-a new envelope or rename its version fields without a compatibility plan.
+a new envelope or rename its version fields.
 
 ## Protecting a private key
 
@@ -74,10 +74,8 @@ async function unlockPrivateKey(serialized: string, password: string) {
 }
 ```
 
-New protected keys use the v3 scrypt envelope. Existing supported envelopes remain
-readable. `needsReEncryption()` identifies older formats; callers decide when to
-replace stored data after a successful unlock. This package does not enforce an
-application password policy or provide account recovery.
+Protected keys use the v3 scrypt envelope; other envelopes are rejected. This
+package does not enforce an application password policy or provide account recovery.
 
 ## Public API
 
@@ -87,18 +85,17 @@ application password policy or provide account recovery.
 | Protected keys | `EncryptedPrivateKey`, `EncryptedKeyPair`, `CryptoPassword` |
 | Encrypted envelopes | `EncryptedPayload`, `AsymmetricEncryptedPayload`, `SymmetricEncryptedPayload`, `EncryptedPayloadScheme` |
 | Symmetric encryption | `SymmetricKey`, `SymmetricKeyCryptOptions`, `SymmetricKeyDerivationOptions` |
-| Digest computation | `MD5Hash`, `SHA256Hash`, `SHA512Hash`, `HashPayload` |
+| Digest computation | `SHA256Hash`, `SHA512Hash`, `HashPayload` |
 | Public errors | `InvalidKeyError`, `InvalidSignatureError`, `InvalidEncryptedPrivateKeyFormatError` |
 
 Digest classes expose `.from(payload)` for computation. The corresponding classes
 in `value-objects` validate an already-computed digest. With version 8, equality
 requires the same concrete type; use `hasValue` only when comparing the underlying
-digest across representations intentionally. MD5 is retained for compatibility,
-not for security-sensitive integrity or password storage.
+digest across representations intentionally.
 
 ## Compatibility and security
 
-See [wire formats and migration](docs/compatibility.md) before changing imports or
+See [wire formats](docs/wire-formats.md) before changing imports or
 persisted data, and [SECURITY.md](SECURITY.md) for security boundaries and reporting.
 See the [key lifecycle review](docs/key-lifecycle-review.md) for current rotation
 gaps, the distinction between password re-encryption and key replacement, and

@@ -4,8 +4,7 @@
 
 Do not disclose suspected vulnerabilities in public issues. Report them privately through GitHub's private vulnerability reporting when enabled, or contact the repository owner directly.
 
-Cryptographic compatibility changes require an explicit versioned migration or
-an explicitly documented breaking boundary. New cryptographic constructions
+Format changes replace the superseded format with a new version. New cryptographic constructions
 require test vectors and security-focused review before release.
 
 ## Security boundaries

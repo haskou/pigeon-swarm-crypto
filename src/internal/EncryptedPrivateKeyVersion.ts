@@ -7,8 +7,4 @@ export abstract class EncryptedPrivateKeyVersion {
     parts: string[],
     password: CryptoPassword,
   ): Promise<PrivateKey>;
-
-  public needsReEncryption(): boolean {
-    return false;
-  }
 }

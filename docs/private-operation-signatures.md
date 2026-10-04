@@ -85,7 +85,7 @@ The signed JSON contains sensitive scope, author and payload information. It mus
 remain inside participant encryption and encrypted local storage. Do not place it
 in public IPFS, shared pubsub, mailbox headers, transport logs or global indexes.
 Signatures alone do not conceal metadata, prevent replay or enforce revocation.
-This change neither erases existing replicated copies nor changes legacy traffic.
+This change does not erase existing replicated copies.
 
 Unit tests cover malformed and ambiguous inputs, altered fields, wrong pinned
 keys, protocol-domain confusion, weak Ed25519 keys, bounds and fixed errors.

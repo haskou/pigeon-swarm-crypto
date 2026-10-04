@@ -85,38 +85,6 @@ describe('PrivateKey', () => {
     ).toBe('vo-payload');
   });
 
-  it('decrypts legacy asymmetric payloads', () => {
-    const priv = new PrivateKey(privatePem);
-    const message = Buffer.from('legacy secret');
-    const recipientPub = CryptoAdapter.publicKeyToX25519(publicPem);
-    const ephemeralPriv = CryptoAdapter.x25519RandomPrivateKey();
-    const ephemeralPub = CryptoAdapter.x25519PublicKey(ephemeralPriv);
-    const sharedSecret = CryptoAdapter.x25519SharedSecret(
-      ephemeralPriv,
-      recipientPub,
-    );
-    const aesKey = CryptoAdapter.deriveEncryptionKey(
-      sharedSecret,
-      ephemeralPub,
-    );
-    const iv = CryptoAdapter.randomBytes(12);
-    const { cipherText, tag } = CryptoAdapter.encryptAes256Gcm(
-      aesKey,
-      iv,
-      message,
-    );
-    const payload = new EncryptedPayload(
-      [
-        Buffer.from(ephemeralPub).toString('base64'),
-        iv.toString('base64'),
-        Buffer.from(cipherText).toString('base64'),
-        Buffer.from(tag).toString('base64'),
-      ].join('.'),
-    );
-
-    expect(priv.decrypt(payload).toString()).toBe('legacy secret');
-  });
-
   it('rejects wrong keys and tampered current payload fields', () => {
     const pub = new PublicKey(publicPem);
     const priv = new PrivateKey(privatePem);
@@ -170,12 +138,12 @@ describe('PrivateKey', () => {
     const priv = new PrivateKey(privatePem);
     const oversized = Buffer.alloc(1024 * 1024).toString('base64');
     const payload = new EncryptedPayload(
-      `${oversized}.${Buffer.alloc(12).toString('base64')}..${Buffer.alloc(16).toString('base64')}`,
+      `v2.x25519-hkdf-sha256-aes-256-gcm.${oversized}.${Buffer.alloc(12).toString('base64')}..${Buffer.alloc(16).toString('base64')}`,
     );
     const spy = jest.spyOn(Buffer, 'from');
 
     expect(() => priv.decrypt(payload)).toThrow(InvalidFormatError);
-    expect(spy).not.toHaveBeenCalled();
+    expect(spy).not.toHaveBeenCalledWith(oversized, 'base64');
     spy.mockRestore();
   });
 
@@ -185,7 +153,7 @@ describe('PrivateKey', () => {
     expect(() =>
       priv.decrypt(
         new EncryptedPayload(
-          `${Buffer.alloc(32).toString('base64')}.${Buffer.alloc(12).toString('base64')}.${oversized}.${Buffer.alloc(16).toString('base64')}`,
+          `v2.x25519-hkdf-sha256-aes-256-gcm.${Buffer.alloc(32).toString('base64')}.${Buffer.alloc(12).toString('base64')}.${oversized}.${Buffer.alloc(16).toString('base64')}`,
         ),
       ),
     ).toThrow(InvalidLengthError);

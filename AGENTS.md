@@ -6,8 +6,8 @@
 - Keep explanations in documentation; avoid unnecessary comments in code.
 - Keep cryptographic behavior in this package and generic value types in
   `@haskou/value-objects`. Never introduce the reverse dependency.
-- Preserve persisted formats, authenticated data and derivation contexts unless
-  an explicitly versioned migration covers existing data.
+- Keep one reader per format: do not add backward-compatible readers, fallbacks
+  or migration APIs for superseded formats.
 - Follow [CONTRIBUTING.md](CONTRIBUTING.md) for verification and release branches.
 - Read the relevant managed skill under `.agents/skills/`: `ddd-engineer` for
   boundaries and review, and `haskou-value-objects` for value semantics.

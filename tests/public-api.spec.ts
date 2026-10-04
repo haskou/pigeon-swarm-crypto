@@ -2,7 +2,6 @@ import {
   EncryptedPrivateKey,
   EncryptedPayload,
   KeyPair,
-  MD5Hash,
   PrivateKey,
   PublicKey,
   SHA256Hash,
@@ -11,8 +10,8 @@ import {
   SymmetricKey,
 } from '../src';
 
-describe('crypto migration contract', () => {
-  it('exports the legacy crypto API from the dedicated package', () => {
+describe('crypto public API', () => {
+  it('exports the crypto API', () => {
     expect(KeyPair).toBeDefined();
     expect(PrivateKey).toBeDefined();
     expect(PublicKey).toBeDefined();
@@ -39,9 +38,6 @@ describe('crypto migration contract', () => {
   });
 
   it('keeps digest computation in the crypto package', () => {
-    expect(MD5Hash.from('hello').valueOf()).toBe(
-      '5d41402abc4b2a76b9719d911017c592',
-    );
     expect(SHA256Hash.from('hello').valueOf()).toHaveLength(64);
     expect(SHA512Hash.from('hello').valueOf()).toHaveLength(128);
   });

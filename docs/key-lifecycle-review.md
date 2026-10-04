@@ -36,8 +36,8 @@ material, including a private key mistakenly submitted to a public-key field.
 The accompanying fix supplies only lengths or a fixed redacted label, preserving
 error classes and all valid key/ciphertext formats. Five regression cases fail
 before the change and pass afterward, checking string, JSON and diagnostic
-rendering. Existing keys, signatures and encryption compatibility remain covered
-by the package's tests.
+rendering. Key, signature and encryption behavior remains covered by the package's
+tests.
 
 This is narrowly about rejected key inputs. Explicit key serialization, logging
 key objects, malformed ciphertext diagnostics and application logging policies
@@ -86,15 +86,6 @@ their public `packageId` in trusted state and replace it with a consumed
 tombstone atomically with successful group creation or joining. Restoration
 requires the current trusted identifier; a protected package snapshot alone is
 not sufficient authority to reactivate its private keys.
-
-### Compatibility is not a strict new-protocol policy
-
-The symmetric decryptor retains compatibility with legacy ciphertext without
-AAD when the caller supplies no AAD. Existing asymmetric and protected-key
-readers also accept documented legacy formats. New private-protocol framing must
-require its exact version, kind and authenticated context without routing failures
-through legacy decryption. Retiring legacy reads requires the migration policy;
-silently disabling them would strand stored data.
 
 ### Additional input review
 

@@ -1,8 +1,9 @@
 # Contributing
 
-Keep changes focused on Pigeon Swarm cryptographic behavior, public API boundaries
-and compatibility. Generic value validation belongs in `value-objects`. Preserve
-existing wire formats unless the change includes an explicit migration.
+Keep changes focused on Pigeon Swarm cryptographic behavior and public API
+boundaries. Generic value validation belongs in `value-objects`. There is no
+production data to preserve: replace formats outright and keep one reader per
+format.
 
 ## Validation
 
@@ -15,9 +16,8 @@ negative cases for tampered data, incorrect keys and invalid parameters. Verify
 public package exports and browser consumers when changing packaging or runtime
 dependencies. Keep old implementation dependencies confined to tests.
 
-Document the affected format, backwards compatibility, limits and validation in
-the pull request. Use English and the repository's conventional title format, for
-example `fix(crypto): 🐛 Preserve protected-key compatibility`.
+Document the affected format, limits and validation in the pull request. Use English and the repository's conventional title format, for
+example `fix(crypto): 🐛 Reject truncated protected keys`.
 
 ## Release process
 

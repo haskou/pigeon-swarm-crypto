@@ -6,10 +6,6 @@ export class EncryptedPayload extends ValueObject<string> {
   public getScheme(): EncryptedPayloadScheme {
     const parts = this.valueOf().split('.');
 
-    if (parts.length === 4) {
-      return 'asymmetric';
-    }
-
     if (
       parts.length === 6 &&
       parts[0] === 'v2' &&

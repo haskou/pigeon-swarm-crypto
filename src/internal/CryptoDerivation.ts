@@ -1,45 +1,10 @@
-import { pbkdf2Async } from '@noble/hashes/pbkdf2.js';
 import { scryptAsync } from '@noble/hashes/scrypt.js';
-import { sha256, sha512 } from '@noble/hashes/sha2.js';
 import { Buffer } from 'buffer';
 
 import { CryptoAdapter } from './CryptoAdapter';
 import { NodeLikeCrypto } from './NodeLikeCrypto';
 
 export class CryptoDerivation {
-  public static async pbkdf2Async(
-    password: string,
-    salt: Buffer,
-    iterations: number,
-    keyLength: number,
-    algorithm: string,
-    cryptoModule?: NodeLikeCrypto,
-  ): Promise<Buffer> {
-    if (cryptoModule?.pbkdf2) {
-      return new Promise<Buffer>((resolve, reject) => {
-        cryptoModule.pbkdf2!(
-          password,
-          salt,
-          iterations,
-          keyLength,
-          algorithm,
-          (err, key) => {
-            if (err) reject(err);
-            else resolve(key);
-          },
-        );
-      });
-    }
-
-    const hash = algorithm === 'sha512' ? sha512 : sha256;
-    const key = await pbkdf2Async(hash, password, salt, {
-      c: iterations,
-      dkLen: keyLength,
-    });
-
-    return Buffer.from(key);
-  }
-
   public static scryptAsync(
     password: string,
     salt: Buffer,

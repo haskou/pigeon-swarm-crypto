@@ -8,7 +8,7 @@ protection and digest computation. Generic value types remain in
 ## Installation
 
 ```sh
-yarn add @haskou/pigeon-swarm-crypto @haskou/value-objects@7
+yarn add @haskou/pigeon-swarm-crypto @haskou/value-objects@^8.3.3
 ```
 
 Import public APIs from the package root. Internal adapters are implementation
@@ -91,7 +91,7 @@ application password policy or provide account recovery.
 | Public errors | `InvalidKeyError`, `InvalidSignatureError`, `InvalidEncryptedPrivateKeyFormatError` |
 
 Digest classes expose `.from(payload)` for computation. The corresponding classes
-in `value-objects` validate an already-computed digest. With version 7, equality
+in `value-objects` validate an already-computed digest. With version 8, equality
 requires the same concrete type; use `hasValue` only when comparing the underlying
 digest across representations intentionally. MD5 is retained for compatibility,
 not for security-sensitive integrity or password storage.

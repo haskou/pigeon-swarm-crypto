@@ -80,7 +80,7 @@
     "@noble/curves": "2.4.0",
     "@noble/hashes": "^2.4.0",
     "buffer": "^6.0.3",
-    "canonicalize": "2.1.0",
+    "canonicalize": "5.1.0",
     "jsonc-parser": "3.3.1",
     "ts-mls": "1.6.4",
     "tslib": "^2.8.1"

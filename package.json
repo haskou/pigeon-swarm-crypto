@@ -76,9 +76,9 @@
     "test:private-delivery": "node tests/runtime/private-delivery.cjs"
   },
   "dependencies": {
-    "@noble/ciphers": "2.1.1",
-    "@noble/curves": "2.0.1",
-    "@noble/hashes": "^2.2.0",
+    "@noble/ciphers": "2.4.0",
+    "@noble/curves": "2.4.0",
+    "@noble/hashes": "^2.4.0",
     "buffer": "^6.0.3",
     "canonicalize": "2.1.0",
     "jsonc-parser": "3.3.1",

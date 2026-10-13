@@ -513,10 +513,10 @@
     eslint-plugin-unused-imports "^4.4.1"
     globals "^17.9.0"
 
-"@haskou/value-objects@8.3.4":
-  version "8.3.4"
-  resolved "https://registry.yarnpkg.com/@haskou/value-objects/-/value-objects-8.3.4.tgz#2b51a714dc9359c4d9fe91e0ff652cc57505a294"
-  integrity sha512-IhuPgG3ehkkR5cqNXTmwoqj78Rdu74wFQAoWAWnGJNmfj1w84OMiXjkHxCAz2JHy9UJV8vGjH/5RqfXYXU+Qyw==
+"@haskou/value-objects@8.4.3":
+  version "8.4.3"
+  resolved "https://registry.yarnpkg.com/@haskou/value-objects/-/value-objects-8.4.3.tgz#276b394c49eabbf49003eaa74f4f78d48d2bb69b"
+  integrity sha512-vs2x/Vpdxno2yVBmH2IMK8dw9Z3rieQJvUGrojz1RwfuoYyKee32Kaf/OCutBSYECQ3Oy5jNyCxyccbfMitjXQ==
 
 "@hpke/common@^1.10.0":
   version "1.10.1"

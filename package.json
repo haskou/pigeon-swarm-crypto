@@ -33,7 +33,7 @@
   "sideEffects": false,
   "license": "MIT",
   "engines": {
-    "node": ">=20.20.2"
+    "node": ">=24.22.0"
   },
   "packageManager": "yarn@1.22.22",
   "keywords": [

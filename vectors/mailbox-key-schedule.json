@@ -1,0 +1,52 @@
+{
+  "contactPresence": [
+    {
+      "conversationKey": "BQwTGiEoLzY9REtSWWBnbnV8g4qRmJ+mrbS7wsnQ194=",
+      "envelopeKey": "qKFQIKv_SJY6QUHxJMMAmyDfCdeCZCdtxKqzJgaGrnE",
+      "mailboxId": "lyILj5y3lZfc49C_4DMduh8yKfNg2-rOIxv34ZA_J0k",
+      "postToken": "Nq85zrV6BjPXwZBuVfkaQGeiPn0lbOuvG-w7uzmQm08",
+      "recipientIdentityId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w="
+    },
+    {
+      "conversationKey": "Bg0UGyIpMDc+RUxTWmFob3Z9hIuSmaCnrrW8w8rR2N8=",
+      "envelopeKey": "c4f83qwWSmw18W8D52qNRosJwOZSn2tjpSYA0rMfJaE",
+      "mailboxId": "0gJEkxsZLvLoQsHDvG6ld8DDO0FIgponSusV2-82Z68",
+      "postToken": "nuVNdLVfPQF5hRRwVJZo1i9kgDt6FMKEFXX7VErJ7Co",
+      "recipientIdentityId": "MCowBQYDK2VwAyEAgTl3Dqh9F19Wo1Rmw0x+zMuNipG07jeiXfYPW4/Js5Q="
+    }
+  ],
+  "derive": [
+    {
+      "envelopeKey": "RGFu339G3Y2c9tnwSHf8x9j06_LMZOKeCSleYrYkyQs",
+      "epoch": 0,
+      "mailboxId": "4dDf2wyJRTfJ7F_Oh2h9FLlMzIp04wwZD_xts74JKqA",
+      "postToken": "KQV2nqsifyVhoeFzSKuFwd0aZsYfF04FuJoHjQ7vi9E",
+      "recipientIdentityId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+      "sharedSecret": "AQgPFh0kKzI5QEdOVVxjanF4f4aNlJuiqbC3vsXM09o="
+    },
+    {
+      "envelopeKey": "uo4207erGJ7f5mes7CwYI6az_gtQ2haZLSmIQfvPLjA",
+      "epoch": 1,
+      "mailboxId": "l18V1EszK5xjL6Np74LaCPlH5gBICqviz8e83vkr9p0",
+      "postToken": "V39PYrxTjXu2c4boF5LbfM6KHvWdYSIYOYqYuHeZ8Qo",
+      "recipientIdentityId": "MCowBQYDK2VwAyEAgTl3Dqh9F19Wo1Rmw0x+zMuNipG07jeiXfYPW4/Js5Q=",
+      "sharedSecret": "AgkQFx4lLDM6QUhPVl1ka3J5gIeOlZyjqrG4v8bN1Ns="
+    },
+    {
+      "envelopeKey": "6E7klGaBqbzHgrGQx4tqo8mCAOmP2mT8G7UG9IGNPVA",
+      "epoch": 4294967295,
+      "mailboxId": "n_pcxxmczGVUq-5FvWSAHmzPfcGlXpiG5oYpJLNxbvU",
+      "postToken": "RWNp_DNqfv8mbCjNI0k2_V6o6gx3q326fEfwyDnD6vU",
+      "recipientIdentityId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+      "sharedSecret": "AwoRGB8mLTQ7QklQV15lbHN6gYiPlp2kq7K5wMfO1dw="
+    },
+    {
+      "envelopeKey": "qvb8XzUw3au8Wi34Av9dRw9lkRxdsmEHF53tj7KwLa8",
+      "epoch": 7,
+      "mailboxId": "7PezK-nPHITadNDUOwDKtYQtfmGCF3GFPvz8OT3XYVc",
+      "postToken": "Zv7YKLg0qqmA2iMvIkf-juOGzI9gzlRen0-c6Mg13Bg",
+      "recipientIdentityId": "é😀",
+      "sharedSecret": "BAsSGSAnLjU8Q0pRWF9mbXR7gomQl56lrLO6wcjP1t0="
+    }
+  ]
+}

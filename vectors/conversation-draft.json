@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "content": "hola",
+      "conversationId": "conversation-1",
+      "draftKey": "jyr6IEsjeX54FtQpor3TOi5WHeEov3nJEdICc6xzmz0",
+      "encryptedPayload": "v1.aes-256-gcm.jJOaoaivtr3Ey9LZ.jrUOdFGLAhGp+UpcphmI4HKULoncCA2gkpdbTF0xcAqLY+6SOgT5+8KHf3Jf+AWKvSyZiQ==.t2QhFpzgFKn/qgrnBzkO/w==",
+      "iv": "jJOaoaivtr3Ey9LZ",
+      "root": "gomQl56lrLO6wcjP1t3k6/L5AAcOFRwjKjE4P0ZNVFs="
+    },
+    {
+      "content": "",
+      "conversationId": "é😀",
+      "draftKey": "qzVLo5-c5JJbW1DmhDaAfDpj_7ZHIKVHejCrTWZoNrE",
+      "encryptedPayload": "v1.aes-256-gcm.jZSboqmwt77FzNPa.IGIa8qssqsNqsmpctingTWWQjHhHSca8vDVE+1zfBcYQ/h2UyT5f9w==.sgSJpCu4PmN4lUvmHhwKhQ==",
+      "iv": "jZSboqmwt77FzNPa",
+      "root": "g4qRmJ+mrbS7wsnQ197l7PP6AQgPFh0kKzI5QEdOVVw="
+    },
+    {
+      "content": "a \"quoted\"\nline",
+      "conversationId": "MCowBQYDK2VwAyEAgTl3Dqh9F19Wo1Rmw0x+zMuNipG07jeiXfYPW4/Js5Q=",
+      "draftKey": "7z7-KtyMi4i7wGtyZqoRf4CA4RW_qS1NiHEsvCp5yb4",
+      "encryptedPayload": "v1.aes-256-gcm.jpWco6qxuL/GzdTb.voEw+AWH9RA8tTPClmCF1zqDmN/eiH3/vr/2hG/AY0QB46oP5Hco8tz8RD5gDKrOCX/O5EPklh+a5oAQVMNU3a8FMrZ7q6T341qt88VGM/g1sWuG3sfPh4yGbE5An5JglXOofCylMxt4NENa3blY7A==.YDm56l7kJXqaFNiJuURGag==",
+      "iv": "jpWco6qxuL_GzdTb",
+      "root": "hIuSmaCnrrW8w8rR2N/m7fT7AgkQFx4lLDM6QUhPVl0="
+    }
+  ]
+}

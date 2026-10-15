@@ -1,0 +1,260 @@
+{
+  "label": "pigeon/mailbox/own-record/v2",
+  "tags": [
+    {
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "encryptedPayload": "v1.aes-256-gcm.AAAAAAAAAAAAAAAA.AAAA.AAAAAAAAAAAAAAAAAAAAAA==",
+        "id": "message-1",
+        "previousMessageIds": [
+          "message-0",
+          "message-a"
+        ],
+        "replyToMessageId": "message-0",
+        "type": "sent"
+      },
+      "rootKey": "ERERERERERERERERERERERERERERERERERERERERERE=",
+      "tag": "qxlwVNYGzLe3RhPpOc_NttOw_8otq9DOFH8En2492c0"
+    },
+    {
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "encryptedPayload": "v1.aes-256-gcm.AAAAAAAAAAAAAAAA.AAAA.AAAAAAAAAAAAAAAAAAAAAA==",
+        "id": "message-1",
+        "previousMessageIds": [
+          "message-0",
+          "message-a"
+        ],
+        "replyToMessageId": "message-0",
+        "type": "sent"
+      },
+      "rootKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+      "tag": "jje19pCqqyCVgW5i_xBJo3GTLX71jqLN80afBWNu3u8"
+    },
+    {
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "allowsMultipleVotes": false,
+        "id": "poll-1",
+        "options": [
+          {
+            "id": "option-1",
+            "text": "Yes"
+          },
+          {
+            "id": "option-2",
+            "text": "No 😀"
+          }
+        ],
+        "question": "¿Comemos?",
+        "type": "poll"
+      },
+      "rootKey": "ERERERERERERERERERERERERERERERERERERERERERE=",
+      "tag": "DLXy2h9K0zZOjtvpY4yz2RKX0CZs2p8ioMm_Abu-SmI"
+    },
+    {
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "allowsMultipleVotes": false,
+        "id": "poll-1",
+        "options": [
+          {
+            "id": "option-1",
+            "text": "Yes"
+          },
+          {
+            "id": "option-2",
+            "text": "No 😀"
+          }
+        ],
+        "question": "¿Comemos?",
+        "type": "poll"
+      },
+      "rootKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+      "tag": "gdi2PkB1Kry84s4dZFdXTYyALx3AxwX6WnKJvT2BpfU"
+    },
+    {
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "id": "vote-1",
+        "optionIds": [
+          "option-2"
+        ],
+        "targetPollId": "poll-1",
+        "type": "poll_vote"
+      },
+      "rootKey": "ERERERERERERERERERERERERERERERERERERERERERE=",
+      "tag": "F1eLyfIDgimDJKaalVQXhzIWghcUs_932RaTBx-ju6g"
+    },
+    {
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "id": "vote-1",
+        "optionIds": [
+          "option-2"
+        ],
+        "targetPollId": "poll-1",
+        "type": "poll_vote"
+      },
+      "rootKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+      "tag": "dkdC1uWVWSKYOxi6LL9XMArLvxNcVOxKmgnMue_vJ0Q"
+    }
+  ],
+  "invalid": [
+    {
+      "reason": "nested poll option text changed",
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "allowsMultipleVotes": false,
+        "id": "poll-1",
+        "options": [
+          {
+            "id": "option-1",
+            "text": "Yes"
+          },
+          {
+            "id": "option-2",
+            "text": "Yes"
+          }
+        ],
+        "question": "¿Comemos?",
+        "type": "poll"
+      },
+      "rootKey": "ERERERERERERERERERERERERERERERERERERERERERE=",
+      "tag": "DLXy2h9K0zZOjtvpY4yz2RKX0CZs2p8ioMm_Abu-SmI"
+    },
+    {
+      "reason": "superseded v1 tag",
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "allowsMultipleVotes": false,
+        "id": "poll-1",
+        "options": [
+          {
+            "id": "option-1",
+            "text": "Yes"
+          },
+          {
+            "id": "option-2",
+            "text": "No 😀"
+          }
+        ],
+        "question": "¿Comemos?",
+        "type": "poll"
+      },
+      "rootKey": "ERERERERERERERERERERERERERERERERERERERERERE=",
+      "tag": "D4K4dGXScPI7aT_RT4m96bjBfgINDuJtM5K1MPVfpkY"
+    },
+    {
+      "reason": "other root key",
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "allowsMultipleVotes": false,
+        "id": "poll-1",
+        "options": [
+          {
+            "id": "option-1",
+            "text": "Yes"
+          },
+          {
+            "id": "option-2",
+            "text": "No 😀"
+          }
+        ],
+        "question": "¿Comemos?",
+        "type": "poll"
+      },
+      "rootKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+      "tag": "DLXy2h9K0zZOjtvpY4yz2RKX0CZs2p8ioMm_Abu-SmI"
+    },
+    {
+      "reason": "padded tag",
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "allowsMultipleVotes": false,
+        "id": "poll-1",
+        "options": [
+          {
+            "id": "option-1",
+            "text": "Yes"
+          },
+          {
+            "id": "option-2",
+            "text": "No 😀"
+          }
+        ],
+        "question": "¿Comemos?",
+        "type": "poll"
+      },
+      "rootKey": "ERERERERERERERERERERERERERERERERERERERERERE=",
+      "tag": "DLXy2h9K0zZOjtvpY4yz2RKX0CZs2p8ioMm_Abu-SmI="
+    },
+    {
+      "reason": "short tag",
+      "record": {
+        "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+        "conversationId": "conversation-1",
+        "createdAt": 1767225600000,
+        "allowsMultipleVotes": false,
+        "id": "poll-1",
+        "options": [
+          {
+            "id": "option-1",
+            "text": "Yes"
+          },
+          {
+            "id": "option-2",
+            "text": "No 😀"
+          }
+        ],
+        "question": "¿Comemos?",
+        "type": "poll"
+      },
+      "rootKey": "ERERERERERERERERERERERERERERERERERERERERERE=",
+      "tag": "DLXy2h9K0zZOjtvpY4yz2RKX0CZs2p8ioMm_Abu-Sm"
+    }
+  ],
+  "keyOrderIndependent": {
+    "record": {
+      "type": "poll",
+      "question": "¿Comemos?",
+      "options": [
+        {
+          "id": "option-1",
+          "text": "Yes"
+        },
+        {
+          "id": "option-2",
+          "text": "No 😀"
+        }
+      ],
+      "id": "poll-1",
+      "allowsMultipleVotes": false,
+      "createdAt": 1767225600000,
+      "conversationId": "conversation-1",
+      "authorId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w="
+    },
+    "rootKey": "ERERERERERERERERERERERERERERERERERERERERERE=",
+    "tag": "DLXy2h9K0zZOjtvpY4yz2RKX0CZs2p8ioMm_Abu-SmI"
+  }
+}

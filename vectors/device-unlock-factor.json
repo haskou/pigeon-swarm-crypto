@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {
+      "deviceId": "device-1",
+      "identityId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+      "secretHandle": "handle-1",
+      "context": "pigeon-swarm:device-unlock-factor:v1\nMCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=\ndevice-1\nhandle-1",
+      "factorKey": "vsXM09rh6O_2_QQLEhkgJy41PENKUVhfZm10e4KJkJc",
+      "secondFactor": "/SK49RqSsrwA0i99RG28VePA2rK/GknPeMz+5OhxrFM="
+    }
+  ]
+}

@@ -1,4 +1,17 @@
 import {
+  CallMediaFrameCipher,
+  ConversationDraft,
+  DeviceRootRowKeys,
+  DeviceUnlockFactor,
+  HistoryBackupFile,
+  KeyFingerprint,
+  MailboxEnvelope,
+  MailboxKeySchedule,
+  MailboxReadToken,
+  MailboxRecordAuthorship,
+  RecoveryKey,
+  RecoveryKit,
+  SafetyNumber,
   EncryptedPrivateKey,
   EncryptedPayload,
   KeyPair,
@@ -19,6 +32,24 @@ describe('crypto public API', () => {
     expect(EncryptedPrivateKey).toBeDefined();
     expect(EncryptedPayload).toBeDefined();
     expect(Signature).toBeDefined();
+  });
+
+  it('exports the client key schedules', () => {
+    expect([
+      CallMediaFrameCipher,
+      ConversationDraft,
+      DeviceRootRowKeys,
+      DeviceUnlockFactor,
+      HistoryBackupFile,
+      KeyFingerprint,
+      MailboxEnvelope,
+      MailboxKeySchedule,
+      MailboxReadToken,
+      MailboxRecordAuthorship,
+      RecoveryKey,
+      RecoveryKit,
+      SafetyNumber,
+    ]).toSatisfyAll((value: unknown) => typeof value === 'function');
   });
 
   it('signs, verifies, encrypts and decrypts with a generated key pair', async () => {

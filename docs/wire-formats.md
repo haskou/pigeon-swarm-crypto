@@ -23,7 +23,7 @@ standard Base64 unless stated otherwise.
 | --- | --- | --- |
 | Private key | Ed25519 PKCS#8 PEM | Key material and encoding |
 | Public key | Ed25519 SPKI PEM | Key material and encoding |
-| Signature | Base64 Ed25519 signature | Signatures cover supplied bytes; applications own canonicalization |
+| Signature | Base64 Ed25519 signature | Signatures cover supplied bytes; applications own canonicalization. Verification is strict RFC 8032: non-canonical point encodings and small-order public keys are rejected (ZIP-215 is not accepted) |
 | Symmetric payload | `v1.aes-256-gcm.iv.ciphertext.tag` | Authenticates the default header AAD unless custom AAD is supplied |
 | Asymmetric payload | `v2.x25519-hkdf-sha256-aes-256-gcm.ephemeralPublicKey.iv.ciphertext.tag` | Only this envelope is accepted |
 | Protected private key | `v3.scrypt.N16384.r8.p5.salt.iv.tag.ciphertext` | Only this envelope is accepted |

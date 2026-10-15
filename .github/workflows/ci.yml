@@ -75,7 +75,7 @@ jobs:
         run: yarn test:mls-browser
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./tests/coverage/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}

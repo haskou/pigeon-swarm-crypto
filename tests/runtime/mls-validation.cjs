@@ -45,6 +45,7 @@ const {
   validateMlsCredential,
 } = require('../../dist/mls/internal/MlsProtocolPolicy.js');
 const canonicalize = require('canonicalize');
+const strictEd25519Cases = require('./ed25519-strict-cases.cjs');
 
 const text = new TextEncoder();
 const bytes = (value) => text.encode(value);
@@ -62,6 +63,18 @@ const run = async () => {
   assert.equal(typeof InvalidMlsStateError, 'function');
   assert.equal(typeof InvalidPrivateDeliveryError, 'function');
   assert.equal(typeof MlsCodec.encodeGroupContext, 'function');
+  const signatureSuite = await getMlsCiphersuite();
+  for (const strictCase of strictEd25519Cases) {
+    assert.equal(
+      await signatureSuite.signature.verify(
+        Buffer.from(strictCase.publicKey, 'hex'),
+        bytes(strictCase.message),
+        Buffer.from(strictCase.signature, 'hex'),
+      ),
+      strictCase.valid,
+      strictCase.name,
+    );
+  }
   assert.equal('UserRootKey' in require('../../dist/mls/index.cjs'), false);
   const root = UserRootKey.generate();
   const nullRoot = new UserRootKey();

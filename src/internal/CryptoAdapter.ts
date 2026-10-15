@@ -159,6 +159,7 @@ export class CryptoAdapter {
       signature,
       message,
       this.publicKeyToBytes(publicKeyPem),
+      { zip215: false },
     );
   }
 

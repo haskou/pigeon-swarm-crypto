@@ -76,6 +76,62 @@ describe('PublicKey', () => {
     ).toBeTrue();
   });
 
+  describe('strict Ed25519 verification (RFC 8032, no small-order keys)', () => {
+    const pemFromRawKey = (rawKeyHex: string): PublicKey =>
+      new PublicKey(
+        `-----BEGIN PUBLIC KEY-----\n${Buffer.concat([
+          Buffer.from('302a300506032b6570032100', 'hex'),
+          Buffer.from(rawKeyHex, 'hex'),
+        ]).toString('base64')}\n-----END PUBLIC KEY-----\n`,
+      );
+    const signatureFromHex = (hex: string): Signature =>
+      Signature.fromBuffer(Buffer.from(hex, 'hex'));
+    const honestKey =
+      '78899ded7ed71ce8c18552165d02ac87bd63b91191952c4e90798f2430542b7e';
+    const smallOrderKey = `01${'00'.repeat(31)}`;
+    const nonCanonicalIdentity = `ee${'ff'.repeat(30)}7f`;
+    const identitySignature = `01${'00'.repeat(63)}`;
+
+    it('accepts the honest signature of the known-answer key', () => {
+      expect(
+        pemFromRawKey(honestKey).isValidSignature(
+          'message',
+          signatureFromHex(
+            'd05e6ca2a45dab9011f4cb2dbb45c293ab74909103e0680f074a8748ec946a76c9edf57575ac7b6d79d162163e38b1cfab1376df84379ca7e96ee6ee16af6305',
+          ),
+        ),
+      ).toBeTrue();
+    });
+
+    it('rejects a small-order public key that verifies any message', () => {
+      const key = pemFromRawKey(smallOrderKey);
+      const signature = signatureFromHex(identitySignature);
+
+      expect(key.isValidSignature('message', signature)).toBeFalse();
+      expect(key.isValidSignature('anything', signature)).toBeFalse();
+    });
+
+    it('rejects a non-canonical encoding of the identity public key', () => {
+      expect(
+        pemFromRawKey(nonCanonicalIdentity).isValidSignature(
+          'message',
+          signatureFromHex(identitySignature),
+        ),
+      ).toBeFalse();
+    });
+
+    it('rejects a non-canonical R encoding under an honest key', () => {
+      expect(
+        pemFromRawKey(honestKey).isValidSignature(
+          'message',
+          signatureFromHex(
+            `${nonCanonicalIdentity}bb9dc62ee84724b85b0fa54b6ad67c83b0835966a3ca39f2ca6f22f15f6b1b0f`,
+          ),
+        ),
+      ).toBeFalse();
+    });
+  });
+
   it('encrypts versioned payloads with fresh ephemeral keys and IVs', () => {
     const key = new PublicKey(publicPem);
     const first = key.encrypt('same payload');

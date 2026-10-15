@@ -8,12 +8,24 @@ const {
   PrivateDeliveryDescriptor,
   PrivateDeliveryFrame,
 } = require('../../dist/mls/index.cjs');
+const strictEd25519Cases = require('./ed25519-strict-cases.cjs');
 
 (async () => {
   const bundle = await readFile('dist/mls/index.mjs');
   const rootBundle = await build({
     stdin: {
       contents: "export { UserRootKey } from './dist/index.js';",
+      resolveDir: process.cwd(),
+    },
+    bundle: true,
+    format: 'esm',
+    platform: 'browser',
+    write: false,
+  });
+  const suiteBundle = await build({
+    stdin: {
+      contents:
+        "export { getMlsCiphersuite } from './dist/mls/internal/MlsRuntime.js';",
       resolveDir: process.cwd(),
     },
     bundle: true,
@@ -30,6 +42,11 @@ const {
     if (request.url === '/root.mjs') {
       response.setHeader('Content-Type', 'text/javascript');
       response.end(rootBundle.outputFiles[0].text);
+      return;
+    }
+    if (request.url === '/suite.mjs') {
+      response.setHeader('Content-Type', 'text/javascript');
+      response.end(suiteBundle.outputFiles[0].text);
       return;
     }
     response.setHeader('Content-Type', 'text/html');
@@ -153,6 +170,29 @@ const {
       rootKey: browserDelivery.rootKey,
     });
 
+    const strictResults = await page.evaluate(async (cases) => {
+      const { getMlsCiphersuite } = await import('/suite.mjs');
+      const suite = await getMlsCiphersuite();
+      const hex = (value) =>
+        Uint8Array.from(value.match(/../g), (pair) => parseInt(pair, 16));
+      const results = [];
+      for (const strictCase of cases) {
+        results.push(
+          await suite.signature.verify(
+            hex(strictCase.publicKey),
+            new TextEncoder().encode(strictCase.message),
+            hex(strictCase.signature),
+          ),
+        );
+      }
+
+      return results;
+    }, strictEd25519Cases);
+
+    assert.deepEqual(
+      strictResults,
+      strictEd25519Cases.map((strictCase) => strictCase.valid),
+    );
     assert.deepEqual(result, {
       active: true,
       epoch: '2',

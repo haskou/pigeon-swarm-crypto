@@ -32,6 +32,15 @@ export class PublicKey extends Key {
     return new PublicKey(pem.valueOf());
   }
 
+  public static fromRaw(raw: Uint8Array): PublicKey {
+    assert(
+      raw instanceof Uint8Array && CryptoAdapter.isStrictEd25519PublicKey(raw),
+      new InvalidFormatError('[redacted key]'),
+    );
+
+    return new PublicKey(CryptoAdapter.publicKeyToPem(raw));
+  }
+
   constructor(value: string | StringValueObject) {
     super(value?.valueOf());
 
@@ -51,6 +60,17 @@ export class PublicKey extends Key {
       PublicKey.PATTERN.test(value),
       new InvalidFormatError('[redacted key]'),
     );
+  }
+
+  public toRaw(): Uint8Array {
+    const raw = CryptoAdapter.publicKeyToStrictBytes(this.valueOf());
+
+    assert(
+      CryptoAdapter.isStrictEd25519PublicKey(raw),
+      new InvalidFormatError('[redacted key]'),
+    );
+
+    return Uint8Array.from(raw);
   }
 
   public isValidSignature(

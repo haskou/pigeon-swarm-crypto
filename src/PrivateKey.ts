@@ -72,6 +72,15 @@ export class PrivateKey extends Key {
     return new PrivateKey(pem.valueOf());
   }
 
+  public static fromSeed(seed: Uint8Array): PrivateKey {
+    assert(
+      seed instanceof Uint8Array && seed.length === 32,
+      new InvalidFormatError('[redacted key]'),
+    );
+
+    return new PrivateKey(CryptoAdapter.privateKeyToPem(seed));
+  }
+
   public static generate(): PrivateKey {
     return new PrivateKey(CryptoAdapter.randomPrivateKeyPem());
   }

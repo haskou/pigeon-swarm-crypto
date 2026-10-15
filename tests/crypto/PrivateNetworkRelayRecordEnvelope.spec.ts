@@ -84,12 +84,12 @@ describe('PrivateNetworkRelayRecordEnvelope', () => {
       { ...record, multiaddrs: Array(33).fill(multiaddr) },
       { ...record, multiaddrs: [1] },
       { ...record, multiaddrs: [''] },
-      { ...record, multiaddrs: ['a'.repeat(1025)] },
+      { ...record, multiaddrs: ['a'.repeat(2049)] },
       { ...record, multiaddrs: ['\uD800'] },
       { ...record, peerId: 'a'.repeat(129) },
       { ...record, role: 'call-relay' },
       { ...record, version: 2 },
-      { ...record, multiaddrs: Array(9).fill('a'.repeat(1024)) },
+      { ...record, multiaddrs: Array(5).fill('a'.repeat(2048)) },
     ])
       expect(() =>
         Crypto.PrivateNetworkRelayRecordEnvelope.seal(

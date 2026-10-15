@@ -111,7 +111,7 @@ describe('PublicKey', () => {
       expect(key.isValidSignature('anything', signature)).toBeFalse();
     });
 
-    it('rejects a non-canonical public key encoding', () => {
+    it('rejects a non-canonical encoding of the identity public key', () => {
       expect(
         pemFromRawKey(nonCanonicalIdentity).isValidSignature(
           'message',

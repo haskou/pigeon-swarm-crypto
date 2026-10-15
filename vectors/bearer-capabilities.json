@@ -1,0 +1,135 @@
+{
+  "description": "Bearer capabilities: 32 random bytes as unpadded base64url. Servers keep only the commitment, the lowercase hex sha256 of the token text, and verify presented tokens in constant time. Tokens must match ^[A-Za-z0-9_-]{20,128}$ and commitments ^[0-9a-f]{64}$; hash throws InvalidBearerCapabilityError for a malformed token, and verify returns false for any malformed input.",
+  "algorithms": {
+    "hash": "lowercase hex sha256(utf8(token))",
+    "generate": "base64url(32 random bytes), 43 characters"
+  },
+  "hash": {
+    "valid": [
+      {
+        "name": "32-byte token",
+        "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+        "hash": "dc4bf80c77473d130fa0de86ba4018fe98bb214005e6a5891d12ba91446f9e81"
+      },
+      {
+        "name": "shortest token",
+        "token": "AAAAAAAAAAAAAAAAAAAA",
+        "hash": "edfcaac579024f574adbcaa3c13e4fd2b7f1797826afe679f2144af2cb5c062d"
+      },
+      {
+        "name": "longest token",
+        "token": "Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-Az09_-zz",
+        "hash": "66c68d75b1a836b9b26accb989c9372bd7567a99c193ace5eb4c7c2303ee377e"
+      },
+      {
+        "name": "mailbox token",
+        "token": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE",
+        "hash": "56d5fa7333f6d747db42c239407e5da4c32f4c79f35d092b134fd35a402d9c5c"
+      }
+    ],
+    "invalid": [
+      {
+        "name": "19 characters",
+        "token": "AAAAAAAAAAAAAAAAAAA"
+      },
+      {
+        "name": "129 characters",
+        "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      {
+        "name": "standard base64 characters",
+        "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHB+/"
+      },
+      {
+        "name": "padding",
+        "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc="
+      },
+      {
+        "name": "surrounding space",
+        "token": " BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc"
+      },
+      {
+        "name": "non-ASCII",
+        "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwé"
+      },
+      {
+        "name": "empty",
+        "token": ""
+      }
+    ]
+  },
+  "verify": [
+    {
+      "name": "matching token",
+      "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "hash": "dc4bf80c77473d130fa0de86ba4018fe98bb214005e6a5891d12ba91446f9e81",
+      "expected": true
+    },
+    {
+      "name": "other token",
+      "token": "CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg",
+      "hash": "dc4bf80c77473d130fa0de86ba4018fe98bb214005e6a5891d12ba91446f9e81",
+      "expected": false
+    },
+    {
+      "name": "uppercase commitment",
+      "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "hash": "DC4BF80C77473D130FA0DE86BA4018FE98BB214005E6A5891D12BA91446F9E81",
+      "expected": false
+    },
+    {
+      "name": "short commitment",
+      "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "hash": "dc4bf80c77473d130fa0de86ba4018fe98bb214005e6a5891d12ba91446f9e",
+      "expected": false
+    },
+    {
+      "name": "non-hex commitment",
+      "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "hash": "gc4bf80c77473d130fa0de86ba4018fe98bb214005e6a5891d12ba91446f9e81",
+      "expected": false
+    },
+    {
+      "name": "base64url commitment",
+      "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "hash": "3Ev4DHdHPRMPoN6GukAY_pi7IUAF5qWJHRK6kURvnoE",
+      "expected": false
+    },
+    {
+      "name": "token with 19 characters",
+      "token": "AAAAAAAAAAAAAAAAAAA",
+      "hash": "234b7f9389f9b521f407805760775940d79a48188338d02a1fe654e826a83f69",
+      "expected": false
+    },
+    {
+      "name": "token with 129 characters",
+      "token": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "hash": "e7118c3a89bf814ded2ab232303565239253f59fdea93e27d0206e175492e3a7",
+      "expected": false
+    },
+    {
+      "name": "token with standard base64 characters",
+      "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHB+/",
+      "hash": "6e8586d2e1ada5d9708dc4c29337d09eda669ab0e7dec24af23c5caf2a68657a",
+      "expected": false
+    },
+    {
+      "name": "token with padding",
+      "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=",
+      "hash": "ebbad97f478755d90c8f34bec04444dc8b0025d5fc09ed3523aa5d17e6059d86",
+      "expected": false
+    },
+    {
+      "name": "token with surrounding space",
+      "token": " BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "hash": "fc7cab0ebe5069779c8f03dd7ef3251b2390b45c8e3bc9e886dd4405699856ea",
+      "expected": false
+    },
+    {
+      "name": "token with non-ASCII",
+      "token": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwé",
+      "hash": "ab6fbc9d8979b0043f14c49aecad952c54cc615bfab871fb4cfea5d70066f79a",
+      "expected": false
+    }
+  ]
+}

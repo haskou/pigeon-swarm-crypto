@@ -15,7 +15,7 @@ read token. Every value below is derived on the client from a 256-bit
 | --- | --- | --- |
 | `envelopeKey` | `pigeon/mailbox/envelope/v1` | bytes |
 | `mailboxId` | `pigeon/mailbox/id/v1` | unpadded base64url |
-| `postKey` | `pigeon/mailbox/post/v1` | unpadded base64url |
+| `postToken` | `pigeon/mailbox/post/v1` | unpadded base64url |
 
 `recipient` is a non-empty well-formed string of at most 4096 UTF-8 bytes.
 `epoch` is an integer in `[0, 2^32 - 1]`. `contactPresence(conversationKey,

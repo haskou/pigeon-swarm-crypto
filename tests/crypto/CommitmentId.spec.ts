@@ -14,59 +14,74 @@ interface Section {
   valid: ValidCase[];
 }
 
-type Derive = (...args: unknown[]) => string;
+type Owner = typeof CommitmentId | typeof StateDigest;
 
-const sections: Record<string, [Section, Derive]> = {
-  call: [vectors.call, CommitmentId.call as Derive],
-  community: [vectors.community, CommitmentId.community as Derive],
+const sections: Record<string, [Section, Owner, string]> = {
+  call: [vectors.call, CommitmentId, 'call'],
+  community: [vectors.community, CommitmentId, 'community'],
   communityChannel: [
     vectors.communityChannel,
-    CommitmentId.communityChannel as Derive,
+    CommitmentId,
+    'communityChannel',
   ],
-  communityRole: [vectors.communityRole, CommitmentId.communityRole as Derive],
+  communityRole: [vectors.communityRole, CommitmentId, 'communityRole'],
   communityRequest: [
     vectors.communityRequest,
-    CommitmentId.communityRequest as Derive,
+    CommitmentId,
+    'communityRequest',
   ],
   communityModerationLog: [
     vectors.communityModerationLog,
-    CommitmentId.communityModerationLog as Derive,
+    CommitmentId,
+    'communityModerationLog',
   ],
   communityInviteToken: [
     vectors.communityInviteToken,
-    CommitmentId.communityInviteToken as Derive,
+    CommitmentId,
+    'communityInviteToken',
   ],
-  mlsRecord: [vectors.mlsRecord, CommitmentId.mlsRecord as Derive],
+  mlsRecord: [vectors.mlsRecord, CommitmentId, 'mlsRecord'],
   privateBlobOwner: [
     vectors.privateBlobOwner,
-    CommitmentId.privateBlobOwner as Derive,
+    CommitmentId,
+    'privateBlobOwner',
   ],
-  stateDigest: [vectors.stateDigest, StateDigest.of as Derive],
+  stateDigest: [vectors.stateDigest, StateDigest, 'of'],
   communityFrontiers: [
     vectors.communityFrontiers as Section,
-    StateDigest.communityFrontiers as Derive,
+    StateDigest,
+    'communityFrontiers',
   ],
 };
 
-const run = (derive: Derive, args: unknown[]): string =>
-  Reflect.apply(derive, undefined, args) as string;
+const run = (owner: Owner, method: string, args: unknown[]): string =>
+  Reflect.apply(
+    Reflect.get(owner, method) as (...values: unknown[]) => string,
+    owner,
+    args,
+  );
 
 describe('CommitmentId and StateDigest shipped vectors', () => {
-  describe.each(Object.entries(sections))('%s', (_, [section, derive]) => {
-    it.each(section.valid.map((item) => [item.name, item] as const))(
-      'derives %s',
-      (_name, item) => {
-        expect(run(derive, item.args)).toBe(item.id);
-      },
-    );
+  describe.each(Object.entries(sections))(
+    '%s',
+    (_, [section, owner, method]) => {
+      it.each(section.valid.map((item) => [item.name, item] as const))(
+        'derives %s',
+        (_name, item) => {
+          expect(run(owner, method, item.args)).toBe(item.id);
+        },
+      );
 
-    it.each(section.invalid.map((item) => [item.name, item.args] as const))(
-      'rejects %s',
-      (_name, args) => {
-        expect(() => run(derive, args)).toThrow(InvalidCommitmentError);
-      },
-    );
-  });
+      it.each(section.invalid.map((item) => [item.name, item.args] as const))(
+        'rejects %s',
+        (_name, args) => {
+          expect(() => run(owner, method, args)).toThrow(
+            InvalidCommitmentError,
+          );
+        },
+      );
+    },
+  );
 
   it('hashes exactly the documented preimage', () => {
     const sha = (text: string): Buffer =>
@@ -97,6 +112,23 @@ describe('CommitmentId and StateDigest shipped vectors', () => {
         CommitmentId.mlsRecord(JSON.parse(item.preimage) as never),
       ).not.toBe(item.id);
     }
+  });
+
+  it('rejects text with lone surrogates', () => {
+    const salt = vectors.privateBlobOwner.valid[0].args[0];
+    const derivations = [
+      (): string => CommitmentId.call('\ud800', 'vector-call-nonce-conv-0001'),
+      (): string => CommitmentId.community('network', 'owner', 'nonce-\udc00'),
+      (): string => CommitmentId.communityRole('community', '\ud83d', 0),
+      (): string => CommitmentId.privateBlobOwner(salt, '\ud800'),
+      (): string =>
+        StateDigest.communityFrontiers([
+          { communityId: 'community', frontier: ['\udfff'] },
+        ]),
+    ];
+
+    for (const derive of derivations)
+      expect(derive).toThrow(InvalidCommitmentError);
   });
 
   it('digests bytes', () => {

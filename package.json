@@ -38,6 +38,8 @@
     "docs/identity-verification.md",
     "docs/call-media-frames.md",
     "docs/proof-of-work.md",
+    "docs/bearer-capabilities.md",
+    "docs/commitment-ids.md",
     "vectors"
   ],
   "sideEffects": false,
@@ -86,7 +88,8 @@
     "test:mls-standard-vectors": "node tests/runtime/mls-standard-vectors.mjs",
     "test:private-delivery": "node tests/runtime/private-delivery.cjs",
     "test:signed-preimages": "node tests/runtime/signed-preimages.cjs",
-    "test:client-key-schedules": "node tests/runtime/client-key-schedules.cjs"
+    "test:client-key-schedules": "node tests/runtime/client-key-schedules.cjs",
+    "test:commitments": "node tests/runtime/commitments.cjs"
   },
   "dependencies": {
     "@noble/ciphers": "2.4.0",

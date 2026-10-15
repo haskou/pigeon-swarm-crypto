@@ -90,13 +90,6 @@
         ]
       },
       {
-        "name": "creator with a lone surrogate",
-        "args": [
-          "\ud800",
-          "vector-call-nonce-conv-0001"
-        ]
-      },
-      {
         "name": "numeric creator",
         "args": [
           1,
@@ -161,14 +154,6 @@
           "550e8400-e29b-41d4-a716-446655440000",
           "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
           ""
-        ]
-      },
-      {
-        "name": "nonce with a lone surrogate",
-        "args": [
-          "550e8400-e29b-41d4-a716-446655440000",
-          "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          "nonce-\udc00"
         ]
       },
       {
@@ -284,14 +269,6 @@
         "args": [
           "",
           "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          1767225300000
-        ]
-      },
-      {
-        "name": "creator with a lone surrogate",
-        "args": [
-          "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
-          "\ud83d",
           1767225300000
         ]
       },
@@ -838,13 +815,6 @@
         "args": [
           "0707070707070707070707070707070707070707070707070707070707070707",
           ""
-        ]
-      },
-      {
-        "name": "identity with a lone surrogate",
-        "args": [
-          "0707070707070707070707070707070707070707070707070707070707070707",
-          "\ud800"
         ]
       }
     ]

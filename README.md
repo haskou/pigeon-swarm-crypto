@@ -150,3 +150,11 @@ It does not change authorization of existing replicated data.
 
 Subsequent [private control signatures](docs/private-control-signatures.md) must
 satisfy the previous policy's quorum and sequencer before MLS processing.
+
+## Capabilities and commitment ids
+
+[Bearer capabilities](docs/bearer-capabilities.md) generate access tokens and
+verify them against stored SHA-256 commitments in constant time.
+[Commitment ids](docs/commitment-ids.md) derive the call, community, MLS record
+and private blob owner ids and the state digests shared by nodes and clients.
+Both ship JSON vectors under `@haskou/pigeon-swarm-crypto/vectors/`.

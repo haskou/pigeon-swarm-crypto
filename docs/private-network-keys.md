@@ -55,6 +55,10 @@ Both envelopes are the exact JSON text
 canonical unpadded base64url. Any other key order, whitespace, extra property,
 version or encoding is rejected.
 
+Every pubsub topic of a network shares one AES-256-GCM key, and every relay record
+of a network shares another. With random 96-bit nonces, a key must seal fewer than
+2^32 messages over its lifetime. Rotate the network key before that.
+
 The pubsub additional authenticated data is the UTF-8 bytes of
 `pigeon.private-network.pubsub.v2`, one zero byte, and
 `JSON.stringify({ networkId, topic })`. A message therefore cannot be replayed into

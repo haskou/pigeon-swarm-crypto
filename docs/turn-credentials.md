@@ -18,8 +18,9 @@ bytes are fixed by coturn and cannot be versioned.
 
 `peerSubject` gives a relay peer an opaque TURN user name: the first 32 lowercase
 hex characters of HMAC-SHA256 keyed by the shared secret over
-`pigeon.turn.subject.v2`, one zero byte and the peer id. It does not reveal the peer
-id to the TURN server's logs.
+`pigeon.turn.subject.v2`, one zero byte and the peer id. It keeps the peer id out
+of TURN user names. It does not hide the peer from the TURN operator: anyone who
+holds the shared secret can recompute the subject of every public peer id.
 
 ## Limits
 

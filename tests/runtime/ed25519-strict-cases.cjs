@@ -40,4 +40,18 @@ module.exports = [
     signature: `${nonCanonicalIdentity}bb9dc62ee84724b85b0fa54b6ad67c83b0835966a3ca39f2ca6f22f15f6b1b0f`,
     valid: false,
   },
+  {
+    name: 'truncated signature under the honest key',
+    publicKey: honestKey,
+    message: 'message',
+    signature: identitySignature.slice(2),
+    valid: false,
+  },
+  {
+    name: 'truncated public key',
+    publicKey: honestKey.slice(2),
+    message: 'message',
+    signature: identitySignature,
+    valid: false,
+  },
 ];

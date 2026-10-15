@@ -1,0 +1,584 @@
+{
+  "description": "Pigeon proof of work. preimage = lp(domain) || challenge fields || lp(nonce), where lp(x) = uint32be(byte length) || ASCII bytes. Identity admission fields: lp(identityId) || uint32be(network count) || lp(networkId) for each network sorted by bytes. Mailbox creation fields: lp(mailboxId) || lp(postTokenHash) || lp(readTokenHash). The proof is valid when SHA-256(preimage) starts with at least difficultyBits zero bits. Fields are 1 to 256 visible ASCII characters (0x21-0x7e); identity admission takes 1 to 64 distinct networks. Nonces are canonical decimal strings of 1 to 16 digits. difficultyBits is an integer from 1 to 32. Minted nonces are the first valid counter from 0.",
+  "limits": {
+    "minDifficultyBits": 1,
+    "maxDifficultyBits": 32,
+    "maxNonceLength": 16,
+    "maxFieldLength": 256,
+    "maxNetworkIds": 64
+  },
+  "invalidDifficulties": [0, 33, -1, 16.5, "16", null],
+  "identityAdmission": {
+    "domain": "pigeon-identity-admission:v2",
+    "accepted": [
+      {
+        "name": "first nonce at the protocol floor",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": "44962",
+        "difficultyBits": 16,
+        "minted": true,
+        "preimageHex": "0000001c706967656f6e2d6964656e746974792d61646d697373696f6e3a76320000003c4d436f77425159444b32567741794541412f77675735477a654a6d6e7647427432795a4373454f634d72365138664d6d74776b34616e346f5565343d000000020000002435353065383430302d653239622d343164342d613731362d3434363635353434303030310000002435353065383430302d653239622d343164342d613731362d343436363535343430303032000000053434393632",
+        "digestHex": "00000df3ba4e0270131545bcdb90a0011b244207adff602cc590ff85c0cce492",
+        "leadingZeroBits": 20
+      },
+      {
+        "name": "network order does not matter",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440001",
+            "550e8400-e29b-41d4-a716-446655440002"
+          ]
+        },
+        "nonce": "44962",
+        "difficultyBits": 16,
+        "preimageHex": "0000001c706967656f6e2d6964656e746974792d61646d697373696f6e3a76320000003c4d436f77425159444b32567741794541412f77675735477a654a6d6e7647427432795a4373454f634d72365138664d6d74776b34616e346f5565343d000000020000002435353065383430302d653239622d343164342d613731362d3434363635353434303030310000002435353065383430302d653239622d343164342d613731362d343436363535343430303032000000053434393632",
+        "digestHex": "00000df3ba4e0270131545bcdb90a0011b244207adff602cc590ff85c0cce492",
+        "leadingZeroBits": 20
+      },
+      {
+        "name": "single network at 8 bits",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": ["550e8400-e29b-41d4-a716-446655440001"]
+        },
+        "nonce": "48",
+        "difficultyBits": 8,
+        "minted": true,
+        "preimageHex": "0000001c706967656f6e2d6964656e746974792d61646d697373696f6e3a76320000003c4d436f77425159444b32567741794541412f77675735477a654a6d6e7647427432795a4373454f634d72365138664d6d74776b34616e346f5565343d000000010000002435353065383430302d653239622d343164342d613731362d343436363535343430303031000000023438",
+        "digestHex": "002abbfa31d496a32f0df29f27cd04eeca6d682f4653244077f90bafee561f0b",
+        "leadingZeroBits": 10
+      }
+    ],
+    "rejected": [
+      {
+        "name": "insufficient leading zero bits",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": "44962",
+        "difficultyBits": 21,
+        "preimageHex": "0000001c706967656f6e2d6964656e746974792d61646d697373696f6e3a76320000003c4d436f77425159444b32567741794541412f77675735477a654a6d6e7647427432795a4373454f634d72365138664d6d74776b34616e346f5565343d000000020000002435353065383430302d653239622d343164342d613731362d3434363635353434303030310000002435353065383430302d653239622d343164342d613731362d343436363535343430303032000000053434393632",
+        "digestHex": "00000df3ba4e0270131545bcdb90a0011b244207adff602cc590ff85c0cce492",
+        "leadingZeroBits": 20
+      },
+      {
+        "name": "proof reused for another identity",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAIPGUw0ob1Oa1Yp9GtcpimiT7Hhvi6t/Y6HCCPGt8v5c=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": "44962",
+        "difficultyBits": 16,
+        "preimageHex": "0000001c706967656f6e2d6964656e746974792d61646d697373696f6e3a76320000003c4d436f77425159444b325677417945414950475577306f62314f613159703947746370696d6954374868766936742f5936484343504774387635633d000000020000002435353065383430302d653239622d343164342d613731362d3434363635353434303030310000002435353065383430302d653239622d343164342d613731362d343436363535343430303032000000053434393632",
+        "digestHex": "e5ae5475aa138cd02152d11c674e759f7fb050d02d2565e5a8c5763af2c788e2",
+        "leadingZeroBits": 0
+      },
+      {
+        "name": "proof reused for another network set",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": ["550e8400-e29b-41d4-a716-446655440002"]
+        },
+        "nonce": "44962",
+        "difficultyBits": 16,
+        "preimageHex": "0000001c706967656f6e2d6964656e746974792d61646d697373696f6e3a76320000003c4d436f77425159444b32567741794541412f77675735477a654a6d6e7647427432795a4373454f634d72365138664d6d74776b34616e346f5565343d000000010000002435353065383430302d653239622d343164342d613731362d343436363535343430303032000000053434393632",
+        "digestHex": "53b6c79ef3ee29c4fd4dba68a05e119ec52afe55ef5808c9753926cf6ef1816e",
+        "leadingZeroBits": 1
+      },
+      {
+        "name": "empty nonce",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": "",
+        "difficultyBits": 16
+      },
+      {
+        "name": "nonce longer than 16 digits",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": "10000000000000000",
+        "difficultyBits": 16
+      },
+      {
+        "name": "nonce with a leading zero",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": "044962",
+        "difficultyBits": 16
+      },
+      {
+        "name": "nonce with a sign",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": "+44962",
+        "difficultyBits": 16
+      },
+      {
+        "name": "nonce with whitespace",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": " 44962",
+        "difficultyBits": 16
+      },
+      {
+        "name": "hexadecimal nonce",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": "0x1f",
+        "difficultyBits": 16
+      },
+      {
+        "name": "non-decimal digits",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": "١٢٣",
+        "difficultyBits": 16
+      },
+      {
+        "name": "numeric nonce",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": 44962,
+        "difficultyBits": 16
+      },
+      {
+        "name": "null nonce",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440002",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        },
+        "nonce": null,
+        "difficultyBits": 16
+      }
+    ],
+    "invalidChallenges": [
+      {
+        "name": "empty identity id",
+        "challenge": {
+          "identityId": "",
+          "networkIds": ["550e8400-e29b-41d4-a716-446655440001"]
+        }
+      },
+      {
+        "name": "identity id with a space",
+        "challenge": {
+          "identityId": "MCow BQ",
+          "networkIds": ["550e8400-e29b-41d4-a716-446655440001"]
+        }
+      },
+      {
+        "name": "identity id with a non-ASCII character",
+        "challenge": {
+          "identityId": "MCowé",
+          "networkIds": ["550e8400-e29b-41d4-a716-446655440001"]
+        }
+      },
+      {
+        "name": "identity id longer than 256 characters",
+        "challenge": {
+          "identityId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "networkIds": ["550e8400-e29b-41d4-a716-446655440001"]
+        }
+      },
+      {
+        "name": "non-string identity id",
+        "challenge": {
+          "identityId": 7,
+          "networkIds": ["550e8400-e29b-41d4-a716-446655440001"]
+        }
+      },
+      {
+        "name": "no networks",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": []
+        }
+      },
+      {
+        "name": "duplicate network",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "550e8400-e29b-41d4-a716-446655440001",
+            "550e8400-e29b-41d4-a716-446655440001"
+          ]
+        }
+      },
+      {
+        "name": "more than 64 networks",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [
+            "network-0",
+            "network-1",
+            "network-2",
+            "network-3",
+            "network-4",
+            "network-5",
+            "network-6",
+            "network-7",
+            "network-8",
+            "network-9",
+            "network-10",
+            "network-11",
+            "network-12",
+            "network-13",
+            "network-14",
+            "network-15",
+            "network-16",
+            "network-17",
+            "network-18",
+            "network-19",
+            "network-20",
+            "network-21",
+            "network-22",
+            "network-23",
+            "network-24",
+            "network-25",
+            "network-26",
+            "network-27",
+            "network-28",
+            "network-29",
+            "network-30",
+            "network-31",
+            "network-32",
+            "network-33",
+            "network-34",
+            "network-35",
+            "network-36",
+            "network-37",
+            "network-38",
+            "network-39",
+            "network-40",
+            "network-41",
+            "network-42",
+            "network-43",
+            "network-44",
+            "network-45",
+            "network-46",
+            "network-47",
+            "network-48",
+            "network-49",
+            "network-50",
+            "network-51",
+            "network-52",
+            "network-53",
+            "network-54",
+            "network-55",
+            "network-56",
+            "network-57",
+            "network-58",
+            "network-59",
+            "network-60",
+            "network-61",
+            "network-62",
+            "network-63",
+            "network-64"
+          ]
+        }
+      },
+      {
+        "name": "empty network id",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": [""]
+        }
+      },
+      {
+        "name": "network id with a control character",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": ["net\n1"]
+        }
+      },
+      {
+        "name": "non-array networks",
+        "challenge": {
+          "identityId": "MCowBQYDK2VwAyEAA/wgW5GzeJmnvGBt2yZCsEOcMr6Q8fMmtwk4an4oUe4=",
+          "networkIds": "550e8400-e29b-41d4-a716-446655440001"
+        }
+      }
+    ]
+  },
+  "mailboxCreation": {
+    "domain": "pigeon-mailbox-creation:v2",
+    "accepted": [
+      {
+        "name": "first nonce at 8 bits",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "82",
+        "difficultyBits": 8,
+        "minted": true,
+        "preimageHex": "0000001a706967656f6e2d6d61696c626f782d6372656174696f6e3a76320000002b5f7130526a734a53336b536f33364c6b44313975694f63706a6e62637a3971335574626d6e33594c71696300000040393162323335366337613766393664393164313461646236386466313334386362363834376262313134333332356632396137353666623432353964333462340000004030396533333132343139656536393735666336383763643739326163646662303531336535306337653333306234323235626539633935303864633839636138000000023832",
+        "digestHex": "00fdd10a7af34ead240f461c8131d324b5db886c58c82837177f833b113faf15",
+        "leadingZeroBits": 8
+      },
+      {
+        "name": "first nonce at 16 bits",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "27487",
+        "difficultyBits": 16,
+        "minted": true,
+        "preimageHex": "0000001a706967656f6e2d6d61696c626f782d6372656174696f6e3a76320000002b5f7130526a734a53336b536f33364c6b44313975694f63706a6e62637a3971335574626d6e33594c71696300000040393162323335366337613766393664393164313461646236386466313334386362363834376262313134333332356632396137353666623432353964333462340000004030396533333132343139656536393735666336383763643739326163646662303531336535306337653333306234323235626539633935303864633839636138000000053237343837",
+        "digestHex": "0000aaf6b00f2d2985c251b3da0846d7cf8699df142f4ed322fc3c66defcf809",
+        "leadingZeroBits": 16
+      },
+      {
+        "name": "field containing the former delimiter",
+        "challenge": {
+          "mailboxId": "box:a",
+          "postTokenHash": "b",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "1359",
+        "difficultyBits": 8,
+        "preimageHex": "0000001a706967656f6e2d6d61696c626f782d6372656174696f6e3a763200000005626f783a61000000016200000040303965333331323431396565363937356663363837636437393261636466623035313365353063376533333062343232356265396339353038646338396361380000000431333539",
+        "digestHex": "001fbd4098e2fb09f68fffe0301ed8af98e1a66c76861ca13f5b89e53966326f",
+        "leadingZeroBits": 11
+      }
+    ],
+    "rejected": [
+      {
+        "name": "insufficient leading zero bits",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "27487",
+        "difficultyBits": 17,
+        "preimageHex": "0000001a706967656f6e2d6d61696c626f782d6372656174696f6e3a76320000002b5f7130526a734a53336b536f33364c6b44313975694f63706a6e62637a3971335574626d6e33594c71696300000040393162323335366337613766393664393164313461646236386466313334386362363834376262313134333332356632396137353666623432353964333462340000004030396533333132343139656536393735666336383763643739326163646662303531336535306337653333306234323235626539633935303864633839636138000000053237343837",
+        "digestHex": "0000aaf6b00f2d2985c251b3da0846d7cf8699df142f4ed322fc3c66defcf809",
+        "leadingZeroBits": 16
+      },
+      {
+        "name": "post and read hashes swapped",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8",
+          "readTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4"
+        },
+        "nonce": "27487",
+        "difficultyBits": 16,
+        "preimageHex": "0000001a706967656f6e2d6d61696c626f782d6372656174696f6e3a76320000002b5f7130526a734a53336b536f33364c6b44313975694f63706a6e62637a3971335574626d6e33594c71696300000040303965333331323431396565363937356663363837636437393261636466623035313365353063376533333062343232356265396339353038646338396361380000004039316232333536633761376639366439316431346164623638646631333438636236383437626231313433333235663239613735366662343235396433346234000000053237343837",
+        "digestHex": "f67444a6657451c3cc6f28332bc523930493c35595f6d8602c26da8125357387",
+        "leadingZeroBits": 0
+      },
+      {
+        "name": "proof replayed for another mailbox",
+        "challenge": {
+          "mailboxId": "3tIaFC-unXnjTcEtAuEUqpHHU9VWb-YtegIUe4d4UuA",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "27487",
+        "difficultyBits": 16,
+        "preimageHex": "0000001a706967656f6e2d6d61696c626f782d6372656174696f6e3a76320000002b3374496146432d756e586e6a54634574417545557170484855395657622d5974656749556534643455754100000040393162323335366337613766393664393164313461646236386466313334386362363834376262313134333332356632396137353666623432353964333462340000004030396533333132343139656536393735666336383763643739326163646662303531336535306337653333306234323235626539633935303864633839636138000000053237343837",
+        "digestHex": "dcad4faa4d1d7435155b2b33316debdd19a45eb6bc1fde473edc689ed15ca8f6",
+        "leadingZeroBits": 0
+      },
+      {
+        "name": "delimiter moved across a field boundary",
+        "challenge": {
+          "mailboxId": "box",
+          "postTokenHash": "a:b",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "1359",
+        "difficultyBits": 8,
+        "preimageHex": "0000001a706967656f6e2d6d61696c626f782d6372656174696f6e3a763200000003626f7800000003613a6200000040303965333331323431396565363937356663363837636437393261636466623035313365353063376533333062343232356265396339353038646338396361380000000431333539",
+        "digestHex": "9c7ef8d84810b6bc82ff906d2d6c369c69c0dcab0e8e1f8c09fc518e8cfc5803",
+        "leadingZeroBits": 0
+      },
+      {
+        "name": "empty nonce",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "",
+        "difficultyBits": 8
+      },
+      {
+        "name": "nonce longer than 16 digits",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "10000000000000000",
+        "difficultyBits": 8
+      },
+      {
+        "name": "nonce with a leading zero",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "044962",
+        "difficultyBits": 8
+      },
+      {
+        "name": "nonce with a sign",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "+44962",
+        "difficultyBits": 8
+      },
+      {
+        "name": "nonce with whitespace",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": " 44962",
+        "difficultyBits": 8
+      },
+      {
+        "name": "hexadecimal nonce",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "0x1f",
+        "difficultyBits": 8
+      },
+      {
+        "name": "non-decimal digits",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": "١٢٣",
+        "difficultyBits": 8
+      },
+      {
+        "name": "numeric nonce",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": 44962,
+        "difficultyBits": 8
+      },
+      {
+        "name": "null nonce",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        },
+        "nonce": null,
+        "difficultyBits": 8
+      }
+    ],
+    "invalidChallenges": [
+      {
+        "name": "empty mailbox id",
+        "challenge": {
+          "mailboxId": "",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        }
+      },
+      {
+        "name": "post token hash with a space",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "a b",
+          "readTokenHash": "09e3312419ee6975fc687cd792acdfb0513e50c7e330b4225be9c9508dc89ca8"
+        }
+      },
+      {
+        "name": "read token hash longer than 256 characters",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        }
+      },
+      {
+        "name": "non-string read token hash",
+        "challenge": {
+          "mailboxId": "_q0RjsJS3kSo36LkD19uiOcpjnbcz9q3Utbmn3YLqic",
+          "postTokenHash": "91b2356c7a7f96d91d14adb68df1348cb6847bb1143325f29a756fb4259d34b4",
+          "readTokenHash": null
+        }
+      }
+    ]
+  }
+}

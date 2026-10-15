@@ -1,0 +1,83 @@
+{
+  "description": "Fixed vectors for the private freshness challenge request JSON a node sends before accepting a private batch. Regenerate only through a reviewed protocol change.",
+  "algorithms": {
+    "requestJson": "RFC 8785 canonical JSON of {batchCommitment, expectedHeadHash, expectedRevision, nonce, scopeId, version:1}. Every 32-byte value is unpadded base64url (43 characters); expectedRevision is a non-negative safe integer."
+  },
+  "cases": [
+    {
+      "name": "first revision",
+      "input": {
+        "batchCommitment": "BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ",
+        "expectedHeadHash": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM",
+        "expectedRevision": 0,
+        "nonce": "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI",
+        "scopeId": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE"
+      },
+      "requestJson": "{\"batchCommitment\":\"BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ\",\"expectedHeadHash\":\"AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM\",\"expectedRevision\":0,\"nonce\":\"AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI\",\"scopeId\":\"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE\",\"version\":1}"
+    },
+    {
+      "name": "later revision",
+      "input": {
+        "batchCommitment": "S7JO_JZBr8Xe0cp36rtuL88GLSESzNYb2L1qzYkYC64",
+        "expectedHeadHash": "ny5tM6NxfugmNTpAS6RhjRrutoea15Nrzo7V9GgUkk0",
+        "expectedRevision": 42,
+        "nonce": "eDd7UldXtJRCf4kBT5fXmSjzk40U61HiD7XeyYNOswQ",
+        "scopeId": "XxYckUmILg4QEkvF3VwR8Pvo7EUu3VK87HawHpJSyzM"
+      },
+      "requestJson": "{\"batchCommitment\":\"S7JO_JZBr8Xe0cp36rtuL88GLSESzNYb2L1qzYkYC64\",\"expectedHeadHash\":\"ny5tM6NxfugmNTpAS6RhjRrutoea15Nrzo7V9GgUkk0\",\"expectedRevision\":42,\"nonce\":\"eDd7UldXtJRCf4kBT5fXmSjzk40U61HiD7XeyYNOswQ\",\"scopeId\":\"XxYckUmILg4QEkvF3VwR8Pvo7EUu3VK87HawHpJSyzM\",\"version\":1}"
+    }
+  ],
+  "rejected": [
+    {
+      "name": "nonce shorter than 32 bytes",
+      "input": {
+        "batchCommitment": "BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ",
+        "expectedHeadHash": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM",
+        "expectedRevision": 0,
+        "nonce": "AgICAgICAgICAgICAgICAg",
+        "scopeId": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE"
+      }
+    },
+    {
+      "name": "padded base64url scope",
+      "input": {
+        "batchCommitment": "BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ",
+        "expectedHeadHash": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM",
+        "expectedRevision": 0,
+        "nonce": "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI",
+        "scopeId": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE="
+      }
+    },
+    {
+      "name": "negative revision",
+      "input": {
+        "batchCommitment": "BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ",
+        "expectedHeadHash": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM",
+        "expectedRevision": -1,
+        "nonce": "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI",
+        "scopeId": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE"
+      }
+    },
+    {
+      "name": "fractional revision",
+      "input": {
+        "batchCommitment": "BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ",
+        "expectedHeadHash": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM",
+        "expectedRevision": 1.5,
+        "nonce": "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI",
+        "scopeId": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE"
+      }
+    },
+    {
+      "name": "unknown member",
+      "input": {
+        "batchCommitment": "BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ",
+        "expectedHeadHash": "AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM",
+        "expectedRevision": 0,
+        "nonce": "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI",
+        "scopeId": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE",
+        "extra": "x"
+      }
+    }
+  ]
+}

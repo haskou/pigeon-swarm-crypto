@@ -13,6 +13,28 @@ type MailboxCreationChallenge = {
   postTokenHash: string;
   readTokenHash: string;
 };
+type ProofOfWorkVector = {
+  challenge: unknown;
+  difficultyBits: number;
+  digestHex?: string;
+  leadingZeroBits?: number;
+  minted?: boolean;
+  name: string;
+  nonce: unknown;
+  preimageHex?: string;
+};
+type AcceptedProofOfWorkVector = ProofOfWorkVector & {
+  digestHex: string;
+  leadingZeroBits: number;
+  nonce: string;
+  preimageHex: string;
+};
+type ProofOfWorkFormatVectors = {
+  accepted: AcceptedProofOfWorkVector[];
+  domain: string;
+  invalidChallenges: { challenge: unknown; name: string }[];
+  rejected: ProofOfWorkVector[];
+};
 
 const { InvalidProofOfWorkError, ProofOfWork } = Crypto;
 
@@ -66,7 +88,7 @@ describe('ProofOfWork', () => {
   const formats = [
     {
       name: 'identity admission',
-      vectors: vectors.identityAdmission,
+      vectors: vectors.identityAdmission as ProofOfWorkFormatVectors,
       challenge: (value: unknown) =>
         identityAdmission(value as IdentityAdmissionChallenge),
       prefix: (value: unknown) =>
@@ -74,7 +96,7 @@ describe('ProofOfWork', () => {
     },
     {
       name: 'mailbox creation',
-      vectors: vectors.mailboxCreation,
+      vectors: vectors.mailboxCreation as ProofOfWorkFormatVectors,
       challenge: (value: unknown) =>
         mailboxCreation(value as MailboxCreationChallenge),
       prefix: (value: unknown) =>
@@ -130,7 +152,7 @@ describe('ProofOfWork', () => {
       },
     );
 
-    it.each(format.accepted.filter((vector) => 'minted' in vector))(
+    it.each(format.accepted.filter((vector) => vector.minted === true))(
       'mints $name synchronously and asynchronously',
       async (vector) => {
         const proof = challenge(vector.challenge);
@@ -146,20 +168,20 @@ describe('ProofOfWork', () => {
       const proof = challenge(vector.challenge);
 
       expect(proof.verify(vector.nonce, vector.difficultyBits)).toBe(false);
+    });
 
-      if ('preimageHex' in vector) {
-        const preimage = Buffer.from(vector.preimageHex, 'hex');
-        const digest = createHash('sha256').update(preimage).digest();
+    it.each(
+      format.rejected.filter((vector) => vector.preimageHex !== undefined),
+    )('pins the preimage and digest of rejected $name', (vector) => {
+      const preimage = Buffer.concat([
+        prefix(vector.challenge),
+        ProofOfWorkEncoding.nonce(vector.nonce as string),
+      ]);
+      const digest = createHash('sha256').update(preimage).digest();
 
-        expect(
-          Buffer.concat([
-            prefix(vector.challenge),
-            ProofOfWorkEncoding.nonce(vector.nonce as string),
-          ]).toString('hex'),
-        ).toBe(vector.preimageHex);
-        expect(digest.toString('hex')).toBe(vector.digestHex);
-        expect(leadingZeroBits(digest)).toBe(vector.leadingZeroBits);
-      }
+      expect(preimage.toString('hex')).toBe(vector.preimageHex);
+      expect(digest.toString('hex')).toBe(vector.digestHex);
+      expect(leadingZeroBits(digest)).toBe(vector.leadingZeroBits);
     });
 
     it.each(format.invalidChallenges)(

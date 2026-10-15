@@ -28,6 +28,7 @@ standard Base64 unless stated otherwise.
 | Asymmetric payload | `v2.x25519-hkdf-sha256-aes-256-gcm.ephemeralPublicKey.iv.ciphertext.tag` | Only this envelope is accepted |
 | Protected private key | `v3.scrypt.N16384.r8.p5.salt.iv.tag.ciphertext` | Only this envelope is accepted |
 | Private control transition | `pigeon.private-control.v2` signed canonical JSON | Derives the binding from the authenticated operation and requires its claimed resulting head to equal the signed checkpoint head without creating a circular hash |
+| Proof of work | SHA-256 over length-prefixed `pigeon-identity-admission:v2` or `pigeon-mailbox-creation:v2` preimages | Canonical decimal nonce; see [Proof of work](proof-of-work.md) |
 
 The asymmetric HKDF context is `@haskou/value-objects/asymmetric-payload/v2`. It is
 part of the protocol and independent of the package name.

@@ -1,0 +1,466 @@
+{
+  "cases": [
+    {
+      "derived": {
+        "canonicalPayload": "{\"expiresAt\":1767225600000,\"issuedAt\":1767225300000,\"peerId\":\"12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP\",\"publicKey\":\"CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2\",\"role\":\"call-relay\",\"urls\":[\"turn:relay.example.test:3478?transport=udp\",\"turns:relay.example.test:5349?transport=tcp\"],\"version\":1}",
+        "poolSignature": "Tw9X9HN1mpL2uNW-qHal5qde5GwIa3Nsp4BZZ_RhoVk",
+        "record": {
+          "expiresAt": 1767225600000,
+          "issuedAt": 1767225300000,
+          "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+          "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+          "role": "call-relay",
+          "urls": [
+            "turns:relay.example.test:5349?transport=tcp",
+            "turn:relay.example.test:3478?transport=udp"
+          ],
+          "version": 1,
+          "poolSignature": "Tw9X9HN1mpL2uNW-qHal5qde5GwIa3Nsp4BZZ_RhoVk",
+          "signature": "FNO8PvmBJ22riZLE9NyYcSCv1pE_Q7PYTOpB1NzkocLzF4xzfwuWJ2fIzhzjw6HXF4AZINENeo61WdrK41bKAg"
+        },
+        "signature": "FNO8PvmBJ22riZLE9NyYcSCv1pE_Q7PYTOpB1NzkocLzF4xzfwuWJ2fIzhzjw6HXF4AZINENeo61WdrK41bKAg"
+      },
+      "input": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "urls": [
+          "turns:relay.example.test:5349?transport=tcp",
+          "turn:relay.example.test:3478?transport=udp"
+        ],
+        "version": 1
+      },
+      "name": "v1_pool_member"
+    },
+    {
+      "derived": {
+        "canonicalPayload": "{\"expiresAt\":1767225600000,\"issuedAt\":1767225300000,\"peerId\":\"12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP\",\"publicKey\":\"CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2\",\"role\":\"call-relay\",\"urls\":[\"turn:relay.example.test:4101\"],\"version\":2}",
+        "poolSignature": "",
+        "record": {
+          "expiresAt": 1767225600000,
+          "issuedAt": 1767225300000,
+          "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+          "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+          "role": "call-relay",
+          "urls": [
+            "turn:relay.example.test:4101"
+          ],
+          "version": 2,
+          "poolSignature": "",
+          "signature": "hlFPGr1Svp2xV1XA_C-XcLZftNQc7FsG5e3B8bd-4QaKXxhLTaJsNcd7qoXz7f_JjBwPR6AB3paP_HnieS0KAA"
+        },
+        "signature": "hlFPGr1Svp2xV1XA_C-XcLZftNQc7FsG5e3B8bd-4QaKXxhLTaJsNcd7qoXz7f_JjBwPR6AB3paP_HnieS0KAA"
+      },
+      "input": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "urls": [
+          "turn:relay.example.test:4101"
+        ],
+        "version": 2
+      },
+      "name": "v2_peer_announcement"
+    }
+  ],
+  "description": "Signed relay records that nodes exchange for TURN call relay discovery and public circuit relay discovery. Node-only: no UI code signs or verifies them. The relay key derives from sha256(\"pigeon-vector:call-relay\") as an Ed25519 seed. verifiedAt is a fixed clock inside every record lifetime. Signatures are strict RFC 8032 Ed25519. Regenerate only with a protocol version bump.",
+  "keys": {
+    "relay": {
+      "identityId": "MCowBQYDK2VwAyEAOf05yKzVFznw2wFSjm2n4MbjocSV7Oicx/MyJqQ0+vY=",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIG7gDibeMblz8KS2u5GKupAPxRJrEzZk+FHSj/oJps9P\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAOf05yKzVFznw2wFSjm2n4MbjocSV7Oicx/MyJqQ0+vY=\n-----END PUBLIC KEY-----\n",
+      "seedHex": "6ee00e26de31b973f0a4b6bb918aba900fc5126b133664f851d28ffa09a6cf4f",
+      "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+      "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2"
+    }
+  },
+  "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+  "verifiedAt": 1767225400000,
+  "invalidCallRecords": [
+    {
+      "name": "tampered_signature",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turns:relay.example.test:5349?transport=tcp",
+          "turn:relay.example.test:3478?transport=udp"
+        ],
+        "version": 1,
+        "poolSignature": "Tw9X9HN1mpL2uNW-qHal5qde5GwIa3Nsp4BZZ_RhoVk",
+        "signature": "hlFPGr1Svp2xV1XA_C-XcLZftNQc7FsG5e3B8bd-4QaKXxhLTaJsNcd7qoXz7f_JjBwPR6AB3paP_HnieS0KAA"
+      }
+    },
+    {
+      "name": "non_canonical_signature",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turns:relay.example.test:5349?transport=tcp",
+          "turn:relay.example.test:3478?transport=udp"
+        ],
+        "version": 1,
+        "poolSignature": "Tw9X9HN1mpL2uNW-qHal5qde5GwIa3Nsp4BZZ_RhoVk",
+        "signature": "FNO8PvmBJ22riZLE9NyYcSCv1pE_Q7PYTOpB1NzkocLzF4xzfwuWJ2fIzhzjw6HXF4AZINENeo61WdrK41bKAh"
+      }
+    },
+    {
+      "name": "tampered_url",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turn:attacker.example.test:3478",
+          "turn:relay.example.test:3478?transport=udp"
+        ],
+        "version": 1,
+        "poolSignature": "Tw9X9HN1mpL2uNW-qHal5qde5GwIa3Nsp4BZZ_RhoVk",
+        "signature": "FNO8PvmBJ22riZLE9NyYcSCv1pE_Q7PYTOpB1NzkocLzF4xzfwuWJ2fIzhzjw6HXF4AZINENeo61WdrK41bKAg"
+      }
+    },
+    {
+      "name": "wrong_pool_secret",
+      "sharedSecret": "pigeon-vector-other-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turns:relay.example.test:5349?transport=tcp",
+          "turn:relay.example.test:3478?transport=udp"
+        ],
+        "version": 1,
+        "poolSignature": "Tw9X9HN1mpL2uNW-qHal5qde5GwIa3Nsp4BZZ_RhoVk",
+        "signature": "FNO8PvmBJ22riZLE9NyYcSCv1pE_Q7PYTOpB1NzkocLzF4xzfwuWJ2fIzhzjw6HXF4AZINENeo61WdrK41bKAg"
+      }
+    },
+    {
+      "name": "empty_pool_secret",
+      "sharedSecret": "",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turns:relay.example.test:5349?transport=tcp",
+          "turn:relay.example.test:3478?transport=udp"
+        ],
+        "version": 1,
+        "poolSignature": "Tw9X9HN1mpL2uNW-qHal5qde5GwIa3Nsp4BZZ_RhoVk",
+        "signature": "FNO8PvmBJ22riZLE9NyYcSCv1pE_Q7PYTOpB1NzkocLzF4xzfwuWJ2fIzhzjw6HXF4AZINENeo61WdrK41bKAg"
+      }
+    },
+    {
+      "name": "v1_empty_pool_signature",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turns:relay.example.test:5349?transport=tcp",
+          "turn:relay.example.test:3478?transport=udp"
+        ],
+        "version": 1,
+        "poolSignature": "",
+        "signature": "FNO8PvmBJ22riZLE9NyYcSCv1pE_Q7PYTOpB1NzkocLzF4xzfwuWJ2fIzhzjw6HXF4AZINENeo61WdrK41bKAg"
+      }
+    },
+    {
+      "name": "v2_with_pool_signature",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turn:relay.example.test:4101"
+        ],
+        "version": 2,
+        "poolSignature": "Tw9X9HN1mpL2uNW-qHal5qde5GwIa3Nsp4BZZ_RhoVk",
+        "signature": "hlFPGr1Svp2xV1XA_C-XcLZftNQc7FsG5e3B8bd-4QaKXxhLTaJsNcd7qoXz7f_JjBwPR6AB3paP_HnieS0KAA"
+      }
+    },
+    {
+      "name": "v1_downgraded_to_v2",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turns:relay.example.test:5349?transport=tcp",
+          "turn:relay.example.test:3478?transport=udp"
+        ],
+        "version": 2,
+        "poolSignature": "",
+        "signature": "FNO8PvmBJ22riZLE9NyYcSCv1pE_Q7PYTOpB1NzkocLzF4xzfwuWJ2fIzhzjw6HXF4AZINENeo61WdrK41bKAg"
+      }
+    },
+    {
+      "name": "unknown_version",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turn:relay.example.test:4101"
+        ],
+        "version": 3,
+        "poolSignature": "",
+        "signature": "7PbGJkuGnrqr8WCKignCO_XHusWjKlggLIDqq-QvsI3xyV2cCD6P607aJ1ui79h-Px8xWd4jaicEQ5kNIHixBg"
+      }
+    },
+    {
+      "name": "wrong_role",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "relay",
+        "urls": [
+          "turn:relay.example.test:4101"
+        ],
+        "version": 2,
+        "poolSignature": "",
+        "signature": "e4r073wmV6ky5foJ4bpKK4Oaejfakm-aoVErj6GH2p4snP4McG883u32IFsNkM-IVItfTegBwkZo8QsksBAZBw"
+      }
+    },
+    {
+      "name": "inverted_lifetime",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225300000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turn:relay.example.test:4101"
+        ],
+        "version": 2,
+        "poolSignature": "",
+        "signature": "rZ_Z1XzZ9clTnKWLRq6YDq6A18m3dkX69Wcw5iXLWvdCU5Gacf58dlITVQRjLWPyWenyML_a1cb8O8KFxKzECQ"
+      }
+    },
+    {
+      "name": "empty_urls",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [],
+        "version": 2,
+        "poolSignature": "",
+        "signature": "sV5AsspBU4cirBWuaFHSnLNE67n7BlL_vKAlHJaMJuRwRVUtg9aL3aK7oy35o5QREX1v1qFcDhx7wn4JGIIqAg"
+      }
+    },
+    {
+      "name": "too_many_urls",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turn:relay0.example.test:3478",
+          "turn:relay1.example.test:3478",
+          "turn:relay2.example.test:3478",
+          "turn:relay3.example.test:3478",
+          "turn:relay4.example.test:3478",
+          "turn:relay5.example.test:3478",
+          "turn:relay6.example.test:3478",
+          "turn:relay7.example.test:3478",
+          "turn:relay8.example.test:3478"
+        ],
+        "version": 2,
+        "poolSignature": "",
+        "signature": "nWH8AZNwaYAFXwAZhu4YtF-gllZOUVDCBO0xpjCiJRhXY9E5McK-6tvCPDtobBVxsS8L5URuqILdjCoYk_8HAA"
+      }
+    },
+    {
+      "name": "secp256k1_key_type",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAISIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turn:relay.example.test:4101"
+        ],
+        "version": 2,
+        "poolSignature": "",
+        "signature": "SMr2TPzBMbsqFWPK8oXStvQCpu4anraYut47emYr1tPEsxpIbULDIpN4zsD5qt8IDBpXIs5wCovg-n_zFZnlCg"
+      }
+    },
+    {
+      "name": "small_order_public_key",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "publicKey": "CAESIAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "role": "call-relay",
+        "urls": [
+          "turn:relay.example.test:4101"
+        ],
+        "version": 2,
+        "poolSignature": "",
+        "signature": "hlFPGr1Svp2xV1XA_C-XcLZftNQc7FsG5e3B8bd-4QaKXxhLTaJsNcd7qoXz7f_JjBwPR6AB3paP_HnieS0KAA"
+      }
+    },
+    {
+      "name": "invalid_peer_id",
+      "sharedSecret": "pigeon-vector-call-relay-pool-secret",
+      "record": {
+        "expiresAt": 1767225600000,
+        "issuedAt": 1767225300000,
+        "peerId": "0OIl",
+        "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+        "role": "call-relay",
+        "urls": [
+          "turn:relay.example.test:4101"
+        ],
+        "version": 2,
+        "poolSignature": "",
+        "signature": "Sh8GsaHTK0TvNRdRCLd8ej1RCuENgdbx0jkoacCeRWKa4A3ufaOoczmZbn1Ie6hhkVfj0Q-S3WdUNS0rkAIWDg"
+      }
+    }
+  ],
+  "publicRelay": {
+    "canonicalPayload": "{\"expiresAt\":1767225600000,\"issuedAt\":1767225300000,\"multiaddrs\":[\"/dns4/relay.example.test/tcp/443/wss/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP\",\"/ip4/203.0.113.7/tcp/4001/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP\"],\"peerId\":\"12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP\",\"publicKey\":\"CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2\",\"role\":\"relay\",\"version\":1}",
+    "record": {
+      "expiresAt": 1767225600000,
+      "issuedAt": 1767225300000,
+      "multiaddrs": [
+        "/ip4/203.0.113.7/tcp/4001/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+        "/dns4/relay.example.test/tcp/443/wss/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP"
+      ],
+      "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+      "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+      "role": "relay",
+      "version": 1,
+      "signature": "6e0XzMnWMXYVJWUXb8ir8HbM0wD63n32bO2g7stL8DpmCSonZDmQBjzSIh_TlCalZ6nVrIApG9ckC8YBw6PrAA"
+    },
+    "invalid": [
+      {
+        "name": "tampered_signature",
+        "record": {
+          "expiresAt": 1767225600000,
+          "issuedAt": 1767225300000,
+          "multiaddrs": [
+            "/ip4/203.0.113.7/tcp/4001/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+            "/dns4/relay.example.test/tcp/443/wss/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP"
+          ],
+          "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+          "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+          "role": "relay",
+          "version": 1,
+          "signature": "FNO8PvmBJ22riZLE9NyYcSCv1pE_Q7PYTOpB1NzkocLzF4xzfwuWJ2fIzhzjw6HXF4AZINENeo61WdrK41bKAg"
+        }
+      },
+      {
+        "name": "tampered_multiaddr",
+        "record": {
+          "expiresAt": 1767225600000,
+          "issuedAt": 1767225300000,
+          "multiaddrs": [
+            "/ip4/198.51.100.1/tcp/4001"
+          ],
+          "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+          "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+          "role": "relay",
+          "version": 1,
+          "signature": "6e0XzMnWMXYVJWUXb8ir8HbM0wD63n32bO2g7stL8DpmCSonZDmQBjzSIh_TlCalZ6nVrIApG9ckC8YBw6PrAA"
+        }
+      },
+      {
+        "name": "wrong_role",
+        "record": {
+          "expiresAt": 1767225600000,
+          "issuedAt": 1767225300000,
+          "multiaddrs": [
+            "/ip4/203.0.113.7/tcp/4001/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+            "/dns4/relay.example.test/tcp/443/wss/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP"
+          ],
+          "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+          "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+          "role": "call-relay",
+          "version": 1,
+          "signature": "DwkwqTY5P_ed56WI0NpMMRDJZRcbSNXbskRMwE3El2nc4-IH-71YTDbRxZ7cMQ1unt_i0xT2E_-ds9NbeqYJBg"
+        }
+      },
+      {
+        "name": "wrong_version",
+        "record": {
+          "expiresAt": 1767225600000,
+          "issuedAt": 1767225300000,
+          "multiaddrs": [
+            "/ip4/203.0.113.7/tcp/4001/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+            "/dns4/relay.example.test/tcp/443/wss/p2p/12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP"
+          ],
+          "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+          "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+          "role": "relay",
+          "version": 2,
+          "signature": "w9w9YhV1_QcqR9fSBVGrRt9lW1UYG49vRJTR43s7EHoJdXDgqQGchws61NrCYN9xNe1wM5djj1dXXfUWni3NDQ"
+        }
+      },
+      {
+        "name": "empty_multiaddrs",
+        "record": {
+          "expiresAt": 1767225600000,
+          "issuedAt": 1767225300000,
+          "multiaddrs": [],
+          "peerId": "12D3KooWDijMvz3s9CVMdvFfa936PLwr6JDk9D17rp8RVoHPY8FP",
+          "publicKey": "CAESIDn9Ocis1Rc58NsBUo5tp-DG46HElezonMfzMiakNPr2",
+          "role": "relay",
+          "version": 1,
+          "signature": "UdzhdYLKYBI00Pc1um6XtVk5f0EiQ7ddk1Bab13ZjuBdVhTE319-ew1--pcIdrG7v05UcmqZ9rPnwFtpIILgDg"
+        }
+      }
+    ]
+  },
+  "algorithms": {
+    "canonicalPayload": "JSON.stringify({expiresAt, issuedAt, peerId, publicKey, role, urls: urls sorted by UTF-16 code units, version}) with exactly this key order; not RFC 8785. The record carries urls in announcement order",
+    "peerId": "base58btc(identity multihash 0x00 0x24 || publicKey protobuf), the libp2p Ed25519 peer id",
+    "poolSignature": "version 1: base64url(HMAC-SHA256(utf8(sharedSecret), utf8(canonicalPayload))); version 2: the empty string",
+    "publicKey": "base64url(libp2p public key protobuf 0x08 0x01 0x12 0x20 || raw 32-byte Ed25519 public key)",
+    "signature": "base64url(ed25519(utf8(canonicalPayload))) by the relay libp2p key",
+    "publicRelayCanonicalPayload": "JSON.stringify({expiresAt, issuedAt, multiaddrs: multiaddrs sorted by UTF-16 code units, peerId, publicKey, role, version}) with exactly this key order; signature = base64url(ed25519(utf8(canonicalPayload))) by the relay libp2p key"
+  }
+}

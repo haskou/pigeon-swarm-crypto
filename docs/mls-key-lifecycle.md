@@ -15,6 +15,16 @@ the npm registry and its upstream repository is
 MIT licensed and run in Node.js 20.20.2 or newer and bundled Chromium. The
 integration uses only the standard 0x0001 ciphersuite.
 
+Every Ed25519 signature check of the ciphersuite uses `@noble/curves` strict
+verification (`zip215: false`) instead of the engine-dependent WebCrypto path of
+`ts-mls`. This covers the checks inside `ts-mls` and the package's own device, join
+package and delivery-schedule proofs. Node's OpenSSL and Chromium accept
+small-order public keys, and Chromium also accepts non-canonical key encodings, so
+delegating to them would make the verdict depend on the runtime. Strict
+verification requires canonical `A` and `R` encodings, rejects small-order public
+keys, and returns false for a key that is not 32 bytes or a signature that is not
+64 bytes. Signing is unchanged.
+
 `ts-mls` has not undergone a formal security audit. Pin upgrades, inspect their
 source and changelog, rerun the MLS Working Group vectors and both runtime
 suites, and obtain security-focused review before release. A passing test suite

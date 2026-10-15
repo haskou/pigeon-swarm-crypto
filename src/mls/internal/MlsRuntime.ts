@@ -18,7 +18,9 @@ const withStrictEd25519 = async (
       ...implementation.signature,
       verify: (publicKey, message, signature) =>
         Promise.resolve(
-          ed25519.verify(signature, message, publicKey, { zip215: false }),
+          publicKey.length === 32 &&
+            signature.length === 64 &&
+            ed25519.verify(signature, message, publicKey, { zip215: false }),
         ),
     },
   };

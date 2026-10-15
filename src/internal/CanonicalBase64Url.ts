@@ -27,4 +27,17 @@ export class CanonicalBase64Url {
 
     return bytes;
   }
+
+  public static decodeBounded(value: string, maxLength: number): Uint8Array {
+    if (value.length > Math.ceil((maxLength * 4) / 3))
+      throw new InvalidPrivateOperationError();
+    const bytes = Buffer.from(
+      value.replace(/-/g, '+').replace(/_/g, '/'),
+      'base64',
+    );
+
+    if (this.encode(bytes) !== value) throw new InvalidPrivateOperationError();
+
+    return bytes;
+  }
 }

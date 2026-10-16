@@ -102,10 +102,19 @@ const authService: AuthenticationService = {
   },
 };
 
+/**
+ * Past epochs a group keeps secrets for: ts-mls keeps their receiver data
+ * and `MlsGroup` the states before their commits, for rivals.
+ */
+export const RETAINED_EPOCHS = 8;
+
 export const clientConfig: ClientConfig = {
   authService,
   keyPackageEqualityConfig: defaultKeyPackageEqualityConfig,
-  keyRetentionConfig: { ...defaultKeyRetentionConfig, retainKeysForEpochs: 8 },
+  keyRetentionConfig: {
+    ...defaultKeyRetentionConfig,
+    retainKeysForEpochs: RETAINED_EPOCHS,
+  },
   lifetimeConfig: defaultLifetimeConfig,
   paddingConfig: defaultPaddingConfig,
 };
@@ -272,22 +281,26 @@ export const welcomeSigner = async (
 };
 
 /**
+ * Whether two states are in the same epoch of the same branch: the same
+ * epoch authenticator means the same epoch secret.
+ */
+export const sameEpoch = (one: ClientState, other: ClientState): boolean =>
+  one.groupContext.epoch === other.groupContext.epoch &&
+  one.keySchedule.epochAuthenticator.every(
+    (byte, index) => other.keySchedule.epochAuthenticator[index] === byte,
+  );
+
+/**
  * The state this device left at the epoch `state` is in, when it stepped
- * back from that very epoch: the same epoch authenticator means the same
- * epoch secret. Left states up to that epoch are dropped from `left`.
+ * back from that very epoch (`sameEpoch`). Left states up to that epoch are
+ * dropped from `left`.
  */
 export const resume = (
   left: ClientState[],
   state: ClientState,
 ): ClientState => {
   const epoch = state.groupContext.epoch;
-  const match = left.find(
-    (stashed) =>
-      stashed.groupContext.epoch === epoch &&
-      stashed.keySchedule.epochAuthenticator.every(
-        (byte, index) => state.keySchedule.epochAuthenticator[index] === byte,
-      ),
-  );
+  const match = left.find((stashed) => sameEpoch(stashed, state));
 
   left.splice(
     0,

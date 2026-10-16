@@ -31,8 +31,10 @@ import type { MlsMembershipChange } from './MlsMembershipChange';
 import type { MlsMembershipPolicy } from './MlsMembershipPolicy';
 import type { MlsOpenedMessage } from './MlsOpenedMessage';
 
+import { BoundedText } from '../internal/BoundedText';
 import { buildMlsCommit } from './internal/MlsCommitBuilder';
 import {
+  RETAINED_EPOCHS,
   assertCommitterKept,
   clientConfig,
   contextOf,
@@ -45,6 +47,7 @@ import {
   readCommit,
   rejection,
   resume,
+  sameEpoch,
   welcomeSigner,
 } from './internal/MlsGroupRules';
 import { getMlsCiphersuite } from './internal/MlsRuntime';
@@ -69,6 +72,10 @@ import { MlsRosterFrontier } from './MlsRosterFrontier';
 export class MlsGroup {
   private static readonly decoder = new TextDecoder();
   private static readonly encoder = new TextEncoder();
+  private static readonly CALL_MEDIA_LABEL = 'pigeon/call-media/v1';
+  private static readonly GENERATION_LABEL = 'pigeon/group-mailbox/gen/v1';
+  private static readonly MAX_CALL_ID_BYTES = 256;
+  private static readonly SECRET_LENGTH = 32;
 
   /** Commits, by id, that bound roster operations not verified here. */
   private readonly witnesses = new Map<string, MlsWitness>();
@@ -84,6 +91,7 @@ export class MlsGroup {
    * The commits taken since create, join or restore, by the epoch they left.
    * Epochs are only added past the last one or replaced in place, and later
    * ones are dropped with them, so iteration runs in ascending epoch order.
+   * Only the `RETAINED_EPOCHS` latest keep the state before their commit.
    */
   private readonly applied = new Map<bigint, MlsAppliedEpoch>();
 
@@ -336,6 +344,7 @@ export class MlsGroup {
   private async replace(
     record: MlsCommitRecord,
     previous: MlsAppliedEpoch,
+    before: ClientState,
   ): Promise<MlsCommitOutcome> {
     const verdict = { lost: false };
     let outcome: MlsCommitOutcome;
@@ -343,7 +352,7 @@ export class MlsGroup {
     try {
       outcome = await this.advance(
         record,
-        previous.before,
+        before,
         previous.baseline,
         (change, frontier) => {
           verdict.lost = !this.wins(record.id, { change, frontier }, previous);
@@ -414,10 +423,10 @@ export class MlsGroup {
 
   /**
    * Accepts a commit only when it comes from a member's leaf whose
-   * credential verifies, every proposal in it is that member's own, and
-   * `settle` accepts the change it makes to membership; `settle` learns the
-   * committer's leaf index with the change. A standalone proposal is never
-   * applied.
+   * credential verifies and `settle` accepts the change it makes to
+   * membership; `settle` learns the committer's leaf index with the change.
+   * A standalone proposal is never applied, so a commit can only carry its
+   * committer's proposals by value.
    */
   private judge(
     from: ClientState,
@@ -500,9 +509,11 @@ export class MlsGroup {
 
     this.resumable.push(
       this.state,
-      ...taken.filter(([epoch]) => epoch > from).map(([, left]) => left.before),
+      ...taken
+        .filter(([epoch]) => epoch > from)
+        .map(([, left]) => defined(left.before)),
     );
-    this.state = before;
+    this.state = defined(before);
     this.bound = baseline;
     for (const [epoch] of taken) if (epoch >= from) this.applied.delete(epoch);
   }
@@ -563,7 +574,7 @@ export class MlsGroup {
       throw new InvalidMlsGroupError();
     assertCommitterKept(result.newState.ratchetTree, leaf, change);
     this.witnesses.clear();
-    this.applied.set(record.epoch, {
+    this.take(record.epoch, {
       baseline,
       before: from,
       change,
@@ -634,6 +645,33 @@ export class MlsGroup {
 
   private assertActive(): void {
     if (this.removed) throw new InvalidMlsGroupError();
+  }
+
+  /**
+   * Keeps the commit taken for `epoch` and drops the state before every
+   * commit more than `RETAINED_EPOCHS` epochs behind the epoch it leads to.
+   */
+  private take(epoch: bigint, taken: MlsAppliedEpoch): void {
+    const oldest = epoch + 1n - BigInt(RETAINED_EPOCHS);
+
+    this.applied.set(epoch, taken);
+    for (const [held, entry] of this.applied)
+      if (held < oldest && entry.before !== undefined)
+        this.applied.set(held, { ...entry, before: undefined });
+  }
+
+  private exporter(label: string, context: Uint8Array): Promise<Uint8Array> {
+    return MlsGroup.rejecting(async () => {
+      this.assertActive();
+
+      return mlsExporter(
+        this.state.keySchedule.exporterSecret,
+        label,
+        context,
+        MlsGroup.SECRET_LENGTH,
+        await getMlsCiphersuite(),
+      );
+    });
   }
 
   public serialize(): Uint8Array {
@@ -831,23 +869,29 @@ export class MlsGroup {
     });
   }
 
-  /** Derives a purpose-bound secret from the current epoch (RFC 9420 §8.5). */
-  public exportSecret(
-    label: string,
-    context: Uint8Array,
-    length = 32,
-  ): Promise<Uint8Array> {
-    return MlsGroup.rejecting(async () => {
-      this.assertActive();
+  /**
+   * The 32-byte media key of call `callId` in the current epoch (RFC 9420
+   * §8.5 exporter, label `pigeon/call-media/v1`, context the UTF-8 call id
+   * of at most 256 bytes).
+   */
+  public callMediaKey(callId: string): Promise<Uint8Array> {
+    let context: Uint8Array;
 
-      return mlsExporter(
-        this.state.keySchedule.exporterSecret,
-        label,
-        context,
-        length,
-        await getMlsCiphersuite(),
-      );
-    });
+    try {
+      context = BoundedText.encode(callId, MlsGroup.MAX_CALL_ID_BYTES);
+    } catch {
+      return Promise.reject(new InvalidMlsGroupError());
+    }
+
+    return this.exporter(MlsGroup.CALL_MEDIA_LABEL, context);
+  }
+
+  /**
+   * The 32-byte group mailbox generation secret of the current epoch (RFC
+   * 9420 §8.5 exporter, label `pigeon/group-mailbox/gen/v1`, empty context).
+   */
+  public groupMailboxGenerationSecret(): Promise<Uint8Array> {
+    return this.exporter(MlsGroup.GENERATION_LABEL, new Uint8Array());
   }
 
   /**
@@ -869,9 +913,9 @@ export class MlsGroup {
       if (record.epoch === current)
         return this.advance(record, this.state, this.bound, () => true);
 
-      return previous === undefined
+      return previous?.before === undefined
         ? { kind: 'ignored', reason: 'stale' }
-        : this.replace(record, previous);
+        : this.replace(record, previous, previous.before);
     });
   }
 
@@ -890,7 +934,9 @@ export class MlsGroup {
 
   /**
    * Adopts the pending commit once the node has accepted its record. Pass
-   * the record id the node assigned.
+   * the record id the node assigned. Refused, and dropped, once the group
+   * left the epoch and branch the commit was built on, e.g. because a rival
+   * replaced an earlier commit.
    */
   public confirm(commitId: string): MlsCommitOutcome {
     const pending = this.pending;
@@ -898,10 +944,10 @@ export class MlsGroup {
     if (pending === undefined) throw new InvalidMlsGroupError();
     this.pending = undefined;
 
-    if (this.state.groupContext.epoch !== pending.epoch)
+    if (!sameEpoch(this.state, pending.before))
       throw new InvalidMlsGroupError();
     this.witnesses.clear();
-    this.applied.set(pending.epoch, {
+    this.take(pending.epoch, {
       baseline: this.bound,
       before: pending.before,
       change: pending.change,

@@ -103,3 +103,5 @@ export type { RecoveryKitMaterial } from './RecoveryKitMaterial';
 export { InvalidRecoveryKeyError } from './errors/InvalidRecoveryKeyError';
 export { SafetyNumber } from './SafetyNumber';
 export { InvalidSafetyNumberError } from './errors/InvalidSafetyNumberError';
+export { ProofOfWork } from './ProofOfWork';
+export { InvalidProofOfWorkError } from './errors/InvalidProofOfWorkError';

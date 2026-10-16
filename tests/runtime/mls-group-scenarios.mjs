@@ -179,9 +179,10 @@ export async function run({ mls, KeyPair, tsMls }) {
 
   /**
    * A member's stored group state in which the leaf of `name` shows the
-   * credential `credentialFor` makes, as a tampered store would hold it.
+   * credential `credentialFor` makes, as a tampered store would hold it,
+   * restored as `owner`, the owner its own leaf then names.
    */
-  const withCredential = ({ group, key }, name, credentialFor) => {
+  const withCredential = ({ group, key }, name, credentialFor, owner = key.owner) => {
     const [state] = tsMls.decodeGroupState(group.serialize(), 0);
     const leaves = state.ratchetTree.flatMap((node) =>
       node?.nodeType === 'leaf' ? [node.leaf] : [],
@@ -199,7 +200,7 @@ export async function run({ mls, KeyPair, tsMls }) {
 
     return MlsGroup.restore(
       group.groupId,
-      key.owner,
+      owner,
       policy,
       tsMls.encodeGroupState({ ...state, ratchetTree }),
       group.frontier,
@@ -834,10 +835,15 @@ export async function run({ mls, KeyPair, tsMls }) {
       const seats = await setup(['alice', 'bob']);
       // Bob's patched client also holds mallory's keys and has her identity
       // and device sign bob's leaf key: a credential that verifies.
-      const bob = withCredential(seats.bob, 'bob', ({ signaturePublicKey }) => ({
-        credentialType: 'basic',
-        identity: MlsLeafCredential.issue(cast.mallory.signer(), signaturePublicKey),
-      }));
+      const bob = withCredential(
+        seats.bob,
+        'bob',
+        ({ signaturePublicKey }) => ({
+          credentialType: 'basic',
+          identity: MlsLeafCredential.issue(cast.mallory.signer(), signaturePublicKey),
+        }),
+        cast.mallory.owner(),
+      );
       const update = await bob.update();
       bob.confirm('c-swap');
 
@@ -918,6 +924,14 @@ export async function run({ mls, KeyPair, tsMls }) {
       ok(throws(() => MlsGroup.restore('community-1', bob.key.owner, policy, state, [])), 'identity');
       ok(throws(() => MlsGroup.restore('community-1', otherDevice, policy, state, [])), 'device');
       same(MlsGroup.restore('community-1', alice.key.owner, policy, state, []).epoch, alice.group.epoch, 'owner');
+      const [decoded] = tsMls.decodeGroupState(state, 0);
+      const blank = tsMls.encodeGroupState({
+        ...decoded,
+        ratchetTree: decoded.ratchetTree.map((node, index) =>
+          index === decoded.privatePath.leafIndex * 2 ? undefined : node,
+        ),
+      });
+      ok(throws(() => MlsGroup.restore('community-1', alice.key.owner, policy, blank, [])), 'blank leaf');
     },
 
     'rejects messages it cannot read as the kind asked for': async () => {

@@ -30,9 +30,11 @@ decisions on every commit it makes or takes.
   - every leaf's credential verifies;
   - the policy admits every identity at that frontier.
 - `MlsGroup.restore(groupId, owner, policy, serialized, frontier)` reloads a
-  stored state. It checks the group id and the owner's leaf but trusts the
-  rest of the state: store it where only this device can change it, e.g.
-  sealed with `ProtectedMlsGroupState`.
+  stored state. It checks the group id and, while the device is still a
+  member, that its own leaf names `owner` (identity and device); a removed
+  state has a blank leaf and restores as removed. It trusts the rest of the
+  state: store it where only this device can change it, e.g. sealed with
+  `ProtectedMlsGroupState`.
 - `add`, `changeContext`, `removeIdentities`, `removeDevices` and `update`
   each build one commit. The commit binds the policy frontier as its
   authenticated data and as the GroupInfo `0xf420` extension. Each call

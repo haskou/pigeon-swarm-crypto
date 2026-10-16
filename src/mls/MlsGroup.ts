@@ -105,6 +105,22 @@ export class MlsGroup {
     }
   }
 
+  /** Whether the state's own leaf names `owner`, identity and device. */
+  private static ownsLeaf(state: GroupState, owner: MlsLeafOwner): boolean {
+    try {
+      const leaf = ownerOf(
+        leafAt(state.ratchetTree, state.privatePath.leafIndex).leaf.credential,
+      );
+
+      return (
+        leaf.identityId === owner.identityId &&
+        leaf.deviceCredential === owner.deviceCredential
+      );
+    } catch {
+      return false;
+    }
+  }
+
   /** Starts a group with this device alone and these context extensions. */
   public static create(
     groupId: string,
@@ -213,14 +229,19 @@ export class MlsGroup {
       MlsGroup.decoder.decode(state.groupContext.groupId) !== groupId
     )
       throw new InvalidMlsGroupError();
+    // A device removed before a restart must stay unable to send; its leaf
+    // is blank by then, so only an active state still names its owner.
+    const removed = state.groupActiveState.kind !== 'active';
+
+    if (!removed && !MlsGroup.ownsLeaf(state, owner))
+      throw new InvalidMlsGroupError();
 
     return new MlsGroup(
       groupId,
       owner,
       policy,
       { ...state, clientConfig },
-      // A device removed before a restart must stay unable to send.
-      state.groupActiveState.kind !== 'active',
+      removed,
       frontier,
       undefined,
     );

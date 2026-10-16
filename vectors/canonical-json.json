@@ -1,0 +1,90 @@
+{
+  "description": "RFC 8785 (JCS) canonical JSON restricted to the values Pigeon Swarm signs: objects, arrays, strings without lone surrogates, booleans, null and safe integers. Object members whose value is undefined are omitted. Depth is limited to 64 nested containers.",
+  "cases": [
+    {
+      "name": "object keys sorted by UTF-16 code units",
+      "value": {
+        "b": 1,
+        "a": 2,
+        "é": 3,
+        "€": 4,
+        "😀": 5,
+        "A": 6
+      },
+      "canonical": "{\"A\":6,\"a\":2,\"b\":1,\"é\":3,\"€\":4,\"😀\":5}"
+    },
+    {
+      "name": "nested objects and arrays keep array order",
+      "value": {
+        "z": [
+          3,
+          {
+            "y": true,
+            "x": null
+          },
+          "a"
+        ],
+        "m": {
+          "k": false
+        }
+      },
+      "canonical": "{\"m\":{\"k\":false},\"z\":[3,{\"x\":null,\"y\":true},\"a\"]}"
+    },
+    {
+      "name": "string escapes",
+      "value": {
+        "s": "quote \" backslash \\ slash / newline \n tab \t control \u0001 line separator   emoji 😀"
+      },
+      "canonical": "{\"s\":\"quote \\\" backslash \\\\ slash / newline \\n tab \\t control \\u0001 line separator   emoji 😀\"}"
+    },
+    {
+      "name": "safe integer bounds and negative zero",
+      "value": [
+        9007199254740991,
+        -9007199254740991,
+        0,
+        0
+      ],
+      "canonical": "[9007199254740991,-9007199254740991,0,0]"
+    },
+    {
+      "name": "top-level scalars",
+      "value": "text",
+      "canonical": "\"text\""
+    },
+    {
+      "name": "empty containers",
+      "value": {
+        "a": {},
+        "b": []
+      },
+      "canonical": "{\"a\":{},\"b\":[]}"
+    }
+  ],
+  "rejectedJson": [
+    {
+      "name": "fraction",
+      "json": "{\"a\":1.5}"
+    },
+    {
+      "name": "unsafe integer",
+      "json": "[9007199254740992]"
+    },
+    {
+      "name": "exponent beyond the safe range",
+      "json": "1e21"
+    },
+    {
+      "name": "lone high surrogate in a value",
+      "json": "{\"a\":\"\\ud800\"}"
+    },
+    {
+      "name": "lone low surrogate in a key",
+      "json": "{\"\\udc00\":1}"
+    },
+    {
+      "name": "nesting deeper than 64",
+      "json": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]"
+    }
+  ]
+}

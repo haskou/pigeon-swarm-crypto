@@ -86,6 +86,8 @@ package does not enforce an application password policy or provide account recov
 | Encrypted envelopes | `EncryptedPayload`, `AsymmetricEncryptedPayload`, `SymmetricEncryptedPayload`, `EncryptedPayloadScheme` |
 | Symmetric encryption | `SymmetricKey`, `SymmetricKeyCryptOptions`, `SymmetricKeyDerivationOptions` |
 | Digest computation | `SHA256Hash`, `SHA512Hash`, `HashPayload` |
+| Signed protocol preimages | `CanonicalJson`, `SignedHttpRequestSignature`, `IdentitySignature`, `KeychainSignature`, `DeviceAuthorizationTransitionSignature`, `DeviceSealedSecretSignature`, `DeviceCredentialCommitment`, `PublicMutationSignature`, `CommunityOperationSignature`, `CommunityInviteReference`, `PrivateFreshnessRequest` |
+| Device pairing | `DevicePairingInvitationSignature`, `DevicePairingRequestSignature`, `DevicePairingCompletionSignature`, `DevicePairingVerificationCode` |
 | Public errors | `InvalidKeyError`, `InvalidSignatureError`, `InvalidEncryptedPrivateKeyFormatError` |
 
 Digest classes expose `.from(payload)` for computation. The corresponding classes
@@ -100,6 +102,11 @@ persisted data, and [SECURITY.md](SECURITY.md) for security boundaries and repor
 See the [key lifecycle review](docs/key-lifecycle-review.md) for current rotation
 gaps, the distinction between password re-encryption and key replacement, and
 the next integration milestone.
+
+[Signed protocol preimages](docs/signed-preimages.md) and
+[device pairing](docs/device-pairing.md) describe every public signed format and
+its limits. Their test vectors ship as `@haskou/pigeon-swarm-crypto/vectors/*`
+so Node and UI specs check the same bytes as the package.
 
 Moving encryption into this package does not provide forward secrecy, metadata
 privacy, anonymous communication or deletion of data already replicated through

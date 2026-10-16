@@ -1,0 +1,207 @@
+{
+  "description": "Fixed, byte-exact vectors for device pairing: the invitation, request and completion signing preimages, their Ed25519 signatures and the short authentication (verification) code. Keys derive from sha256(utf8(\"pigeon-vector:device-pairing:<role>\")) as an Ed25519 seed. Regenerate only through a reviewed protocol change.",
+  "algorithms": {
+    "invitation": "signingPayload = JSON.stringify({domain:\"pigeon:device-pairing:invitation:v1\", invitation}), invitation keys authorCredential, epoch, expiresAt, identityId, pairingId, revision, version in this order; signed by authorCredential.",
+    "request": "signingPayload = JSON.stringify({domain:\"pigeon:device-pairing:request:v1\", request}), request keys authorizedAt, invitation, operationId, proofOfPossession, targetCredential, transportPublicKey, version in this order; signed by targetCredential.",
+    "completion": "signingPayload = JSON.stringify({completion, domain:\"pigeon:device-pairing:completion:v1\"}), completion keys authorCredential, encryptedMaterial, epoch, identityId, operationId, pairingId, revision, version in this order; signed by authorCredential.",
+    "signature": "Ed25519 (pure, no prehash) over utf8(signingPayload), standard base64 with padding (88 characters).",
+    "verificationCode": "digest = sha256(utf8(JSON.stringify({domain:\"pigeon:device-pairing:verification:v1\", operationId, pairingId, targetCredential, transportPublicKey}))); value = big-endian uint64 of digest[0..8] mod 10^10; zero-padded to 10 digits and split 5 + space + 5.",
+    "credentials": "authorCredential, targetCredential and transportPublicKey are full SPKI PEM strings (113 characters); identityId is the PEM body."
+  },
+  "keys": {
+    "identity": {
+      "identityId": "MCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIE6XN7AGyIOLCmVzOcm0BvS986kppIdiO85mJyD+qG4/\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=\n-----END PUBLIC KEY-----\n",
+      "seedDerivation": "sha256(utf8(\"pigeon-vector:device-pairing:identity\"))",
+      "seedHex": "4e9737b006c8838b0a657339c9b406f4bdf3a929a487623bce662720fea86e3f"
+    },
+    "author": {
+      "identityId": "MCowBQYDK2VwAyEAeu6SzeVK2vWFhlw9ZmqatqvEpV2R7bIWIINIHIuPOjE=",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIMVMvgErZfyQSsWqsnxTW6y16+jWJNgmsYp0coUDkfhj\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAeu6SzeVK2vWFhlw9ZmqatqvEpV2R7bIWIINIHIuPOjE=\n-----END PUBLIC KEY-----\n",
+      "seedDerivation": "sha256(utf8(\"pigeon-vector:device-pairing:author\"))",
+      "seedHex": "c54cbe012b65fc904ac5aab27c535bacb5ebe8d624d826b18a7472850391f863"
+    },
+    "target": {
+      "identityId": "MCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEICkbEJkBknUgYWLEkiQsJ96yXpFtvYE/jnyKsMIns2Zj\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=\n-----END PUBLIC KEY-----\n",
+      "seedDerivation": "sha256(utf8(\"pigeon-vector:device-pairing:target\"))",
+      "seedHex": "291b1099019275206162c492242c27deb25e916dbd813f8e7c8ab0c227b36663"
+    },
+    "transport": {
+      "identityId": "MCowBQYDK2VwAyEAOVRNjz6v71vCFFPtkFBUo1DwuzbHsY/kUi8mvvBrBsI=",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEILSCAxNwZS6wrZ2iOSw9czIOM+7YpUJijhQhAnhnEyIR\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAOVRNjz6v71vCFFPtkFBUo1DwuzbHsY/kUi8mvvBrBsI=\n-----END PUBLIC KEY-----\n",
+      "seedDerivation": "sha256(utf8(\"pigeon-vector:device-pairing:transport\"))",
+      "seedHex": "b482031370652eb0ad9da2392c3d73320e33eed8a542628e1421027867132211"
+    },
+    "stranger": {
+      "identityId": "MCowBQYDK2VwAyEA9moljnIbgFlQBD2q22HsNZRdplhxUkQJFKxSCfMfzRs=",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIOdVS4s7gt+BTaAaSiSrSoD/Bj7S9USzGJL04GuBnPGt\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA9moljnIbgFlQBD2q22HsNZRdplhxUkQJFKxSCfMfzRs=\n-----END PUBLIC KEY-----\n",
+      "seedDerivation": "sha256(utf8(\"pigeon-vector:device-pairing:stranger\"))",
+      "seedHex": "e7554b8b3b82df814da01a4a24ab4a80ff063ed2f544b31892f4e06b819cf1ad"
+    }
+  },
+  "invitation": {
+    "payload": {
+      "authorCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAeu6SzeVK2vWFhlw9ZmqatqvEpV2R7bIWIINIHIuPOjE=\n-----END PUBLIC KEY-----\n",
+      "epoch": "genesis",
+      "expiresAt": 1760000300000,
+      "identityId": "MCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=",
+      "pairingId": "c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f",
+      "revision": 3,
+      "version": 1
+    },
+    "signingPayload": "{\"domain\":\"pigeon:device-pairing:invitation:v1\",\"invitation\":{\"authorCredential\":\"-----BEGIN PUBLIC KEY-----\\nMCowBQYDK2VwAyEAeu6SzeVK2vWFhlw9ZmqatqvEpV2R7bIWIINIHIuPOjE=\\n-----END PUBLIC KEY-----\\n\",\"epoch\":\"genesis\",\"expiresAt\":1760000300000,\"identityId\":\"MCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=\",\"pairingId\":\"c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f\",\"revision\":3,\"version\":1}}",
+    "signature": "elHNVi9mBSftWz4fNI1TLs8xCFBiDmczV4pM8dovW2RiU7UekFrLIYbUGLsrRPotMWq4qK4NHx0r5e3hBFfOAA==",
+    "code": "psdp1.eyJraW5kIjoicGlnZW9uLWRldmljZS1wYWlyaW5nLWludml0YXRpb24iLCJhdXRob3JDcmVkZW50aWFsIjoiLS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS1cbk1Db3dCUVlESzJWd0F5RUFldTZTemVWSzJ2V0ZobHc5Wm1xYXRxdkVwVjJSN2JJV0lJTklISXVQT2pFPVxuLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tXG4iLCJlcG9jaCI6ImdlbmVzaXMiLCJleHBpcmVzQXQiOjE3NjAwMDAzMDAwMDAsImlkZW50aXR5SWQiOiJNQ293QlFZREsyVndBeUVBZXpZZmNWWTM4elRQcEhKaE9VaUlubEdIK3lKUWlTbldZTkdCb2JsUGhJUT0iLCJwYWlyaW5nSWQiOiJjMmE0ZTZmOC0xYjNkLTRmNWEtOGM3ZS05ZDBiMWEyYzNlNGYiLCJyZXZpc2lvbiI6MywidmVyc2lvbiI6MSwic2lnbmF0dXJlIjoiZWxITlZpOW1CU2Z0V3o0Zk5JMVRMczh4Q0ZCaURtY3pWNHBNOGRvdlcyUmlVN1Vla0ZyTElZYlVHTHNyUlBvdE1XcTRxSzROSHgwcjVlM2hCRmZPQUE9PSJ9"
+  },
+  "request": {
+    "payload": {
+      "authorizedAt": 1760000000000,
+      "invitation": "psdp1.eyJraW5kIjoicGlnZW9uLWRldmljZS1wYWlyaW5nLWludml0YXRpb24iLCJhdXRob3JDcmVkZW50aWFsIjoiLS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS1cbk1Db3dCUVlESzJWd0F5RUFldTZTemVWSzJ2V0ZobHc5Wm1xYXRxdkVwVjJSN2JJV0lJTklISXVQT2pFPVxuLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tXG4iLCJlcG9jaCI6ImdlbmVzaXMiLCJleHBpcmVzQXQiOjE3NjAwMDAzMDAwMDAsImlkZW50aXR5SWQiOiJNQ293QlFZREsyVndBeUVBZXpZZmNWWTM4elRQcEhKaE9VaUlubEdIK3lKUWlTbldZTkdCb2JsUGhJUT0iLCJwYWlyaW5nSWQiOiJjMmE0ZTZmOC0xYjNkLTRmNWEtOGM3ZS05ZDBiMWEyYzNlNGYiLCJyZXZpc2lvbiI6MywidmVyc2lvbiI6MSwic2lnbmF0dXJlIjoiZWxITlZpOW1CU2Z0V3o0Zk5JMVRMczh4Q0ZCaURtY3pWNHBNOGRvdlcyUmlVN1Vla0ZyTElZYlVHTHNyUlBvdE1XcTRxSzROSHgwcjVlM2hCRmZPQUE9PSJ9",
+      "operationId": "3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80",
+      "proofOfPossession": "5R7gaqP2vBhE4EdvEgKr6lE2Yb0n9TaT5lT2Vmey7t8n2SGjnqpAaSMqZd8iVBmadMX8l6pSjJDtOUIRP10SCA==",
+      "targetCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=\n-----END PUBLIC KEY-----\n",
+      "transportPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAOVRNjz6v71vCFFPtkFBUo1DwuzbHsY/kUi8mvvBrBsI=\n-----END PUBLIC KEY-----\n",
+      "version": 1
+    },
+    "signingPayload": "{\"domain\":\"pigeon:device-pairing:request:v1\",\"request\":{\"authorizedAt\":1760000000000,\"invitation\":\"psdp1.eyJraW5kIjoicGlnZW9uLWRldmljZS1wYWlyaW5nLWludml0YXRpb24iLCJhdXRob3JDcmVkZW50aWFsIjoiLS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS1cbk1Db3dCUVlESzJWd0F5RUFldTZTemVWSzJ2V0ZobHc5Wm1xYXRxdkVwVjJSN2JJV0lJTklISXVQT2pFPVxuLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tXG4iLCJlcG9jaCI6ImdlbmVzaXMiLCJleHBpcmVzQXQiOjE3NjAwMDAzMDAwMDAsImlkZW50aXR5SWQiOiJNQ293QlFZREsyVndBeUVBZXpZZmNWWTM4elRQcEhKaE9VaUlubEdIK3lKUWlTbldZTkdCb2JsUGhJUT0iLCJwYWlyaW5nSWQiOiJjMmE0ZTZmOC0xYjNkLTRmNWEtOGM3ZS05ZDBiMWEyYzNlNGYiLCJyZXZpc2lvbiI6MywidmVyc2lvbiI6MSwic2lnbmF0dXJlIjoiZWxITlZpOW1CU2Z0V3o0Zk5JMVRMczh4Q0ZCaURtY3pWNHBNOGRvdlcyUmlVN1Vla0ZyTElZYlVHTHNyUlBvdE1XcTRxSzROSHgwcjVlM2hCRmZPQUE9PSJ9\",\"operationId\":\"3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80\",\"proofOfPossession\":\"5R7gaqP2vBhE4EdvEgKr6lE2Yb0n9TaT5lT2Vmey7t8n2SGjnqpAaSMqZd8iVBmadMX8l6pSjJDtOUIRP10SCA==\",\"targetCredential\":\"-----BEGIN PUBLIC KEY-----\\nMCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=\\n-----END PUBLIC KEY-----\\n\",\"transportPublicKey\":\"-----BEGIN PUBLIC KEY-----\\nMCowBQYDK2VwAyEAOVRNjz6v71vCFFPtkFBUo1DwuzbHsY/kUi8mvvBrBsI=\\n-----END PUBLIC KEY-----\\n\",\"version\":1}}",
+    "signature": "9Z87bxFvv4g7PDGpDXDVREMrvSY99us3roubl5+J3qNe2pTzojuNll44sGpU/JJbcqVp28pq69uL2N3wkVGXBg=="
+  },
+  "completion": {
+    "payload": {
+      "authorCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAeu6SzeVK2vWFhlw9ZmqatqvEpV2R7bIWIINIHIuPOjE=\n-----END PUBLIC KEY-----\n",
+      "encryptedMaterial": "v2.x25519-hkdf-sha256-aes-256-gcm.ZXBo.aXY.Y3Q.dGFn",
+      "epoch": "genesis",
+      "identityId": "MCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=",
+      "operationId": "3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80",
+      "pairingId": "c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f",
+      "revision": 4,
+      "version": 1
+    },
+    "signingPayload": "{\"completion\":{\"authorCredential\":\"-----BEGIN PUBLIC KEY-----\\nMCowBQYDK2VwAyEAeu6SzeVK2vWFhlw9ZmqatqvEpV2R7bIWIINIHIuPOjE=\\n-----END PUBLIC KEY-----\\n\",\"encryptedMaterial\":\"v2.x25519-hkdf-sha256-aes-256-gcm.ZXBo.aXY.Y3Q.dGFn\",\"epoch\":\"genesis\",\"identityId\":\"MCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=\",\"operationId\":\"3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80\",\"pairingId\":\"c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f\",\"revision\":4,\"version\":1},\"domain\":\"pigeon:device-pairing:completion:v1\"}",
+    "signature": "6MWWO7X79DacgMWmdsgRsxL3qzJMhEMpFk4X6BOgYH8pc+o/AJtmPTEWskeOvdFX3Lg08E3LH6sjZAJ4o/oxAA=="
+  },
+  "verificationCodes": [
+    {
+      "name": "pairing request",
+      "input": {
+        "operationId": "3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80",
+        "pairingId": "c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f",
+        "targetCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=\n-----END PUBLIC KEY-----\n",
+        "transportPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAOVRNjz6v71vCFFPtkFBUo1DwuzbHsY/kUi8mvvBrBsI=\n-----END PUBLIC KEY-----\n"
+      },
+      "preimage": "{\"domain\":\"pigeon:device-pairing:verification:v1\",\"operationId\":\"3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80\",\"pairingId\":\"c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f\",\"targetCredential\":\"-----BEGIN PUBLIC KEY-----\\nMCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=\\n-----END PUBLIC KEY-----\\n\",\"transportPublicKey\":\"-----BEGIN PUBLIC KEY-----\\nMCowBQYDK2VwAyEAOVRNjz6v71vCFFPtkFBUo1DwuzbHsY/kUi8mvvBrBsI=\\n-----END PUBLIC KEY-----\\n\"}",
+      "code": "75339 81070"
+    },
+    {
+      "name": "another transport key",
+      "input": {
+        "operationId": "3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80",
+        "pairingId": "c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f",
+        "targetCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=\n-----END PUBLIC KEY-----\n",
+        "transportPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA9moljnIbgFlQBD2q22HsNZRdplhxUkQJFKxSCfMfzRs=\n-----END PUBLIC KEY-----\n"
+      },
+      "preimage": "{\"domain\":\"pigeon:device-pairing:verification:v1\",\"operationId\":\"3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80\",\"pairingId\":\"c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f\",\"targetCredential\":\"-----BEGIN PUBLIC KEY-----\\nMCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=\\n-----END PUBLIC KEY-----\\n\",\"transportPublicKey\":\"-----BEGIN PUBLIC KEY-----\\nMCowBQYDK2VwAyEA9moljnIbgFlQBD2q22HsNZRdplhxUkQJFKxSCfMfzRs=\\n-----END PUBLIC KEY-----\\n\"}",
+      "code": "06726 76326"
+    }
+  ],
+  "rejected": [
+    {
+      "name": "invitation signed by the target",
+      "format": "invitation",
+      "payload": {
+        "authorCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAeu6SzeVK2vWFhlw9ZmqatqvEpV2R7bIWIINIHIuPOjE=\n-----END PUBLIC KEY-----\n",
+        "epoch": "genesis",
+        "expiresAt": 1760000300000,
+        "identityId": "MCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=",
+        "pairingId": "c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f",
+        "revision": 3,
+        "version": 1
+      },
+      "signature": "x1yGgWK5GrPZXKh3Pr00JDekzkeYbrmv4k86hcc6MFcjeL1SQgh+KTFakxDvBpGattFt1ZZfVFY+dukeJPAbCw==",
+      "signer": "author"
+    },
+    {
+      "name": "invitation revision changed after signing",
+      "format": "invitation",
+      "payload": {
+        "authorCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAeu6SzeVK2vWFhlw9ZmqatqvEpV2R7bIWIINIHIuPOjE=\n-----END PUBLIC KEY-----\n",
+        "epoch": "genesis",
+        "expiresAt": 1760000300000,
+        "identityId": "MCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=",
+        "pairingId": "c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f",
+        "revision": 4,
+        "version": 1
+      },
+      "signature": "elHNVi9mBSftWz4fNI1TLs8xCFBiDmczV4pM8dovW2RiU7UekFrLIYbUGLsrRPotMWq4qK4NHx0r5e3hBFfOAA==",
+      "signer": "author"
+    },
+    {
+      "name": "request transport key swapped after signing",
+      "format": "request",
+      "payload": {
+        "authorizedAt": 1760000000000,
+        "invitation": "psdp1.eyJraW5kIjoicGlnZW9uLWRldmljZS1wYWlyaW5nLWludml0YXRpb24iLCJhdXRob3JDcmVkZW50aWFsIjoiLS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS1cbk1Db3dCUVlESzJWd0F5RUFldTZTemVWSzJ2V0ZobHc5Wm1xYXRxdkVwVjJSN2JJV0lJTklISXVQT2pFPVxuLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tXG4iLCJlcG9jaCI6ImdlbmVzaXMiLCJleHBpcmVzQXQiOjE3NjAwMDAzMDAwMDAsImlkZW50aXR5SWQiOiJNQ293QlFZREsyVndBeUVBZXpZZmNWWTM4elRQcEhKaE9VaUlubEdIK3lKUWlTbldZTkdCb2JsUGhJUT0iLCJwYWlyaW5nSWQiOiJjMmE0ZTZmOC0xYjNkLTRmNWEtOGM3ZS05ZDBiMWEyYzNlNGYiLCJyZXZpc2lvbiI6MywidmVyc2lvbiI6MSwic2lnbmF0dXJlIjoiZWxITlZpOW1CU2Z0V3o0Zk5JMVRMczh4Q0ZCaURtY3pWNHBNOGRvdlcyUmlVN1Vla0ZyTElZYlVHTHNyUlBvdE1XcTRxSzROSHgwcjVlM2hCRmZPQUE9PSJ9",
+        "operationId": "3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80",
+        "proofOfPossession": "5R7gaqP2vBhE4EdvEgKr6lE2Yb0n9TaT5lT2Vmey7t8n2SGjnqpAaSMqZd8iVBmadMX8l6pSjJDtOUIRP10SCA==",
+        "targetCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=\n-----END PUBLIC KEY-----\n",
+        "transportPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA9moljnIbgFlQBD2q22HsNZRdplhxUkQJFKxSCfMfzRs=\n-----END PUBLIC KEY-----\n",
+        "version": 1
+      },
+      "signature": "9Z87bxFvv4g7PDGpDXDVREMrvSY99us3roubl5+J3qNe2pTzojuNll44sGpU/JJbcqVp28pq69uL2N3wkVGXBg==",
+      "signer": "target"
+    },
+    {
+      "name": "request signed with the invitation domain",
+      "format": "request",
+      "payload": {
+        "authorizedAt": 1760000000000,
+        "invitation": "psdp1.eyJraW5kIjoicGlnZW9uLWRldmljZS1wYWlyaW5nLWludml0YXRpb24iLCJhdXRob3JDcmVkZW50aWFsIjoiLS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS1cbk1Db3dCUVlESzJWd0F5RUFldTZTemVWSzJ2V0ZobHc5Wm1xYXRxdkVwVjJSN2JJV0lJTklISXVQT2pFPVxuLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tXG4iLCJlcG9jaCI6ImdlbmVzaXMiLCJleHBpcmVzQXQiOjE3NjAwMDAzMDAwMDAsImlkZW50aXR5SWQiOiJNQ293QlFZREsyVndBeUVBZXpZZmNWWTM4elRQcEhKaE9VaUlubEdIK3lKUWlTbldZTkdCb2JsUGhJUT0iLCJwYWlyaW5nSWQiOiJjMmE0ZTZmOC0xYjNkLTRmNWEtOGM3ZS05ZDBiMWEyYzNlNGYiLCJyZXZpc2lvbiI6MywidmVyc2lvbiI6MSwic2lnbmF0dXJlIjoiZWxITlZpOW1CU2Z0V3o0Zk5JMVRMczh4Q0ZCaURtY3pWNHBNOGRvdlcyUmlVN1Vla0ZyTElZYlVHTHNyUlBvdE1XcTRxSzROSHgwcjVlM2hCRmZPQUE9PSJ9",
+        "operationId": "3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80",
+        "proofOfPossession": "5R7gaqP2vBhE4EdvEgKr6lE2Yb0n9TaT5lT2Vmey7t8n2SGjnqpAaSMqZd8iVBmadMX8l6pSjJDtOUIRP10SCA==",
+        "targetCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA/TgCxmKD4IU72DCRwQbB2Bm4bmF9jJkcKXmgwcC9ENM=\n-----END PUBLIC KEY-----\n",
+        "transportPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAOVRNjz6v71vCFFPtkFBUo1DwuzbHsY/kUi8mvvBrBsI=\n-----END PUBLIC KEY-----\n",
+        "version": 1
+      },
+      "signature": "p+Z/sVAVMjtChtflQWuuCVarDBDXl8rR6/IOXqaPUEcqTDQ5h5PI/ePemtJjN/PH/5V3dI9L7xSbNXmTm09oDg==",
+      "signer": "target"
+    },
+    {
+      "name": "completion material changed after signing",
+      "format": "completion",
+      "payload": {
+        "authorCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAeu6SzeVK2vWFhlw9ZmqatqvEpV2R7bIWIINIHIuPOjE=\n-----END PUBLIC KEY-----\n",
+        "encryptedMaterial": "v2.x25519-hkdf-sha256-aes-256-gcm.ZXBo.aXY.Y3Q.dGFo",
+        "epoch": "genesis",
+        "identityId": "MCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=",
+        "operationId": "3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80",
+        "pairingId": "c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f",
+        "revision": 4,
+        "version": 1
+      },
+      "signature": "6MWWO7X79DacgMWmdsgRsxL3qzJMhEMpFk4X6BOgYH8pc+o/AJtmPTEWskeOvdFX3Lg08E3LH6sjZAJ4o/oxAA==",
+      "signer": "author"
+    },
+    {
+      "name": "completion signed by a stranger",
+      "format": "completion",
+      "payload": {
+        "authorCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA9moljnIbgFlQBD2q22HsNZRdplhxUkQJFKxSCfMfzRs=\n-----END PUBLIC KEY-----\n",
+        "encryptedMaterial": "v2.x25519-hkdf-sha256-aes-256-gcm.ZXBo.aXY.Y3Q.dGFn",
+        "epoch": "genesis",
+        "identityId": "MCowBQYDK2VwAyEAezYfcVY38zTPpHJhOUiInlGH+yJQiSnWYNGBoblPhIQ=",
+        "operationId": "3f1d2c4b-8a7e-4f60-9b12-5c3d4e6f7a80",
+        "pairingId": "c2a4e6f8-1b3d-4f5a-8c7e-9d0b1a2c3e4f",
+        "revision": 4,
+        "version": 1
+      },
+      "signature": "OrBHK3gHlZAoMZTsdCLehPgojK21pPyE5okzRLFWsD0m8A+WkKY04dAL5/VQmTt1wmVkMi+Um4+45LeBUnmHDw==",
+      "signer": "stranger"
+    }
+  ]
+}

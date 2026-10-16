@@ -59,6 +59,9 @@ jobs:
       - name: Verify freshness proofs in Node and Chromium
         run: yarn test:private-freshness
 
+      - name: Verify signed protocol preimages in Node and Chromium
+        run: yarn test:signed-preimages
+
       - name: Verify user root key protection in Node and Chromium
         run: yarn test:user-root-key
 

@@ -177,3 +177,46 @@ describe('PrivateKey', () => {
     expect(cloned.valueOf()).toBe(privatePem);
   });
 });
+
+describe('PrivateKey seed import', () => {
+  const rfc8032Seed = Buffer.from(
+    '9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60',
+    'hex',
+  );
+
+  it('imports the RFC 8032 seed as the same PKCS#8 key', () => {
+    const key = PrivateKey.fromSeed(Uint8Array.from(rfc8032Seed));
+    const native = crypto.createPrivateKey(key.valueOf());
+
+    expect(
+      native.export({ format: 'der', type: 'pkcs8' }).subarray(-32),
+    ).toEqual(rfc8032Seed);
+    expect(
+      crypto
+        .createPublicKey(native)
+        .export({ format: 'der', type: 'spki' })
+        .subarray(-32)
+        .toString('hex'),
+    ).toBe('d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a');
+    expect(key.getPublicKey().toRaw()).toEqual(
+      Uint8Array.from(
+        Buffer.from(
+          'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a',
+          'hex',
+        ),
+      ),
+    );
+  });
+
+  it('rejects seeds that are not 32 bytes', () => {
+    for (const seed of [
+      Buffer.alloc(31),
+      Buffer.alloc(33),
+      undefined,
+      rfc8032Seed.toString('hex'),
+    ])
+      expect(() => PrivateKey.fromSeed(seed as unknown as Uint8Array)).toThrow(
+        InvalidFormatError,
+      );
+  });
+});

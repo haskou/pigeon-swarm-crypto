@@ -1,6 +1,9 @@
 import { gcm } from '@noble/ciphers/aes.js';
+import { equalBytes } from '@noble/ciphers/utils.js';
 import { ed25519, x25519 } from '@noble/curves/ed25519.js';
 import { hkdf } from '@noble/hashes/hkdf.js';
+import { hmac } from '@noble/hashes/hmac.js';
+import { sha1 } from '@noble/hashes/legacy.js';
 import { sha256, sha512 } from '@noble/hashes/sha2.js';
 import {
   bytesToHex,
@@ -86,6 +89,10 @@ export class CryptoAdapter {
     );
   }
 
+  public static equalBytes(left: Uint8Array, right: Uint8Array): boolean {
+    return equalBytes(left, right);
+  }
+
   public static hash(
     algorithm: HashAlgorithm,
     value: string | Uint8Array,
@@ -97,6 +104,30 @@ export class CryptoAdapter {
     }[algorithm];
 
     return bytesToHex(hash(bytes));
+  }
+
+  public static hkdfSha256(
+    inputKeyMaterial: Uint8Array,
+    info: string,
+    length: number,
+  ): Uint8Array {
+    return hkdf(sha256, inputKeyMaterial, undefined, Buffer.from(info), length);
+  }
+
+  public static hmacSha1(key: Uint8Array, message: Uint8Array): Uint8Array {
+    return hmac(sha1, key, message);
+  }
+
+  public static hmacSha256(key: Uint8Array, message: Uint8Array): Uint8Array {
+    return hmac(sha256, key, message);
+  }
+
+  public static isStrictEd25519PublicKey(publicKey: Uint8Array): boolean {
+    try {
+      return !ed25519.Point.fromBytes(publicKey, false).isSmallOrder();
+    } catch {
+      return false;
+    }
   }
 
   public static privateKeyToPem(seed: Uint8Array): string {
@@ -126,6 +157,26 @@ export class CryptoAdapter {
 
   public static publicKeyToBytes(publicKeyPem: string): Uint8Array {
     return this.pemToDer(publicKeyPem).subarray(publicKeyDerPrefix.length);
+  }
+
+  public static publicKeyToStrictBytes(publicKeyPem: string): Uint8Array {
+    const base64 = publicKeyPem
+      .replace('-----BEGIN PUBLIC KEY-----\n', '')
+      .replace('\n-----END PUBLIC KEY-----\n', '');
+    const der = Buffer.from(base64, 'base64');
+
+    if (
+      der.toString('base64') !== base64 ||
+      der.length !== publicKeyDerPrefix.length + 32 ||
+      !equalBytes(
+        der.subarray(0, publicKeyDerPrefix.length),
+        publicKeyDerPrefix,
+      )
+    ) {
+      return new Uint8Array();
+    }
+
+    return der.subarray(publicKeyDerPrefix.length);
   }
 
   public static randomBytes(size: number): Buffer {
@@ -161,6 +212,14 @@ export class CryptoAdapter {
       this.publicKeyToBytes(publicKeyPem),
       { zip215: false },
     );
+  }
+
+  public static verifyStrictEd25519(
+    signature: Uint8Array,
+    message: Uint8Array,
+    publicKey: Uint8Array,
+  ): boolean {
+    return ed25519.verify(signature, message, publicKey, { zip215: false });
   }
 
   public static x25519PublicKey(privateKey: Uint8Array): Uint8Array {

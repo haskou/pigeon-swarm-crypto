@@ -45,6 +45,9 @@
     "docs/mls-roster-frontier.md",
     "docs/group-mailbox-roster-extension.md",
     "docs/group-mailbox-control-letter.md",
+    "docs/private-network-keys.md",
+    "docs/turn-credentials.md",
+    "docs/relay-records.md",
     "vectors"
   ],
   "sideEffects": false,
@@ -88,6 +91,7 @@
     "test:private-freshness": "node tests/runtime/private-freshness.cjs",
     "test:proof-of-work": "node tests/runtime/proof-of-work.cjs",
     "test:user-root-key": "node tests/runtime/user-root-key.cjs",
+    "test:network-derivations": "node tests/runtime/network-derivations.cjs",
     "test:mls-key-lifecycle": "node tests/runtime/mls-key-lifecycle.cjs",
     "test:mls-browser": "node tests/runtime/mls-browser.cjs",
     "test:mls-standard-vectors": "node tests/runtime/mls-standard-vectors.mjs",

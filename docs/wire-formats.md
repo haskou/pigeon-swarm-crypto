@@ -21,14 +21,18 @@ standard Base64 unless stated otherwise.
 
 | Data | Format | Notes |
 | --- | --- | --- |
-| Private key | Ed25519 PKCS#8 PEM | Key material and encoding |
-| Public key | Ed25519 SPKI PEM | Key material and encoding |
+| Private key | Ed25519 PKCS#8 PEM | Key material and encoding; `PrivateKey.fromSeed` imports a 32-byte seed |
+| Public key | Ed25519 SPKI PEM | Key material and encoding; `PublicKey.fromRaw` and `toRaw` convert strict 32-byte keys |
 | Signature | Base64 Ed25519 signature | Signatures cover supplied bytes; applications own canonicalization. Every Ed25519 verification in the package (`PublicKey`, the private signature formats and the MLS ciphersuite) uses RFC 8032 strict decoding with canonical `A` and `R` encodings, plus rejection of small-order public keys; ZIP-215 is not accepted |
 | Symmetric payload | `v1.aes-256-gcm.iv.ciphertext.tag` | Authenticates the default header AAD unless custom AAD is supplied |
 | Asymmetric payload | `v2.x25519-hkdf-sha256-aes-256-gcm.ephemeralPublicKey.iv.ciphertext.tag` | Only this envelope is accepted |
 | Protected private key | `v3.scrypt.N16384.r8.p5.salt.iv.tag.ciphertext` | Only this envelope is accepted |
 | Private control transition | `pigeon.private-control.v2` signed canonical JSON | Derives the binding from the authenticated operation and requires its claimed resulting head to equal the signed checkpoint head without creating a circular hash |
 | Proof of work | SHA-256 over length-prefixed `pigeon-identity-admission:v2` or `pigeon-mailbox-creation:v2` preimages | Canonical decimal nonce; see [Proof of work](proof-of-work.md) |
+| Private network keys | HKDF-SHA256 of the network seed with `pigeon.private-network.*.v2` labels | See [private-network-keys.md](private-network-keys.md) |
+| Private network envelope | `{"ciphertext","nonce","version":2}` AES-256-GCM JSON | Pubsub envelopes bind network id and topic |
+| TURN credential | `expiresAt:user` and Base64 HMAC-SHA1 | Fixed by coturn; see [turn-credentials.md](turn-credentials.md) |
+| Relay record signature | Ed25519 over sorted-field JSON | See [relay-records.md](relay-records.md) |
 
 The asymmetric HKDF context is `@haskou/value-objects/asymmetric-payload/v2`. It is
 part of the protocol and independent of the package name.

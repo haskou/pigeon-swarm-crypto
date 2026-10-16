@@ -187,3 +187,65 @@ describe('PublicKey', () => {
     expect(cloned).not.toBe(first);
   });
 });
+
+describe('PublicKey raw Ed25519 encoding', () => {
+  const rfc8032Public = Buffer.from(
+    'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a',
+    'hex',
+  );
+  const pemOf = (prefix: string, raw: Buffer): string =>
+    `-----BEGIN PUBLIC KEY-----\n${Buffer.concat([
+      Buffer.from(prefix, 'hex'),
+      raw,
+    ]).toString('base64')}\n-----END PUBLIC KEY-----\n`;
+  const ed25519Prefix = '302a300506032b6570032100';
+  const smallOrder = Buffer.from(`01${'00'.repeat(31)}`, 'hex');
+
+  it('round-trips the RFC 8032 public key through SPKI', () => {
+    const key = PublicKey.fromRaw(Uint8Array.from(rfc8032Public));
+    const native = crypto.createPublicKey(key.valueOf());
+
+    expect(
+      native.export({ format: 'der', type: 'spki' }).subarray(-32),
+    ).toEqual(rfc8032Public);
+    expect(Buffer.from(key.toRaw())).toEqual(rfc8032Public);
+    expect(key.toRaw()).not.toBe(key.toRaw());
+    expect(
+      Buffer.from(new PublicKey(pemOf(ed25519Prefix, rfc8032Public)).toRaw()),
+    ).toEqual(rfc8032Public);
+  });
+
+  it('rejects raw keys that are not strict Ed25519 points', () => {
+    for (const raw of [
+      smallOrder,
+      rfc8032Public.subarray(1),
+      Buffer.concat([rfc8032Public, Buffer.alloc(1)]),
+      Buffer.alloc(32, 0xff),
+      undefined,
+      'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a',
+    ])
+      expect(() => PublicKey.fromRaw(raw as unknown as Uint8Array)).toThrow(
+        InvalidFormatError,
+      );
+  });
+
+  it('refuses to export non Ed25519, small-order or non-canonical SPKI keys', () => {
+    const canonical = pemOf(ed25519Prefix, rfc8032Public);
+    const padding = canonical.indexOf('=\n');
+    const alphabet =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    const nonCanonical = `${canonical.slice(0, padding - 1)}${
+      alphabet[alphabet.indexOf(canonical[padding - 1]) + 1]
+    }${canonical.slice(padding)}`;
+
+    expect(Buffer.from(nonCanonical.split('\n')[1], 'base64')).toEqual(
+      Buffer.from(canonical.split('\n')[1], 'base64'),
+    );
+    for (const pem of [
+      pemOf('302a300506032b656e032100', rfc8032Public),
+      pemOf(ed25519Prefix, smallOrder),
+      nonCanonical,
+    ])
+      expect(() => new PublicKey(pem).toRaw()).toThrow(InvalidFormatError);
+  });
+});

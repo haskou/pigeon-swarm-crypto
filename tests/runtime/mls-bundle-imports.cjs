@@ -10,8 +10,9 @@ const dependencies = new Set(Object.keys(manifest.dependencies ?? {}));
 const peers = manifest.peerDependencies ?? {};
 const peerMeta = manifest.peerDependenciesMeta ?? {};
 const builtins = new Set(builtinModules);
+// A specifier holds no whitespace, which keeps `"read from" + x + "y"` out.
 const specifier =
-  /(?:\bimport\(|\bfrom |\brequire\()\s*["']([^"'./][^"']*)["']/g;
+  /(?:\bimport\s*\(|\bimport|\bfrom|\brequire\s*\()\s*["']([^"'./\s][^"'\s]*)["']/g;
 
 const packageName = (id) =>
   id.startsWith('@') ? id.split('/').slice(0, 2).join('/') : id.split('/')[0];

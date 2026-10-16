@@ -44,6 +44,7 @@
     "docs/mls-leaf-credential.md",
     "docs/mls-roster-frontier.md",
     "docs/group-mailbox-roster-extension.md",
+    "docs/group-mailbox-control-letter.md",
     "vectors"
   ],
   "sideEffects": false,
@@ -95,7 +96,8 @@
     "test:client-key-schedules": "node tests/runtime/client-key-schedules.cjs",
     "test:commitments": "node tests/runtime/commitments.cjs",
     "test:mls-group": "node tests/runtime/mls-group.cjs",
-    "test:mls-group-codecs": "node tests/runtime/mls-group-codecs.cjs"
+    "test:mls-group-codecs": "node tests/runtime/mls-group-codecs.cjs",
+    "test:group-mailbox-control-letter": "node tests/runtime/group-mailbox-control-letter.cjs"
   },
   "dependencies": {
     "@noble/ciphers": "2.4.0",

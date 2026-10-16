@@ -48,5 +48,69 @@
       "recipientIdentityId": "é😀",
       "sharedSecret": "BAsSGSAnLjU8Q0pRWF9mbXR7gomQl56lrLO6wcjP1t0="
     }
+  ],
+  "groupInbox": [
+    {
+      "name": "fill bytes",
+      "generationSecret": "ERERERERERERERERERERERERERERERERERERERERERE=",
+      "memberIdentityId": "MCowBQYDK2VwAyEAzF0n0b8bJ6t0nC1p2u8o7aYyq9Qm0cS1k0zjQ5u2d4A=",
+      "slot": "pgAqQi0BWmzYB9FceeGhPYxsQqiTT38DsHsbGj_QJuE",
+      "envelopeKey": "gDnsVFvd6WFiPDai54td4_NmRis9LZz4oS3T6h4cCPc",
+      "mailboxId": "2R17FBRpwi_U3CUbJA106nvW76C-dL0essFhOPU5GDw",
+      "postToken": "CcnXMggP_rmeyujpUTEAd2pp2X_w0Is9hLtDN8kw49s",
+      "ownerRootKey": "MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM=",
+      "readToken": "gYGRBDXZ6XuCntUVif4Rwf8vunYNUdS0LudKymwGh_s"
+    },
+    {
+      "name": "same generation, another identity",
+      "generationSecret": "ERERERERERERERERERERERERERERERERERERERERERE=",
+      "memberIdentityId": "MCowBQYDK2VwAyEAq4oQfVxH3wq0m6s5tYp1Q2kLr8yNn7c0aZ3eX9b1JvI=",
+      "slot": "IhdelaD_hwWYdto2IcgTEKSUNL8Ebd-VkoGS81N2I_A",
+      "envelopeKey": "27ERIgJXbVdKYY6s6b9RaNX4f-5eXrEB0vHKbjG_45Y",
+      "mailboxId": "xlV3YV5mlcA08c5BFEYJdY0vWJmC8LT3317FawH8AhI",
+      "postToken": "JcaiqPGx5QbbzobqeCC593hKZkR9SPIIfVaE1rx3eV8",
+      "ownerRootKey": "MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM=",
+      "readToken": "ui0lCfGOmxolxKuxWg1oYdQXy3faSnFfFZkloZI75I0"
+    },
+    {
+      "name": "next generation, same identity",
+      "generationSecret": "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=",
+      "memberIdentityId": "MCowBQYDK2VwAyEAzF0n0b8bJ6t0nC1p2u8o7aYyq9Qm0cS1k0zjQ5u2d4A=",
+      "slot": "i6be9hUQ4m_P_fJRw38RbEHnqzHjlK2LgaJIsPBF1rE",
+      "envelopeKey": "Xd9F73-_mwRy_Guu9Jnbeb3gjNXFtuQmGxFCi-MlfXE",
+      "mailboxId": "x1imS2TxkxmGCV9W-f2cMmORSOjFVFG1d1nVMiMsIwU",
+      "postToken": "CdOW96f7pbNM7DlCzKk7C8XNuoG4N3B4S9W4mPvmABY",
+      "ownerRootKey": "MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzM=",
+      "readToken": "qy0O_o6hv0cCNtjVAmNYSGGR5D_LY7ZeDCLRkSj7oCk"
+    },
+    {
+      "name": "sequential bytes, non-ascii identity",
+      "generationSecret": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+      "memberIdentityId": "identité-ü",
+      "slot": "-svPCJxPZ5DZ4_z5t6RH1bXE6YoCF6ERysWXuPLQ-pE",
+      "envelopeKey": "dXusvaV6aLbWx6kSNB-TtIqff7ySdyGt0vgp8SJrYe8",
+      "mailboxId": "mHQSxb6R0PxAqstJpUqpUnrnJJNQB09sBnzCBZmPGWY",
+      "postToken": "xMvCvK_fT9FTUbzO3iFJwCTnP5xOf5_RuQpmOMD0EMI",
+      "ownerRootKey": "//79/Pv6+fj39vX08/Lx8O/u7ezr6uno5+bl5OPi4eA=",
+      "readToken": "bx7flE-jsZ7bWC2eB5yMuFOzd7nlgtfpw018NcgI1vI"
+    }
+  ],
+  "invalidGroupInbox": [
+    {
+      "name": "empty member",
+      "memberIdentityId": ""
+    },
+    {
+      "name": "non-string member",
+      "memberIdentityId": 7
+    },
+    {
+      "name": "member longer than 4096 bytes",
+      "memberIdentityId": "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"
+    },
+    {
+      "name": "lone surrogate",
+      "memberIdentityId": "a\ud800"
+    }
   ]
 }

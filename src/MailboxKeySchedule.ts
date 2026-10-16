@@ -12,6 +12,12 @@ import { SymmetricKey } from './SymmetricKey';
 export class MailboxKeySchedule {
   private static readonly CONTACT_PRESENCE_LABEL = 'pigeon/contact-presence/v1';
   private static readonly ENVELOPE_LABEL = 'pigeon/mailbox/envelope/v1';
+  private static readonly GROUP_ENVELOPE_LABEL =
+    'pigeon/group-mailbox/envelope/v1';
+
+  private static readonly GROUP_ID_LABEL = 'pigeon/group-mailbox/id/v1';
+  private static readonly GROUP_POST_LABEL = 'pigeon/group-mailbox/post/v1';
+  private static readonly GROUP_SLOT_LABEL = 'pigeon/group-mailbox/slot/v1';
   private static readonly ID_LABEL = 'pigeon/mailbox/id/v1';
   private static readonly KEY_LENGTH = 32;
   private static readonly MAX_EPOCH = 4294967295;
@@ -97,6 +103,43 @@ export class MailboxKeySchedule {
       );
 
       return this.schedule(secret, recipientIdentityId, 0);
+    } catch {
+      throw new InvalidMailboxKeyError();
+    }
+  }
+
+  /**
+   * Derives a member's inbox in a group mailbox generation: a per-member slot
+   * from the generation secret, then each field from the slot.
+   */
+  public static groupInbox(
+    generationSecret: SymmetricKey,
+    memberIdentityId: string,
+  ): MailboxInboxKeys {
+    try {
+      const secret = KeyMaterial.of(generationSecret);
+      const slot = this.expand(
+        secret,
+        MailboxKeySchedule.GROUP_SLOT_LABEL,
+        BoundedText.encode(
+          memberIdentityId,
+          MailboxKeySchedule.MAX_RECIPIENT_BYTES,
+        ),
+      );
+
+      return Object.freeze({
+        envelopeKey: this.expand(
+          secret,
+          MailboxKeySchedule.GROUP_ENVELOPE_LABEL,
+          slot,
+        ),
+        mailboxId: CanonicalBase64Url.encode(
+          this.expand(secret, MailboxKeySchedule.GROUP_ID_LABEL, slot),
+        ),
+        postToken: CanonicalBase64Url.encode(
+          this.expand(secret, MailboxKeySchedule.GROUP_POST_LABEL, slot),
+        ),
+      });
     } catch {
       throw new InvalidMailboxKeyError();
     }

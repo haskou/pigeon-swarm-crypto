@@ -86,6 +86,22 @@ async function exercise(api, vectors, peer) {
         ),
       ),
     ),
+    groupInbox: vectors.schedule.groupInbox.map((entry) =>
+      keysOf(
+        api.MailboxKeySchedule.groupInbox(
+          key(entry.generationSecret),
+          entry.memberIdentityId,
+        ),
+      ),
+    ),
+    invalidGroupInbox: vectors.schedule.invalidGroupInbox.map((entry) =>
+      rejects(() =>
+        api.MailboxKeySchedule.groupInbox(
+          key(vectors.schedule.groupInbox[0].generationSecret),
+          entry.memberIdentityId,
+        ),
+      ),
+    ),
     readTokens: [
       ...vectors.readToken.derive.map((entry) =>
         api.MailboxReadToken.derive(key(entry.rootKey), entry.mailboxId),
@@ -281,6 +297,15 @@ const expectedOpened = {
 
 (async () => {
   const node = await exercise(api, vectors, undefined);
+  assert.deepEqual(
+    node.deterministic.groupInbox,
+    vectors.schedule.groupInbox.map(({ envelopeKey, mailboxId, postToken }) => ({
+      envelopeKey,
+      mailboxId,
+      postToken,
+    })),
+  );
+  assert.ok(node.deterministic.invalidGroupInbox.every(Boolean));
   const bundle = await build({
     stdin: {
       contents: "export * from './dist/index.js';",

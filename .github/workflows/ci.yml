@@ -74,6 +74,9 @@ jobs:
       - name: Verify commitment ids in Node and Chromium
         run: yarn test:commitments
 
+      - name: Verify group mailbox control letters in Node and Chromium
+        run: yarn test:group-mailbox-control-letter
+
       - name: Verify MLS key lifecycle in Node
         run: yarn test:mls-key-lifecycle
 

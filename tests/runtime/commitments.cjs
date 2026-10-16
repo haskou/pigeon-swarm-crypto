@@ -16,6 +16,9 @@ const owners = {
   communityInviteToken: ['CommitmentId', 'communityInviteToken'],
   mlsRecord: ['CommitmentId', 'mlsRecord'],
   privateBlobOwner: ['CommitmentId', 'privateBlobOwner'],
+  oneToOneConversation: ['CommitmentId', 'oneToOneConversation'],
+  groupConversation: ['CommitmentId', 'groupConversation'],
+  invitation: ['CommitmentId', 'invitation'],
   stateDigest: ['StateDigest', 'of'],
   communityFrontiers: ['StateDigest', 'communityFrontiers'],
 };
@@ -62,6 +65,17 @@ const evaluate = (library, bearer, commitments, owners) => {
     bytes: commitments.bytesDigest.valid.map((item) =>
       library.StateDigest.ofBytes(hex(item.bytes)),
     ),
+    groupMessages: [
+      ...commitments.groupMessage.owned,
+      ...commitments.groupMessage.foreign,
+    ].map((item) => library.CommitmentId.isGroupMessageOf(...item.args)),
+    created: [commitments.groupMessage.owned[0].args[1]].map((author) => {
+      const id = library.CommitmentId.groupMessage(author);
+      return [
+        /^[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{22}$/.test(id),
+        library.CommitmentId.isGroupMessageOf(id, author),
+      ];
+    }),
   };
 };
 
@@ -103,6 +117,15 @@ const assertExpected = (runtime, result) => {
     commitments.bytesDigest.valid.map((item) => item.id),
     runtime,
   );
+  assert.deepEqual(
+    result.groupMessages,
+    [
+      ...commitments.groupMessage.owned.map(() => true),
+      ...commitments.groupMessage.foreign.map(() => false),
+    ],
+    runtime,
+  );
+  assert.deepEqual(result.created, [[true, true]], runtime);
 };
 
 (async () => {

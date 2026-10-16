@@ -15,6 +15,11 @@ import { MlsRecordContent } from './MlsRecordContent';
 
 export class CommitmentId {
   private static readonly callNonce = /^[A-Za-z0-9_-]{16,128}$/;
+  private static readonly groupMessageId =
+    /^([A-Za-z0-9_-]{22})\.([A-Za-z0-9_-]{22})$/;
+
+  private static readonly groupMessagePurpose = 'pigeon-group-message-id';
+  private static readonly groupMessageNonceBytes = 16;
   private static readonly salt = /^[0-9a-f]{64}$/;
   private static readonly mlsRecordFields = [
     'epoch',
@@ -30,6 +35,14 @@ export class CommitmentId {
 
   private static longId(preimage: string): string {
     return CanonicalBase64Url.encode(sha256(utf8ToBytes(preimage)));
+  }
+
+  private static groupMessageTag(author: string, nonce: string): string {
+    return CanonicalBase64Url.encode(
+      sha256(
+        utf8ToBytes(`${this.groupMessagePurpose}\u0000${author}\u0000${nonce}`),
+      ).slice(0, this.groupMessageNonceBytes),
+    );
   }
 
   public static call(creatorIdentityId: string, nonce: string): string {
@@ -183,5 +196,85 @@ export class CommitmentId {
         utf8ToBytes(CommitmentInput.text(identityId)),
       ),
     );
+  }
+
+  /** Both participants derive the same id whatever the argument order. */
+  public static oneToOneConversation(
+    firstIdentityId: string,
+    secondIdentityId: string,
+    networkId: string,
+  ): string {
+    const participants = [firstIdentityId, secondIdentityId].map((value) => {
+      const identityId = CommitmentInput.text(value);
+
+      if (identityId.includes(':')) throw new InvalidCommitmentError();
+
+      return identityId;
+    });
+    const network = CommitmentInput.text(networkId);
+
+    return `one-to-one:${bytesToHex(
+      sha256(utf8ToBytes(`${participants.sort().join(':')}:${network}`)),
+    )}`;
+  }
+
+  public static groupConversation(
+    creatorIdentityId: string,
+    networkId: string,
+    nonce: string,
+  ): string {
+    return `group:${this.longId(
+      StrictCanonicalJson.serialize({
+        creatorIdentityId: CommitmentInput.text(creatorIdentityId),
+        networkId: CommitmentInput.text(networkId),
+        nonce: CommitmentInput.text(nonce),
+      }),
+    )}`;
+  }
+
+  public static invitation(
+    inviterIdentityId: string,
+    recipientIdentityId: string,
+    nonce: string,
+    subjectId?: string,
+  ): string {
+    const record: Record<string, unknown> = {
+      inviterIdentityId: CommitmentInput.text(inviterIdentityId),
+      nonce: CommitmentInput.text(nonce),
+      recipientIdentityId: CommitmentInput.text(recipientIdentityId),
+    };
+
+    if (subjectId !== undefined)
+      record.subjectId = CommitmentInput.text(subjectId);
+
+    return `invitation:${bytesToHex(
+      sha256(utf8ToBytes(StrictCanonicalJson.serialize(record))),
+    )}`;
+  }
+
+  /** A fresh message id whose tag binds it to its author. */
+  public static groupMessage(authorIdentityId: string): string {
+    const author = CommitmentInput.text(authorIdentityId);
+    const nonce = CanonicalBase64Url.encode(
+      randomBytes(this.groupMessageNonceBytes),
+    );
+
+    return `${nonce}.${this.groupMessageTag(author, nonce)}`;
+  }
+
+  /** False for any malformed id or author; never throws. */
+  public static isGroupMessageOf(
+    id: string,
+    authorIdentityId: string,
+  ): boolean {
+    try {
+      const author = CommitmentInput.text(authorIdentityId);
+      const [, nonce, tag] = this.groupMessageId.exec(id as string) ?? [];
+      CanonicalBase64Url.decode(nonce, this.groupMessageNonceBytes);
+
+      return tag === this.groupMessageTag(author, nonce);
+    } catch {
+      return false;
+    }
   }
 }

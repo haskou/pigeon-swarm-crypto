@@ -22,6 +22,28 @@ read token. Every value below is derived on the client from a 256-bit
 recipient)` first derives `HKDF(conversationKey, info =
 "pigeon/contact-presence/v1")` and then runs the schedule at epoch `0`.
 
+## Group inbox
+
+`MailboxKeySchedule.groupInbox(generationSecret, member)` derives a member's
+inbox in one generation of a group mailbox. It first derives a per-member slot
+`HKDF(generationSecret, info = "pigeon/group-mailbox/slot/v1" ||
+UTF-8(member))`, then each field as `HKDF(generationSecret, info = label ||
+slot)`, all HKDF-SHA-256 without salt and 32 bytes:
+
+| Field | Label | Encoding |
+| --- | --- | --- |
+| `envelopeKey` | `pigeon/group-mailbox/envelope/v1` | bytes |
+| `mailboxId` | `pigeon/group-mailbox/id/v1` | unpadded base64url |
+| `postToken` | `pigeon/group-mailbox/post/v1` | unpadded base64url |
+
+The generation secret is a 256-bit `SymmetricKey`; `member` follows the
+`recipient` rules above. Every failure throws `InvalidMailboxKeyError`.
+
+Anyone holding the generation secret, which is every member of that
+generation, can derive every member's `envelopeKey`, `mailboxId` and
+`postToken`. Group inboxes separate members for routing, not for secrecy
+between members; confidentiality inside the group comes from MLS.
+
 ## Read tokens
 
 `MailboxReadToken.derive(root, mailboxId)` is HKDF-SHA-256 without salt over

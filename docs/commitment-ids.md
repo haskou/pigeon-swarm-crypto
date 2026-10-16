@@ -38,6 +38,11 @@ CommitmentId.communityInviteToken(
 CommitmentId.mlsRecord({ epoch, groupId, kind, payload, recipientIdentityId });
 CommitmentId.privateBlobOwner(saltHex, identityId);
 CommitmentId.privateBlobOwnerSalt();
+CommitmentId.oneToOneConversation(firstIdentityId, secondIdentityId, networkId);
+CommitmentId.groupConversation(creatorIdentityId, networkId, nonce);
+CommitmentId.invitation(inviterIdentityId, recipientIdentityId, nonce, subjectId?);
+CommitmentId.groupMessage(authorIdentityId);
+CommitmentId.isGroupMessageOf(id, authorIdentityId);
 
 StateDigest.of(plainObject);
 StateDigest.ofBytes(bytes);
@@ -60,6 +65,10 @@ Canonicalization Scheme bytes. base64url is unpadded.
 | `communityInviteToken`           | base64url SHA-256 of JSON `[communityId, creatorIdentityId, nonce, maxUses, expiresAt or null]`                                                               |
 | `mlsRecord`                      | base64url SHA-256 of RFC 8785 `{epoch?, groupId, kind, payload, recipientIdentityId?}`                                                                        |
 | `privateBlobOwner`               | Lowercase hex HMAC-SHA256 keyed by the 32-byte salt over the UTF-8 identity id                                                                                |
+| `oneToOneConversation`           | `one-to-one:` and lowercase hex SHA-256 of `a ":" b ":" networkId`, with the two identity ids sorted by UTF-16 code unit                                      |
+| `groupConversation`              | `group:` and base64url SHA-256 of RFC 8785 `{creatorIdentityId, networkId, nonce}`                                                                            |
+| `invitation`                     | `invitation:` and lowercase hex SHA-256 of RFC 8785 `{inviterIdentityId, nonce, recipientIdentityId, subjectId?}`                                             |
+| `groupMessage`                   | `nonce "." tag`: a random 16-byte nonce and the first 16 bytes of SHA-256 of `"pigeon-group-message-id" 0x00 author 0x00 nonce`, both base64url               |
 | `StateDigest.of`                 | base64url SHA-256 of RFC 8785 of the object                                                                                                                   |
 | `StateDigest.ofBytes`            | base64url SHA-256 of the bytes                                                                                                                                |
 | `StateDigest.communityFrontiers` | base64url SHA-256 of JSON `[[communityId, heads]]`, communities and heads sorted by UTF-16 code unit                                                          |
@@ -80,6 +89,14 @@ Every failure throws `InvalidCommitmentError` with a fixed message and no input.
 - `mlsRecord` accepts a plain object with only the five listed fields. An
   undefined optional field and an empty `recipientIdentityId` are omitted from
   the preimage.
+- `oneToOneConversation` identity ids must not contain the `:` delimiter.
+- `invitation` omits an undefined `subjectId` from the preimage.
+- `isGroupMessageOf` returns `false` for any id of another author, a tag of
+  another nonce, a non-canonical or padded part, a missing or extra part, or a
+  malformed author; it never throws.
+- The `groupMessage` tag is not a MAC: it stops another author reusing an id
+  already published under someone else's identity, but it does not prove
+  authorship. Authorship comes from the signature on the message.
 - `privateBlobOwner` requires a 64-character lowercase hex salt. Each node
   creates one salt with `privateBlobOwnerSalt` and keeps it secret, so owner
   keys cannot be linked to identity ids by anyone without the salt.

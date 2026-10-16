@@ -1,3 +1,5 @@
+import { hkdfSync } from 'node:crypto';
+
 import {
   InvalidMailboxKeyError,
   MailboxKeySchedule,
@@ -45,6 +47,61 @@ describe('MailboxKeySchedule', () => {
       expect(keys.postToken).toBe(postToken);
     },
   );
+  it.each(scheduleVectors.groupInbox)(
+    'derives the group inbox of $name',
+    (entry) => {
+      const generation = SymmetricKey.fromBase64(entry.generationSecret);
+      const keys = MailboxKeySchedule.groupInbox(
+        generation,
+        entry.memberIdentityId,
+      );
+
+      expect(keys).toBeFrozen();
+      expect(encode(keys.envelopeKey)).toBe(entry.envelopeKey);
+      expect(keys.mailboxId).toBe(entry.mailboxId);
+      expect(keys.postToken).toBe(entry.postToken);
+      expect(
+        MailboxReadToken.derive(
+          SymmetricKey.fromBase64(entry.ownerRootKey),
+          keys.mailboxId,
+        ),
+      ).toBe(entry.readToken);
+    },
+  );
+
+  it('derives the group inbox from the documented member slot', () => {
+    const expand = (secret: Buffer, info: Buffer): Buffer =>
+      Buffer.from(hkdfSync('sha256', secret, Buffer.alloc(0), info, 32));
+
+    for (const entry of scheduleVectors.groupInbox) {
+      const generation = Buffer.from(entry.generationSecret, 'base64');
+      const slot = expand(
+        generation,
+        Buffer.from(`pigeon/group-mailbox/slot/v1${entry.memberIdentityId}`),
+      );
+      const field = (label: string): string =>
+        encode(expand(generation, Buffer.concat([Buffer.from(label), slot])));
+
+      expect(encode(slot)).toBe(entry.slot);
+      expect(field('pigeon/group-mailbox/id/v1')).toBe(entry.mailboxId);
+      expect(field('pigeon/group-mailbox/post/v1')).toBe(entry.postToken);
+      expect(field('pigeon/group-mailbox/envelope/v1')).toBe(entry.envelopeKey);
+    }
+  });
+
+  it.each(
+    scheduleVectors.invalidGroupInbox.map(
+      (entry) => [entry.name, entry.memberIdentityId] as const,
+    ),
+  )('rejects a group inbox for %s', (_, member) => {
+    const generation = SymmetricKey.fromBase64(
+      scheduleVectors.groupInbox[0].generationSecret,
+    );
+
+    expect(() =>
+      MailboxKeySchedule.groupInbox(generation, member as string),
+    ).toThrow(new InvalidMailboxKeyError());
+  });
 
   it.each([
     ['an empty recipient', ''],
@@ -53,9 +110,9 @@ describe('MailboxKeySchedule', () => {
     ['a recipient longer than 4096 bytes', 'é'.repeat(2049)],
     ['a lone surrogate', 'a\uD800'],
   ])('rejects %s', (_, value) => {
-    expect(() =>
-      MailboxKeySchedule.derive(secret, value as string, 0),
-    ).toThrow(new InvalidMailboxKeyError());
+    expect(() => MailboxKeySchedule.derive(secret, value as string, 0)).toThrow(
+      new InvalidMailboxKeyError(),
+    );
     expect(() =>
       MailboxKeySchedule.contactPresence(secret, value as string),
     ).toThrow(InvalidMailboxKeyError);
@@ -77,6 +134,9 @@ describe('MailboxKeySchedule', () => {
       InvalidMailboxKeyError,
     );
     expect(() => MailboxKeySchedule.contactPresence(raw, recipient)).toThrow(
+      InvalidMailboxKeyError,
+    );
+    expect(() => MailboxKeySchedule.groupInbox(raw, recipient)).toThrow(
       InvalidMailboxKeyError,
     );
   });

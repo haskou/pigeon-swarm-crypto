@@ -40,6 +40,10 @@
     "docs/proof-of-work.md",
     "docs/bearer-capabilities.md",
     "docs/commitment-ids.md",
+    "docs/mls-group.md",
+    "docs/mls-leaf-credential.md",
+    "docs/mls-roster-frontier.md",
+    "docs/group-mailbox-roster-extension.md",
     "vectors"
   ],
   "sideEffects": false,
@@ -74,8 +78,8 @@
     "test:unit": "jest --runInBand",
     "test:coverage": "yarn test:coverage:unit && yarn test:coverage:mls",
     "test:coverage:unit": "NODE_ENV=test jest --collect-coverage",
-    "test:coverage:mls": "yarn build && node tests/runtime/mls-create-transaction.cjs && c8 --clean=true --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/mls-key-lifecycle.cjs && c8 --clean=false --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/private-delivery.cjs && c8 --clean=false --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/mls-validation.cjs && c8 report --temp-directory=tests/.coverage-mls --report-dir=tests/coverage-mls --reporter=text --reporter=lcov --exclude-after-remap --exclude=node_modules/** --exclude=src/*.ts --exclude=src/errors/** --exclude=src/hashes/** --exclude=src/internal/** --exclude=src/mls/index.ts --exclude=tests/** --check-coverage --branches=100 --functions=100 --lines=100 --statements=100",
-    "build": "rm -rf dist/ && tsc && esbuild src/mls/index.ts --bundle --platform=browser --format=esm --target=es2022 --sourcemap --outfile=dist/mls/index.mjs && esbuild src/mls/index.ts --bundle --platform=node --format=cjs --target=node20 --sourcemap --outfile=dist/mls/index.cjs",
+    "test:coverage:mls": "yarn build && node tests/runtime/mls-create-transaction.cjs && c8 --clean=true --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/mls-key-lifecycle.cjs && c8 --clean=false --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/private-delivery.cjs && c8 --clean=false --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/mls-validation.cjs && c8 --clean=false --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/mls-group.cjs && c8 --clean=false --temp-directory=tests/.coverage-mls --reporter=none node tests/runtime/mls-group-codecs.cjs && c8 report --temp-directory=tests/.coverage-mls --report-dir=tests/coverage-mls --reporter=text --reporter=lcov --exclude-after-remap --exclude=node_modules/** --exclude=src/*.ts --exclude=src/errors/** --exclude=src/hashes/** --exclude=src/internal/** --exclude=src/mls/index.ts --exclude=tests/** --check-coverage --branches=100 --functions=100 --lines=100 --statements=100",
+    "build": "rm -rf dist/ && tsc && esbuild src/mls/index.ts --bundle --platform=browser --format=esm --target=es2022 --sourcemap --outfile=dist/mls/index.mjs && esbuild src/mls/index.ts --bundle --platform=node --main-fields=module,main --format=cjs --target=node20 --sourcemap --outfile=dist/mls/index.cjs",
     "test:runtime": "node --stack_size=256 tests/runtime/base64.cjs",
     "test:private-signatures": "node tests/runtime/private-signatures.cjs",
     "test:private-genesis": "node tests/runtime/private-genesis.cjs",
@@ -89,7 +93,9 @@
     "test:private-delivery": "node tests/runtime/private-delivery.cjs",
     "test:signed-preimages": "node tests/runtime/signed-preimages.cjs",
     "test:client-key-schedules": "node tests/runtime/client-key-schedules.cjs",
-    "test:commitments": "node tests/runtime/commitments.cjs"
+    "test:commitments": "node tests/runtime/commitments.cjs",
+    "test:mls-group": "node tests/runtime/mls-group.cjs",
+    "test:mls-group-codecs": "node tests/runtime/mls-group-codecs.cjs"
   },
   "dependencies": {
     "@noble/ciphers": "2.4.0",

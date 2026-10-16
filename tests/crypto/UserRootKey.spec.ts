@@ -15,6 +15,8 @@ describe('UserRootKey', () => {
   const password = new Password('Correct-horse-battery-staple-7!');
   const nextPassword = new Password('Different-long-password-9!');
 
+  afterEach(() => jest.restoreAllMocks());
+
   it('protects a random root key with both password and second factor', async () => {
     const rootKey = UserRootKey.generate();
     const factor = UserRootKeySecondFactor.generate();
@@ -135,6 +137,37 @@ describe('UserRootKey', () => {
       ),
     ).toBeTrue();
   });
+
+  it.each([
+    ['root key', UserRootKey],
+    ['second factor', UserRootKeySecondFactor],
+  ] as const)(
+    'compares %s bytes and wipes them, keeping null-object equality',
+    (_name, Type) => {
+      const key = Type.generate();
+      const same = Type.fromBase64(key.valueOf());
+      const other = Type.generate();
+      const empty = new Type(undefined as unknown as string);
+      const opened: Uint8Array[] = [];
+      const getBuffer = Type.prototype.getBuffer;
+      jest
+        .spyOn(Type.prototype, 'getBuffer')
+        .mockImplementation(function (this: InstanceType<typeof Type>) {
+          const bytes = getBuffer.call(this);
+          opened.push(bytes);
+
+          return bytes;
+        });
+
+      expect(key.isEqual(same)).toBeTrue();
+      expect(key.isEqual(other)).toBeFalse();
+      expect(key.isEqual(key.valueOf())).toBeFalse();
+      expect(key.isEqual(empty)).toBeFalse();
+      expect(empty.isEqual(key)).toBeFalse();
+      expect(empty.isEqual(new Type(undefined as unknown as string))).toBeTrue();
+      expect(opened).toEqual(Array.from({ length: 4 }, () => Buffer.alloc(32)));
+    },
+  );
 
   it('requires explicit export and does not serialize or inspect secrets', () => {
     const rootKey = UserRootKey.generate();

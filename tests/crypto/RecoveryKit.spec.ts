@@ -42,6 +42,27 @@ describe('RecoveryKey', () => {
     expect(RecoveryKey.generate().isEqual(RecoveryKey.generate())).toBeFalse();
   });
 
+  it('compares the decoded bytes of both keys and wipes them afterwards', () => {
+    const key = RecoveryKey.fromString(first.recoveryKey);
+    const same = RecoveryKey.fromString(first.recoveryKey);
+    const other = RecoveryKey.generate();
+    const opened: Uint8Array[] = [];
+    const getBytes = RecoveryKey.prototype.getBytes;
+    jest
+      .spyOn(RecoveryKey.prototype, 'getBytes')
+      .mockImplementation(function (this: RecoveryKey) {
+        const bytes = getBytes.call(this);
+        opened.push(bytes);
+
+        return bytes;
+      });
+
+    expect(key.isEqual(same)).toBeTrue();
+    expect(key.isEqual(other)).toBeFalse();
+    expect(opened).toHaveLength(4);
+    expect(opened).toEqual(Array.from({ length: 4 }, () => new Uint8Array(32)));
+  });
+
   it('never serialises or inspects to its value', () => {
     const key = RecoveryKey.fromString(first.recoveryKey);
 

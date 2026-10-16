@@ -63,6 +63,12 @@ message and no input.
   `recipientIdentityId` to equal the opening key, and the signature to verify
   with the sender identity key.
 
+A letter proves who sent it and who it is for, not that it is fresh or new.
+It carries no unique nonce, so a captured sealed value opens again every time
+it is delivered. Consumers must deduplicate letters and only accept a `sentAt`
+within the window they allow, especially for control kinds that change
+membership.
+
 ## Vectors
 
 `vectors/group-mailbox-control-letter.json` lists valid letters with the

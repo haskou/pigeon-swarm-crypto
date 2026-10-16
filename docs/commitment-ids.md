@@ -94,6 +94,9 @@ Every failure throws `InvalidCommitmentError` with a fixed message and no input.
 - `isGroupMessageOf` returns `false` for any id of another author, a tag of
   another nonce, a non-canonical or padded part, a missing or extra part, or a
   malformed author; it never throws.
+- The `groupMessage` tag is not a MAC: it stops another author reusing an id
+  already published under someone else's identity, but it does not prove
+  authorship. Authorship comes from the signature on the message.
 - `privateBlobOwner` requires a 64-character lowercase hex salt. Each node
   creates one salt with `privateBlobOwnerSalt` and keeps it secret, so owner
   keys cannot be linked to identity ids by anyone without the salt.

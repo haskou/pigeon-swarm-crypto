@@ -39,6 +39,11 @@ slot)`, all HKDF-SHA-256 without salt and 32 bytes:
 The generation secret is a 256-bit `SymmetricKey`; `member` follows the
 `recipient` rules above. Every failure throws `InvalidMailboxKeyError`.
 
+Anyone holding the generation secret, which is every member of that
+generation, can derive every member's `envelopeKey`, `mailboxId` and
+`postToken`. Group inboxes separate members for routing, not for secrecy
+between members; confidentiality inside the group comes from MLS.
+
 ## Read tokens
 
 `MailboxReadToken.derive(root, mailboxId)` is HKDF-SHA-256 without salt over

@@ -15,7 +15,8 @@
       "import": "./dist/mls/index.mjs",
       "require": "./dist/mls/index.cjs"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./vectors/*": "./vectors/*"
   },
   "files": [
     "dist",
@@ -28,7 +29,10 @@
     "docs/private-control-signatures.md",
     "docs/private-freshness-proofs.md",
     "docs/user-root-key.md",
-    "docs/mls-key-lifecycle.md"
+    "docs/mls-key-lifecycle.md",
+    "docs/signed-preimages.md",
+    "docs/device-pairing.md",
+    "vectors"
   ],
   "sideEffects": false,
   "license": "MIT",
@@ -73,7 +77,8 @@
     "test:mls-key-lifecycle": "node tests/runtime/mls-key-lifecycle.cjs",
     "test:mls-browser": "node tests/runtime/mls-browser.cjs",
     "test:mls-standard-vectors": "node tests/runtime/mls-standard-vectors.mjs",
-    "test:private-delivery": "node tests/runtime/private-delivery.cjs"
+    "test:private-delivery": "node tests/runtime/private-delivery.cjs",
+    "test:signed-preimages": "node tests/runtime/signed-preimages.cjs"
   },
   "dependencies": {
     "@noble/ciphers": "2.4.0",

@@ -46,6 +46,17 @@ const sections: Record<string, [Section, Owner, string]> = {
     CommitmentId,
     'privateBlobOwner',
   ],
+  oneToOneConversation: [
+    vectors.oneToOneConversation,
+    CommitmentId,
+    'oneToOneConversation',
+  ],
+  groupConversation: [
+    vectors.groupConversation,
+    CommitmentId,
+    'groupConversation',
+  ],
+  invitation: [vectors.invitation, CommitmentId, 'invitation'],
   stateDigest: [vectors.stateDigest, StateDigest, 'of'],
   communityFrontiers: [
     vectors.communityFrontiers as Section,
@@ -104,6 +115,65 @@ describe('CommitmentId and StateDigest shipped vectors', () => {
           .digest('hex'),
       ).toBe(item.id);
     }
+
+    for (const item of vectors.oneToOneConversation.valid)
+      expect(`one-to-one:${sha(item.preimage).toString('hex')}`).toBe(item.id);
+
+    for (const item of vectors.groupConversation.valid)
+      expect(`group:${sha(item.preimage).toString('base64url')}`).toBe(item.id);
+
+    for (const item of vectors.invitation.valid)
+      expect(`invitation:${sha(item.preimage).toString('hex')}`).toBe(item.id);
+  });
+
+  describe('group message ids', () => {
+    const [author, other] = [
+      vectors.groupMessage.owned[0].args[1],
+      vectors.groupMessage.owned[2].args[1],
+    ];
+
+    it.each(
+      vectors.groupMessage.owned.map((item) => [item.name, item.args] as const),
+    )('owns %s', (_name, [id, authorId]) => {
+      expect(CommitmentId.isGroupMessageOf(id, authorId)).toBe(true);
+    });
+
+    it.each(
+      vectors.groupMessage.foreign.map(
+        (item) => [item.name, item.args] as const,
+      ),
+    )('does not own %s', (_name, [id, authorId]) => {
+      expect(
+        CommitmentId.isGroupMessageOf(id as string, authorId as string),
+      ).toBe(false);
+    });
+
+    it('creates fresh ids tagged with the documented preimage', () => {
+      const id = CommitmentId.groupMessage(author);
+      const [nonce, tag] = id.split('.');
+
+      expect(id).toMatch(/^[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{22}$/);
+      expect(tag).toBe(
+        createHash('sha256')
+          .update(['pigeon-group-message-id', author, nonce].join('\0'))
+          .digest()
+          .subarray(0, 16)
+          .toString('base64url'),
+      );
+      expect(CommitmentId.isGroupMessageOf(id, author)).toBe(true);
+      expect(CommitmentId.isGroupMessageOf(id, other)).toBe(false);
+      expect(CommitmentId.groupMessage(author)).not.toBe(id);
+    });
+
+    it.each([
+      ['an empty author', ''],
+      ['a lone surrogate author', '\ud800'],
+      ['a non-string author', 7],
+    ])('refuses to create an id for %s', (_name, authorId) => {
+      expect(() => CommitmentId.groupMessage(authorId as string)).toThrow(
+        InvalidCommitmentError,
+      );
+    });
   });
 
   it('never reaches a non-canonical MLS record preimage', () => {

@@ -8,6 +8,8 @@ import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
 
 export class KeychainSignature {
+  private static readonly DOMAIN = 'pigeon:keychain:v1\n';
+
   private static content(payload: KeychainSignaturePayload): string {
     const record = PreimageFields.record(
       payload,
@@ -15,16 +17,19 @@ export class KeychainSignature {
       ['previousKeychainExternalIdentifier'],
     );
 
-    return CanonicalJson.serialize({
-      encryptedPayload: PreimageFields.text(record.encryptedPayload),
-      ownerIdentityId: PreimageFields.bodyCredential(record.ownerIdentityId),
-      previousKeychainExternalIdentifier: PreimageFields.optional(
-        record.previousKeychainExternalIdentifier,
-        (value) => PreimageFields.text(value),
-      ),
-      timestamp: PreimageFields.counter(record.timestamp),
-      version: PreimageFields.counter(record.version),
-    });
+    return (
+      this.DOMAIN +
+      CanonicalJson.serialize({
+        encryptedPayload: PreimageFields.text(record.encryptedPayload),
+        ownerIdentityId: PreimageFields.bodyCredential(record.ownerIdentityId),
+        previousKeychainExternalIdentifier: PreimageFields.optional(
+          record.previousKeychainExternalIdentifier,
+          (value) => PreimageFields.text(value),
+        ),
+        timestamp: PreimageFields.counter(record.timestamp),
+        version: PreimageFields.counter(record.version),
+      })
+    );
   }
 
   public static signingContent(payload: KeychainSignaturePayload): string {

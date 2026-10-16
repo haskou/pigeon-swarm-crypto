@@ -12,6 +12,7 @@ import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
 
 export class SignedHttpRequestSignature {
+  private static readonly DOMAIN = 'pigeon:signed-http-request:v1\n';
   private static readonly METHOD = /^[A-Z]{1,16}$/;
   private static readonly MAX_PATH_LENGTH = 8192;
   public static readonly MAX_CLOCK_SKEW_MS = 30_000;
@@ -49,8 +50,9 @@ export class SignedHttpRequestSignature {
   }
 
   public static signingContent(request: SignedHttpRequest): string {
-    return PreimageFields.guarded(InvalidSignedHttpRequestError, () =>
-      CanonicalJson.serialize(this.payload(request)),
+    return PreimageFields.guarded(
+      InvalidSignedHttpRequestError,
+      () => this.DOMAIN + CanonicalJson.serialize(this.payload(request)),
     );
   }
 

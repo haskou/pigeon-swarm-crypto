@@ -42,6 +42,16 @@ function computeAll(PigeonCrypto, vectors) {
   };
   const http = vectors.http;
   const httpKey = PrivateKey.fromPEM(http.key.privateKeyPem);
+  const httpPublicKey = new PublicKey(http.key.publicKeyPem);
+  const requestOf = (input) => ({
+    body:
+      input.bodyBase64 === undefined
+        ? (input.bodyText ?? input.body)
+        : Uint8Array.from(atob(input.bodyBase64), (char) => char.charCodeAt(0)),
+    method: input.method,
+    path: input.path,
+    timestamp: input.timestamp,
+  });
   const pairing = vectors.pairing;
   const pairingFormats = {
     completion: DevicePairingCompletionSignature,
@@ -61,27 +71,26 @@ function computeAll(PigeonCrypto, vectors) {
       CanonicalJson.serialize(value),
     ),
     http: http.cases.map(({ input, headers }) => {
-      const request = {
-        body:
-          input.bodyBase64 === undefined
-            ? (input.bodyText ?? input.body)
-            : Uint8Array.from(atob(input.bodyBase64), (char) =>
-                char.charCodeAt(0),
-              ),
-        method: input.method,
-        path: input.path,
-        timestamp: input.timestamp,
-      };
+      const request = requestOf(input);
       SignedHttpRequestSignature.verify(
         request,
         new Signature(headers['x-signature']),
-        new PublicKey(http.key.publicKeyPem),
+        httpPublicKey,
       );
       return [
         SignedHttpRequestSignature.signingContent(request),
         SignedHttpRequestSignature.sign(request, httpKey).valueOf(),
       ];
     }),
+    httpRejected: http.rejected.map(({ input, headers }) =>
+      rejects(() =>
+        SignedHttpRequestSignature.verify(
+          requestOf(input),
+          new Signature(headers['x-signature']),
+          httpPublicKey,
+        ),
+      ),
+    ),
     pairing: Object.entries(pairingFormats).map(([member, format]) => {
       const { payload, signature } = pairing[member];
       const signer = pairing.keys[pairingSigners[member]];
@@ -160,6 +169,7 @@ const expected = (vectors) => ({
     derived.signingContent,
     derived.signature,
   ]),
+  httpRejected: vectors.http.rejected.map(() => true),
   pairing: ['completion', 'invitation', 'request'].map((member) => [
     vectors.pairing[member].signingPayload,
     vectors.pairing[member].signature,

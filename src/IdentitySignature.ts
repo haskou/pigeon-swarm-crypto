@@ -10,6 +10,7 @@ import { PublicKey } from './PublicKey';
 import { Signature } from './Signature';
 
 export class IdentitySignature {
+  private static readonly DOMAIN = 'pigeon:identity:v1\n';
   private static readonly PROFILE_OPTIONAL = [
     'banner',
     'biography',
@@ -59,31 +60,35 @@ export class IdentitySignature {
         DeviceCredentialCommitment.of(new PublicKey(deviceCredential)),
     );
 
-    return CanonicalJson.serialize({
-      admissionNonce: PreimageFields.optional(record.admissionNonce, (value) =>
-        PreimageFields.text(value),
-      ),
-      authorizationRevision: PreimageFields.counter(
-        record.authorizationRevision,
-      ),
-      deviceCredential,
-      deviceCredentialCommitment: record.deviceCredentialCommitment,
-      id: PreimageFields.bodyCredential(record.id),
-      mailboxHome: PreimageFields.optional(record.mailboxHome, (value) =>
-        PreimageFields.text(value),
-      ),
-      networks: PreimageFields.list(record.networks, (network) =>
-        PreimageFields.text(network),
-      ),
-      previousIdentityExternalIdentifier: PreimageFields.optional(
-        record.previousIdentityExternalIdentifier,
-        (value) => PreimageFields.text(value),
-      ),
-      profile: this.profile(record.profile),
-      recoveryAuthority: PreimageFields.credential(record.recoveryAuthority),
-      timestamp: PreimageFields.counter(record.timestamp),
-      version: PreimageFields.counter(record.version),
-    });
+    return (
+      this.DOMAIN +
+      CanonicalJson.serialize({
+        admissionNonce: PreimageFields.optional(
+          record.admissionNonce,
+          (value) => PreimageFields.text(value),
+        ),
+        authorizationRevision: PreimageFields.counter(
+          record.authorizationRevision,
+        ),
+        deviceCredential,
+        deviceCredentialCommitment: record.deviceCredentialCommitment,
+        id: PreimageFields.bodyCredential(record.id),
+        mailboxHome: PreimageFields.optional(record.mailboxHome, (value) =>
+          PreimageFields.text(value),
+        ),
+        networks: PreimageFields.list(record.networks, (network) =>
+          PreimageFields.text(network),
+        ),
+        previousIdentityExternalIdentifier: PreimageFields.optional(
+          record.previousIdentityExternalIdentifier,
+          (value) => PreimageFields.text(value),
+        ),
+        profile: this.profile(record.profile),
+        recoveryAuthority: PreimageFields.credential(record.recoveryAuthority),
+        timestamp: PreimageFields.counter(record.timestamp),
+        version: PreimageFields.counter(record.version),
+      })
+    );
   }
 
   public static signingContent(payload: IdentitySignaturePayload): string {

@@ -2,8 +2,8 @@
   "algorithms": {
     "bodyHash": "lowercase hex SHA-256 of the raw body bytes when the body is a Buffer, otherwise of utf8(JSON.stringify(body || {})).",
     "canonicalPayload": "canonicalSignedRequestPayload(method, path, timestamp, body): object with keys bodyHash, method (upper-cased), path, timestamp in this order.",
-    "signature": "Ed25519 over utf8(JSON.stringify(canonicalPayload)), standard base64 with padding.",
-    "signingContent": "JSON.stringify(canonicalPayload)."
+    "signature": "Ed25519 over utf8(signingContent), standard padded base64.",
+    "signingContent": "utf8(\"pigeon:signed-http-request:v1\\n\") followed by the RFC 8785 canonical JSON of canonicalPayload."
   },
   "cases": [
     {
@@ -14,12 +14,12 @@
           "path": "/conversations/conv-1/messages",
           "timestamp": 1778536870557
         },
-        "signature": "Lzh8yYf36NhFfjDNMKezu3HiL9c+9w36iI6ZEEclVmd8NAd8jhi0uQ9qGiE15a6wThnJxBtEpndIUu9aUbIXCQ==",
-        "signingContent": "{\"bodyHash\":\"a0e6bf8991482606b5d4e23e5aa4ede95dbefb95f70d4da54c17ee31f5e6263a\",\"method\":\"POST\",\"path\":\"/conversations/conv-1/messages\",\"timestamp\":1778536870557}"
+        "signature": "Qv/XfWQz8KWEPlKa9M1hyCKiOw7s/jKCnFRA5wd7zjDDjosrpEk9zE1G8bA7YMNFARsnGatxOjg0Ao64gAivDQ==",
+        "signingContent": "pigeon:signed-http-request:v1\n{\"bodyHash\":\"a0e6bf8991482606b5d4e23e5aa4ede95dbefb95f70d4da54c17ee31f5e6263a\",\"method\":\"POST\",\"path\":\"/conversations/conv-1/messages\",\"timestamp\":1778536870557}"
       },
       "headers": {
         "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
-        "x-signature": "Lzh8yYf36NhFfjDNMKezu3HiL9c+9w36iI6ZEEclVmd8NAd8jhi0uQ9qGiE15a6wThnJxBtEpndIUu9aUbIXCQ==",
+        "x-signature": "Qv/XfWQz8KWEPlKa9M1hyCKiOw7s/jKCnFRA5wd7zjDDjosrpEk9zE1G8bA7YMNFARsnGatxOjg0Ao64gAivDQ==",
         "x-timestamp": "1778536870557"
       },
       "input": {
@@ -42,12 +42,12 @@
           "path": "/identities/alice",
           "timestamp": 1778536870558
         },
-        "signature": "JzBIhR3SydfrNUJRBuegeKcY+0/rTIZoOuZA0cCAFM6zu9gMrrTsUL7DT6rV/0LaTvw/njLRqfQo4M/GjXe1DQ==",
-        "signingContent": "{\"bodyHash\":\"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\",\"method\":\"GET\",\"path\":\"/identities/alice\",\"timestamp\":1778536870558}"
+        "signature": "ZWFiBSGIhbytjWirn4tDtsZ9536CtmVk20OU3hXG+FkUY5Oy/dGOcbr46zMf6Fg4texRvB6I9i/Gv65HbULKCw==",
+        "signingContent": "pigeon:signed-http-request:v1\n{\"bodyHash\":\"44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a\",\"method\":\"GET\",\"path\":\"/identities/alice\",\"timestamp\":1778536870558}"
       },
       "headers": {
         "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
-        "x-signature": "JzBIhR3SydfrNUJRBuegeKcY+0/rTIZoOuZA0cCAFM6zu9gMrrTsUL7DT6rV/0LaTvw/njLRqfQo4M/GjXe1DQ==",
+        "x-signature": "ZWFiBSGIhbytjWirn4tDtsZ9536CtmVk20OU3hXG+FkUY5Oy/dGOcbr46zMf6Fg4texRvB6I9i/Gv65HbULKCw==",
         "x-timestamp": "1778536870558"
       },
       "input": {
@@ -66,12 +66,12 @@
           "path": "/private-blobs/blob-1",
           "timestamp": 1778536870559
         },
-        "signature": "HWCCBde12n+GatVd+qmMxrfNN6gLxvmFO6uu05SznGDda8mFaUKMwJ/7Btt57+C8lCjj2WfNzL8yXCJU79eZBQ==",
-        "signingContent": "{\"bodyHash\":\"d4f5ce33d4008a25a8a601149ada8fe648a8e6f450f38edea8a06aa35cbc6411\",\"method\":\"PUT\",\"path\":\"/private-blobs/blob-1\",\"timestamp\":1778536870559}"
+        "signature": "vpao2rBGD+Ezl5iUjOOAyGJ+GuWs+LQ8q6jDHqJdPhekxh5Bjx6WGnY/6tykEJxw5bvFC0IdumpUV8Iz/WCkBA==",
+        "signingContent": "pigeon:signed-http-request:v1\n{\"bodyHash\":\"d4f5ce33d4008a25a8a601149ada8fe648a8e6f450f38edea8a06aa35cbc6411\",\"method\":\"PUT\",\"path\":\"/private-blobs/blob-1\",\"timestamp\":1778536870559}"
       },
       "headers": {
         "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
-        "x-signature": "HWCCBde12n+GatVd+qmMxrfNN6gLxvmFO6uu05SznGDda8mFaUKMwJ/7Btt57+C8lCjj2WfNzL8yXCJU79eZBQ==",
+        "x-signature": "vpao2rBGD+Ezl5iUjOOAyGJ+GuWs+LQ8q6jDHqJdPhekxh5Bjx6WGnY/6tykEJxw5bvFC0IdumpUV8Iz/WCkBA==",
         "x-timestamp": "1778536870559"
       },
       "input": {
@@ -95,7 +95,7 @@
     {
       "headers": {
         "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
-        "x-signature": "Lzh8yYf36NhFfjDNMKezu3HiL9c+9w36iI6ZEEclVmd8NAd8jhi0uQ9qGiE15a6wThnJxBtEpndIUu9aUbIXCQ==",
+        "x-signature": "Qv/XfWQz8KWEPlKa9M1hyCKiOw7s/jKCnFRA5wd7zjDDjosrpEk9zE1G8bA7YMNFARsnGatxOjg0Ao64gAivDQ==",
         "x-timestamp": "1778536870557"
       },
       "input": {
@@ -113,7 +113,7 @@
     {
       "headers": {
         "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
-        "x-signature": "Lzh8yYf36NhFfjDNMKezu3HiL9c+9w36iI6ZEEclVmd8NAd8jhi0uQ9qGiE15a6wThnJxBtEpndIUu9aUbIXCQ==",
+        "x-signature": "Qv/XfWQz8KWEPlKa9M1hyCKiOw7s/jKCnFRA5wd7zjDDjosrpEk9zE1G8bA7YMNFARsnGatxOjg0Ao64gAivDQ==",
         "x-timestamp": "1778536870557"
       },
       "input": {
@@ -131,7 +131,7 @@
     {
       "headers": {
         "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
-        "x-signature": "Lzh8yYf36NhFfjDNMKezu3HiL9c+9w36iI6ZEEclVmd8NAd8jhi0uQ9qGiE15a6wThnJxBtEpndIUu9aUbIXCQ==",
+        "x-signature": "Qv/XfWQz8KWEPlKa9M1hyCKiOw7s/jKCnFRA5wd7zjDDjosrpEk9zE1G8bA7YMNFARsnGatxOjg0Ao64gAivDQ==",
         "x-timestamp": "1778536870557"
       },
       "input": {
@@ -149,7 +149,7 @@
     {
       "headers": {
         "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
-        "x-signature": "Lzh8yYf36NhFfjDNMKezu3HiL9c+9w36iI6ZEEclVmd8NAd8jhi0uQ9qGiE15a6wThnJxBtEpndIUu9aUbIXCQ==",
+        "x-signature": "Qv/XfWQz8KWEPlKa9M1hyCKiOw7s/jKCnFRA5wd7zjDDjosrpEk9zE1G8bA7YMNFARsnGatxOjg0Ao64gAivDQ==",
         "x-timestamp": "1778536870600"
       },
       "input": {
@@ -163,6 +163,60 @@
         "timestamp": 1778536870600
       },
       "name": "timestamp changed after signing"
+    },
+    {
+      "headers": {
+        "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
+        "x-signature": "Lzh8yYf36NhFfjDNMKezu3HiL9c+9w36iI6ZEEclVmd8NAd8jhi0uQ9qGiE15a6wThnJxBtEpndIUu9aUbIXCQ==",
+        "x-timestamp": "1778536870557"
+      },
+      "input": {
+        "body": {
+          "messageId": "msg-1",
+          "text": "hello"
+        },
+        "method": "post",
+        "name": "json body with a lowercase method",
+        "path": "/conversations/conv-1/messages",
+        "timestamp": 1778536870557
+      },
+      "name": "signed without the request domain"
+    },
+    {
+      "headers": {
+        "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
+        "x-signature": "pSUMaNn1xT6snnXOX6PhW6E6SByfOZfJNUHB3C5mwoxi99sPtM6yBi+CFm8tUcnms8Tp6vWeQ1hRqia27DFRBw==",
+        "x-timestamp": "1778536870557"
+      },
+      "input": {
+        "body": {
+          "messageId": "msg-1",
+          "text": "hello"
+        },
+        "method": "post",
+        "name": "json body with a lowercase method",
+        "path": "/conversations/conv-1/messages",
+        "timestamp": 1778536870557
+      },
+      "name": "identity-domain signature replayed as a request signature"
+    },
+    {
+      "headers": {
+        "x-identity-id": "MCowBQYDK2VwAyEAHINjqiTxz/1T6rJjkG8ywJVJjSih9iy/YFVChpz3lec=",
+        "x-signature": "jrU3LpEyGUGP8Lw8wHeqOkX3LDqEECrLpm3n6LA6C49nCJrMUhaUDrXRO1d/LiylpeuaCL/baudkxD3I/qaPBQ==",
+        "x-timestamp": "1778536870557"
+      },
+      "input": {
+        "body": {
+          "messageId": "msg-1",
+          "text": "hello"
+        },
+        "method": "post",
+        "name": "json body with a lowercase method",
+        "path": "/conversations/conv-1/messages",
+        "timestamp": 1778536870557
+      },
+      "name": "keychain-domain signature replayed as a request signature"
     }
   ]
 }

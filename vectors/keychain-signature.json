@@ -1,5 +1,5 @@
 {
-  "description": "Keychain signatures: the owner identity key signs, with Ed25519 (pure, no prehash, base64), the UTF-8 JSON of {encryptedPayload, ownerIdentityId, previousKeychainExternalIdentifier, timestamp, version} in that order, with ownerIdentityId as the PEM body without headers and previousKeychainExternalIdentifier omitted when there is none. There is no domain prefix. encryptedPayload is opaque to the signature. Generated with node:crypto.",
+  "description": "Keychain signatures: the owner identity key signs, with Ed25519 (pure, no prehash, base64), utf8(\"pigeon:keychain:v1\\n\") followed by the RFC 8785 canonical JSON of {encryptedPayload, ownerIdentityId, previousKeychainExternalIdentifier?, timestamp, version}, with ownerIdentityId as the PEM body without headers and previousKeychainExternalIdentifier omitted when there is none. encryptedPayload is opaque to the signature. Rejected cases include signatures without the domain and signatures replayed from the identity and signed-HTTP domains.",
   "ownerIdentityId": "MCowBQYDK2VwAyEABw7I6MtMuLnEfRhg97TZ9BiO0XXJ/ijsmvf9z2pOtoM=",
   "keys": {
     "owner": {
@@ -21,8 +21,8 @@
         "version": 1
       },
       "expected": {
-        "signingPayload": "{\"encryptedPayload\":\"v1.aes-256-gcm.sSrjKFZxuYVj9GJa.oxuTXYCt5Zxizp9sU1SGJTveskyw9sK7L73GbFlhjOGE+KjEOu2We/5PW32ZpjLtm6nePgPVQwv1NA==.zizNAkLhf6o4PG/ffMOrPw==\",\"ownerIdentityId\":\"MCowBQYDK2VwAyEABw7I6MtMuLnEfRhg97TZ9BiO0XXJ/ijsmvf9z2pOtoM=\",\"timestamp\":1760000000000,\"version\":1}",
-        "signature": "jj8Krg1r+WHf72eYOuw4ssfMvCDFQ7FPVYfZod8M8urcAY+a5VrKR0voQJe/x2SZYpglqvfu4VWejNSL6yQwBg=="
+        "signingPayload": "pigeon:keychain:v1\n{\"encryptedPayload\":\"v1.aes-256-gcm.sSrjKFZxuYVj9GJa.oxuTXYCt5Zxizp9sU1SGJTveskyw9sK7L73GbFlhjOGE+KjEOu2We/5PW32ZpjLtm6nePgPVQwv1NA==.zizNAkLhf6o4PG/ffMOrPw==\",\"ownerIdentityId\":\"MCowBQYDK2VwAyEABw7I6MtMuLnEfRhg97TZ9BiO0XXJ/ijsmvf9z2pOtoM=\",\"timestamp\":1760000000000,\"version\":1}",
+        "signature": "DrXHUIGULttD3l6nmmZg0yQRlll4u0HKaEgJHiChiPm8AQZWDvP4RL0YmbOHy1IdHBYCxIdFKjgT3TL1xtSBDw=="
       }
     },
     {
@@ -34,8 +34,8 @@
         "version": 2
       },
       "expected": {
-        "signingPayload": "{\"encryptedPayload\":\"v1.aes-256-gcm.feMwTm3K8bnd/y0z.korMG+IM5xYcU8IL3s0VrEt0rlshEPkYtLT+m3Lvi/Cu/H65PLZ1mgnkQ6yTOIhaAsNrjZggYb3T0g==.KYANSaeW/iWukgm4JZcdaQ==\",\"ownerIdentityId\":\"MCowBQYDK2VwAyEABw7I6MtMuLnEfRhg97TZ9BiO0XXJ/ijsmvf9z2pOtoM=\",\"previousKeychainExternalIdentifier\":\"zdpuAnvHw2ZJ4bGq6LQ2QYW8Rw9cH4v3sQ2mE8tK1xN5pR7uD\",\"timestamp\":1760000060000,\"version\":2}",
-        "signature": "OfbM2cyBj+GvMzVQsz2qLrisIon/hbrb9Dv2c5W1l+CV48ZGKa4d+jSexJEgsZv1p4ozJSNdyaZlRxyYu90zDg=="
+        "signingPayload": "pigeon:keychain:v1\n{\"encryptedPayload\":\"v1.aes-256-gcm.feMwTm3K8bnd/y0z.korMG+IM5xYcU8IL3s0VrEt0rlshEPkYtLT+m3Lvi/Cu/H65PLZ1mgnkQ6yTOIhaAsNrjZggYb3T0g==.KYANSaeW/iWukgm4JZcdaQ==\",\"ownerIdentityId\":\"MCowBQYDK2VwAyEABw7I6MtMuLnEfRhg97TZ9BiO0XXJ/ijsmvf9z2pOtoM=\",\"previousKeychainExternalIdentifier\":\"zdpuAnvHw2ZJ4bGq6LQ2QYW8Rw9cH4v3sQ2mE8tK1xN5pR7uD\",\"timestamp\":1760000060000,\"version\":2}",
+        "signature": "2dhZvl65jEuAJ7dSGHEP+W04fRt+0goEH1gavWQ5dnBmdNOJxw7VSGL1YpaY9p1MnfEk+GEJOshM4YvS9XqiCg=="
       }
     }
   ],
@@ -47,7 +47,7 @@
         "previousKeychainExternalIdentifier": "zdpuAnvHw2ZJ4bGq6LQ2QYW8Rw9cH4v3sQ2mE8tK1xN5pR7uD",
         "timestamp": 1760000060000,
         "version": 2,
-        "signature": "38+PRZ4tLNxRpNybjmih7bk+t94QibGX2dN5c7XRsYI/DfVkUAZP5+xoJNzLT0URBKGROxdh1IKbLjqapT61Bw=="
+        "signature": "x0vjB2x2L+NthBHzUUiOmbdgySVYMjhwFnCPt0h8r+qlHTsycY/ZyFWJ5KW9Kdo4vp73ecIgUdZps4VLY6y8Aw=="
       }
     },
     {
@@ -57,7 +57,7 @@
         "previousKeychainExternalIdentifier": null,
         "timestamp": 1760000060000,
         "version": 2,
-        "signature": "OfbM2cyBj+GvMzVQsz2qLrisIon/hbrb9Dv2c5W1l+CV48ZGKa4d+jSexJEgsZv1p4ozJSNdyaZlRxyYu90zDg=="
+        "signature": "2dhZvl65jEuAJ7dSGHEP+W04fRt+0goEH1gavWQ5dnBmdNOJxw7VSGL1YpaY9p1MnfEk+GEJOshM4YvS9XqiCg=="
       }
     },
     {
@@ -67,7 +67,7 @@
         "previousKeychainExternalIdentifier": "zdpuAnvHw2ZJ4bGq6LQ2QYW8Rw9cH4v3sQ2mE8tK1xN5pR7uD",
         "timestamp": 1760000060000,
         "version": 3,
-        "signature": "OfbM2cyBj+GvMzVQsz2qLrisIon/hbrb9Dv2c5W1l+CV48ZGKa4d+jSexJEgsZv1p4ozJSNdyaZlRxyYu90zDg=="
+        "signature": "2dhZvl65jEuAJ7dSGHEP+W04fRt+0goEH1gavWQ5dnBmdNOJxw7VSGL1YpaY9p1MnfEk+GEJOshM4YvS9XqiCg=="
       }
     },
     {
@@ -77,7 +77,37 @@
         "previousKeychainExternalIdentifier": "zdpuAnvHw2ZJ4bGq6LQ2QYW8Rw9cH4v3sQ2mE8tK1xN5pR7uD",
         "timestamp": 1760000060000,
         "version": 2,
+        "signature": "2dhZvl65jEuAJ7dSGHEP+W04fRt+0goEH1gavWQ5dnBmdNOJxw7VSGL1YpaY9p1MnfEk+GEJOshM4YvS9XqiCg=="
+      }
+    },
+    {
+      "name": "signed without the keychain domain",
+      "input": {
+        "encryptedPayload": "v1.aes-256-gcm.feMwTm3K8bnd/y0z.korMG+IM5xYcU8IL3s0VrEt0rlshEPkYtLT+m3Lvi/Cu/H65PLZ1mgnkQ6yTOIhaAsNrjZggYb3T0g==.KYANSaeW/iWukgm4JZcdaQ==",
+        "previousKeychainExternalIdentifier": "zdpuAnvHw2ZJ4bGq6LQ2QYW8Rw9cH4v3sQ2mE8tK1xN5pR7uD",
+        "timestamp": 1760000060000,
+        "version": 2,
         "signature": "OfbM2cyBj+GvMzVQsz2qLrisIon/hbrb9Dv2c5W1l+CV48ZGKa4d+jSexJEgsZv1p4ozJSNdyaZlRxyYu90zDg=="
+      }
+    },
+    {
+      "name": "identity-domain signature replayed as a keychain signature",
+      "input": {
+        "encryptedPayload": "v1.aes-256-gcm.feMwTm3K8bnd/y0z.korMG+IM5xYcU8IL3s0VrEt0rlshEPkYtLT+m3Lvi/Cu/H65PLZ1mgnkQ6yTOIhaAsNrjZggYb3T0g==.KYANSaeW/iWukgm4JZcdaQ==",
+        "previousKeychainExternalIdentifier": "zdpuAnvHw2ZJ4bGq6LQ2QYW8Rw9cH4v3sQ2mE8tK1xN5pR7uD",
+        "timestamp": 1760000060000,
+        "version": 2,
+        "signature": "qda6kaz2VLA+Hx5RaAplPQSSmvJy7/6IiPgqwkoJWJIl2XzIc2Nct4nZgbsBVMMaK0REx+NuJ5RjsocBUHnTCA=="
+      }
+    },
+    {
+      "name": "signed-HTTP-domain signature replayed as a keychain signature",
+      "input": {
+        "encryptedPayload": "v1.aes-256-gcm.feMwTm3K8bnd/y0z.korMG+IM5xYcU8IL3s0VrEt0rlshEPkYtLT+m3Lvi/Cu/H65PLZ1mgnkQ6yTOIhaAsNrjZggYb3T0g==.KYANSaeW/iWukgm4JZcdaQ==",
+        "previousKeychainExternalIdentifier": "zdpuAnvHw2ZJ4bGq6LQ2QYW8Rw9cH4v3sQ2mE8tK1xN5pR7uD",
+        "timestamp": 1760000060000,
+        "version": 2,
+        "signature": "/prsMrUhp6c4Ttih2txk21ny46IqbOizY8KI+p3Hhuzy/xAh+70x7KEBxZW++P/VF32+BQu/NhBSLSz5/dFTDA=="
       }
     }
   ]

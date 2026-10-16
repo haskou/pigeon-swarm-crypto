@@ -59,7 +59,9 @@ async function exercise(api, vectors, peer) {
   );
   const [draftCase] = vectors.draft.cases;
   const backupRoot = key(vectors.backup.root);
-  const media = api.CallMediaFrameCipher.fromKey(key(vectors.callMedia.key));
+  const media = await api.CallMediaFrameCipher.fromKey(
+    key(vectors.callMedia.key),
+  );
   const keysOf = (keys) => ({
     envelopeKey: toBase64Url(keys.envelopeKey),
     mailboxId: keys.mailboxId,
@@ -205,8 +207,10 @@ async function exercise(api, vectors, peer) {
         api.KeyFingerprint.ofSecret(fromBase64(entry.secret)),
       ),
     ],
-    frames: vectors.callMedia.frames.map((entry) =>
-      toBase64Url(media.open(fromBase64(entry.frame))),
+    frames: await Promise.all(
+      vectors.callMedia.frames.map(async (entry) =>
+        toBase64Url(await media.open(fromBase64(entry.frame))),
+      ),
     ),
   };
 
@@ -226,7 +230,7 @@ async function exercise(api, vectors, peer) {
       vectors.backup.identityId,
       utf8(message),
     ),
-    frame: toBase64Url(media.seal(utf8(message))),
+    frame: toBase64Url(await media.seal(utf8(message))),
     recoveryKey: api.RecoveryKey.generate().valueOf(),
   };
 
@@ -258,7 +262,7 @@ async function exercise(api, vectors, peer) {
         peer.backup,
       ),
     ),
-    frame: decode(media.open(fromBase64(peer.frame))),
+    frame: decode(await media.open(fromBase64(peer.frame))),
     recoveryKey: api.RecoveryKey.isValid(peer.recoveryKey),
   };
 

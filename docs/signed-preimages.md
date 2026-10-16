@@ -39,9 +39,9 @@ the key to be that credential. `PublicMutationSignature.verify(mutation, key)`
 returns the strictly parsed, frozen mutation.
 
 Every format has its own versioned domain, either as a `pigeon:…\n` prefix or as
-a `domain` member, so a signature made in one context never verifies in another
-even when the same key signs both. Plain JCS without a domain is not accepted
-for any format.
+a `domain` or `purpose` member, so a signature made in one context never
+verifies in another even when the same key signs both. Plain JCS without a
+domain is not accepted for any format.
 
 ### Signed HTTP requests
 

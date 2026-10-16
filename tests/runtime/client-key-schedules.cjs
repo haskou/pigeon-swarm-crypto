@@ -59,9 +59,21 @@ async function exercise(api, vectors, peer) {
   );
   const [draftCase] = vectors.draft.cases;
   const backupRoot = key(vectors.backup.root);
-  const media = await api.CallMediaFrameCipher.fromKey(
+  const mediaPeer = {
+    callId: vectors.callMedia.callId,
+    senderId: vectors.callMedia.senderId,
+  };
+  const mediaOpener = async () => {
+    const opener = api.CallMediaFrameOpener.create(mediaPeer);
+
+    await opener.addKey(key(vectors.callMedia.key), vectors.callMedia.epoch);
+    return opener;
+  };
+  const mediaSealer = await api.CallMediaFrameSealer.create(
     key(vectors.callMedia.key),
+    { ...mediaPeer, epoch: vectors.callMedia.epoch },
   );
+  const vectorOpener = await mediaOpener();
   const keysOf = (keys) => ({
     envelopeKey: toBase64Url(keys.envelopeKey),
     mailboxId: keys.mailboxId,
@@ -143,7 +155,9 @@ async function exercise(api, vectors, peer) {
       return {
         canary: keys.opensCanary(fromBase64(entry.canary.sealed)),
         rows: entry.rows.map((row) =>
-          toBase64Url(keys.open(row.purpose, row.scope, fromBase64(row.sealed))),
+          toBase64Url(
+            keys.open(row.purpose, row.scope, fromBase64(row.sealed)),
+          ),
         ),
         tags: entry.tags.map((tag) => keys.tag(tag.parts)),
       };
@@ -224,8 +238,11 @@ async function exercise(api, vectors, peer) {
       ),
     ],
     frames: await Promise.all(
-      vectors.callMedia.frames.map(async (entry) =>
-        toBase64Url(await media.open(fromBase64(entry.frame))),
+      [...vectors.callMedia.frames, vectors.callMedia.maxSequenceFrame].map(
+        async (entry) =>
+          toBase64Url(
+            await vectorOpener.open(fromBase64(entry.frame), entry.track),
+          ),
       ),
     ),
   };
@@ -246,7 +263,7 @@ async function exercise(api, vectors, peer) {
       vectors.backup.identityId,
       utf8(message),
     ),
-    frame: toBase64Url(await media.seal(utf8(message))),
+    frame: toBase64Url(await mediaSealer.seal(utf8(message), 'audio')),
     recoveryKey: api.RecoveryKey.generate().valueOf(),
   };
 
@@ -256,11 +273,7 @@ async function exercise(api, vectors, peer) {
       api.MailboxEnvelope.open(envelopeKeys, envelopeId, peer.envelope),
     ),
     row: decode(
-      rows.open(
-        'record',
-        ['conversation-1', 'record-1'],
-        fromBase64(peer.row),
-      ),
+      rows.open('record', ['conversation-1', 'record-1'], fromBase64(peer.row)),
     ),
     canary: rows.opensCanary(fromBase64(peer.canary)),
     draft: api.ConversationDraft.open(
@@ -278,7 +291,9 @@ async function exercise(api, vectors, peer) {
         peer.backup,
       ),
     ),
-    frame: decode(await media.open(fromBase64(peer.frame))),
+    frame: decode(
+      await (await mediaOpener()).open(fromBase64(peer.frame), 'audio'),
+    ),
     recoveryKey: api.RecoveryKey.isValid(peer.recoveryKey),
   };
 
@@ -299,13 +314,21 @@ const expectedOpened = {
   const node = await exercise(api, vectors, undefined);
   assert.deepEqual(
     node.deterministic.groupInbox,
-    vectors.schedule.groupInbox.map(({ envelopeKey, mailboxId, postToken }) => ({
-      envelopeKey,
-      mailboxId,
-      postToken,
-    })),
+    vectors.schedule.groupInbox.map(
+      ({ envelopeKey, mailboxId, postToken }) => ({
+        envelopeKey,
+        mailboxId,
+        postToken,
+      }),
+    ),
   );
   assert.ok(node.deterministic.invalidGroupInbox.every(Boolean));
+  assert.deepEqual(
+    node.deterministic.frames,
+    [...vectors.callMedia.frames, vectors.callMedia.maxSequenceFrame].map(
+      ({ plaintext }) => plaintext,
+    ),
+  );
   const bundle = await build({
     stdin: {
       contents: "export * from './dist/index.js';",
@@ -320,7 +343,9 @@ const expectedOpened = {
   const bundleText = bundle.outputFiles[0].text;
   const server = createServer((request, response) => {
     response.setHeader('Content-Type', 'text/html');
-    response.end('<!doctype html><title>Client key schedule runtime test</title>');
+    response.end(
+      '<!doctype html><title>Client key schedule runtime test</title>',
+    );
   });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   let browser;
@@ -376,7 +401,7 @@ self.onmessage = async (event) => {
     assert.notEqual(chromiumResult.sealed.envelope, node.sealed.envelope);
     assert.notEqual(workerResult.sealed.frame, node.sealed.frame);
     console.log(
-      'PASS Node, Chromium and a Chromium Worker agree on client key schedules and open each other\'s sealed values.',
+      "PASS Node, Chromium and a Chromium Worker agree on client key schedules and open each other's sealed values.",
     );
   } finally {
     await browser?.close();

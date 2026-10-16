@@ -76,7 +76,10 @@ export { InvalidCommunityInviteReferenceError } from './errors/InvalidCommunityI
 export { PrivateFreshnessRequest } from './PrivateFreshnessRequest';
 export type { PrivateFreshnessRequestInput } from './PrivateFreshnessRequestInput';
 export { InvalidPrivateFreshnessRequestError } from './errors/InvalidPrivateFreshnessRequestError';
-export { CallMediaFrameCipher } from './CallMediaFrameCipher';
+export type { CallMediaFramePeer } from './CallMediaFramePeer';
+export { CallMediaFrameOpener } from './CallMediaFrameOpener';
+export { CallMediaFrameSealer } from './CallMediaFrameSealer';
+export type { CallMediaFrameSealerContext } from './CallMediaFrameSealerContext';
 export { InvalidCallMediaFrameError } from './errors/InvalidCallMediaFrameError';
 export { ConversationDraft } from './ConversationDraft';
 export type { ConversationDraftContent } from './ConversationDraftContent';

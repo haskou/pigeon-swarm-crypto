@@ -1,5 +1,6 @@
 import {
-  CallMediaFrameCipher,
+  CallMediaFrameOpener,
+  CallMediaFrameSealer,
   ConversationDraft,
   DeviceRootRowKeys,
   DeviceUnlockFactor,
@@ -36,7 +37,8 @@ describe('crypto public API', () => {
 
   it('exports the client key schedules', () => {
     expect([
-      CallMediaFrameCipher,
+      CallMediaFrameOpener,
+      CallMediaFrameSealer,
       ConversationDraft,
       DeviceRootRowKeys,
       DeviceUnlockFactor,

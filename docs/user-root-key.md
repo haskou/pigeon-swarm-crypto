@@ -29,7 +29,9 @@ backup or transfer code.
 This release intentionally removes their inheritance from the generic value
 object abstraction. Code that depended on generic serialization or reflective
 access must use the explicit secret export at a reviewed trust boundary. The
-`valueOf()` and `isEqual()` operations remain available.
+`valueOf()` and `isEqual()` operations remain available. `isEqual()` compares
+the decoded bytes in constant time and wipes both copies; two null objects are
+equal and a null object never equals a key.
 
 An attacker holding only a protected envelope cannot test passwords without the
 second factor. Code executing in the same client origin while the user is

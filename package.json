@@ -135,7 +135,7 @@
     "@hpke/dhkem-x448": "1.8.0",
     "@hpke/hybridkem-x-wing": "0.7.0",
     "@hpke/ml-kem": "0.3.0",
-    "@noble/post-quantum": "0.5.2"
+    "@noble/post-quantum": "0.7.1"
   },
   "peerDependenciesMeta": {
     "@hpke/chacha20poly1305": {

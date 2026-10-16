@@ -1,0 +1,28 @@
+{
+  "derive": [
+    {
+      "mailboxId": "CRAXHiUsMzpBSE9WXWRrcnmAh46VnKOqsbi_xs3U2-I",
+      "readToken": "4GHqPNwM5jDSTWZLbJkKZXKwbY_EQhkBGPdS6unetHs",
+      "rootKey": "FBsiKTA3PkVMU1phaG92fYSLkpmgp661vMPK0djf5u0="
+    },
+    {
+      "mailboxId": "ChEYHyYtNDtCSVBXXmVsc3qBiI-WnaSrsrnAx87V3OM",
+      "readToken": "bWtYQec03yqybF7kZrsNvA2uQcXkbUr6zdnDgHK2dLc",
+      "rootKey": "FRwjKjE4P0ZNVFtiaXB3foWMk5qhqK+2vcTL0tng5+4="
+    }
+  ],
+  "deriveDevice": [
+    {
+      "deviceCredential": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+      "mailboxId": "CRAXHiUsMzpBSE9WXWRrcnmAh46VnKOqsbi_xs3U2-I",
+      "readToken": "mReV8zrz8DiDLC3TKz-Xp__1TF8ZAFAi11ZTvDHAadw",
+      "rootKey": "HiUsMzpBSE9WXWRrcnmAh46VnKOqsbi/xs3U2+Lp8Pc="
+    },
+    {
+      "deviceCredential": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAgTl3Dqh9F19Wo1Rmw0x+zMuNipG07jeiXfYPW4/Js5Q=\n-----END PUBLIC KEY-----\n",
+      "mailboxId": "ChEYHyYtNDtCSVBXXmVsc3qBiI-WnaSrsrnAx87V3OM",
+      "readToken": "5Ee1GruYLNcEf9lzd_Vb2bw2SDAPK26-P3l4ERY_U1s",
+      "rootKey": "HyYtNDtCSVBXXmVsc3qBiI+WnaSrsrnAx87V3OPq8fg="
+    }
+  ]
+}

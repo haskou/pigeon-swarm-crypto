@@ -1,0 +1,28 @@
+{
+  "derive": [
+    {
+      "identityKeyPair": {
+        "privateKey": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIGfW6+xX+H6ac5EcPHUfq0A9QHrxwAcOd4aptGVRRKzm\n-----END PRIVATE KEY-----\n",
+        "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAKprHUkixs82vKUqGxH0XMdPb0nrJCN7WnNWBypJ22YE=\n-----END PUBLIC KEY-----\n"
+      },
+      "recoveryAuthorityKeyPair": {
+        "privateKey": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIH2k/dNrooPzpkoZOkdD8/bMBJbJUA8GfcKQXHHVqfb9\n-----END PRIVATE KEY-----\n",
+        "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAk8n86jJibAqDj5A9hzlF6KeiFjGftdkr2wTK4qWZTFY=\n-----END PUBLIC KEY-----\n"
+      },
+      "recoveryKey": "psrk1.qrG4v8bN1Nvi6fD3_gUMExohKC82PURLUllgZ251fIM",
+      "rootKey": "NzrNxt3gHmCb5CBYTzHqGgfKXlFgKR1jk0uFku/UcDg="
+    },
+    {
+      "identityKeyPair": {
+        "privateKey": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIKyOIWqpgLnmJsD7fQAWgBp9zJI4dg4jbNEATfJgCmBM\n-----END PRIVATE KEY-----\n",
+        "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEALngOyOZNQ3IWJgxMX1ilkUtWMtJQZHKCdSJXAds38u0=\n-----END PUBLIC KEY-----\n"
+      },
+      "recoveryAuthorityKeyPair": {
+        "privateKey": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIChfOjUfICdgxdnvgVITsVERPdUOow/oTjnfY/Ntf7o8\n-----END PRIVATE KEY-----\n",
+        "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA4UJlvdVoMGB8aoHsFUOm+r0j52UkVMCzp/Sns9k2LE0=\n-----END PUBLIC KEY-----\n"
+      },
+      "recoveryKey": "psrk1.q7K5wMfO1dzj6vH4_wYNFBsiKTA3PkVMU1phaG92fYQ",
+      "rootKey": "E7y4JhUvI+vHWuiQIKTidbkbOmkNMYBjgL7sKHtmo3M="
+    }
+  ]
+}

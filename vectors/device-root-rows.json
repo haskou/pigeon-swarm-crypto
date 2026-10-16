@@ -1,0 +1,232 @@
+{
+  "cases": [
+    {
+      "canary": {
+        "iv": "eH-GjZSboqmwt77F",
+        "sealed": "eH-GjZSboqmwt77FfPh7jrj88v0-dFP40eX4yIzVZAR4uS5_aYS9jOpZmwIQ8sXUVVqbzJFd290"
+      },
+      "identityId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+      "label": "pigeon-direct-history",
+      "root": "UFdeZWxzeoGIj5adpKuyucDHztXc4+rx+P8GDRQbIik=",
+      "rows": [
+        {
+          "iv": "WmFob3Z9hIuSmaCn",
+          "plaintext": "",
+          "purpose": "row",
+          "scope": [],
+          "sealed": "WmFob3Z9hIuSmaCnBPPOeQIQwRiv_bBUoxqhiA"
+        },
+        {
+          "iv": "W2JpcHd-hYyTmqGo",
+          "plaintext": "ZWxzeoGIj5adpKuyucDHztXc4-rx-P8GDRQbIikwNz5F",
+          "purpose": "entry",
+          "scope": [
+            "state",
+            "tag-1"
+          ],
+          "sealed": "W2JpcHd-hYyTmqGoE_ZNrseDy-mUBT9CVgBshGtSbxkSuSAqAD4oihdjT2L_f9A1X45ZNDKe1XInl91miw"
+        },
+        {
+          "iv": "XGNqcXh_ho2Um6Kp",
+          "plaintext": "Zm10e4KJkJeepayzusHIz9bd5Ovy-QAHDhUcIyoxOD9GTVRbYmlwd36FjJOaoaivtr3Ey9LZ4Ofu9fwDChEYHyYt",
+          "purpose": "record",
+          "scope": [
+            "conversation-1",
+            "record-1"
+          ],
+          "sealed": "XGNqcXh_ho2Um6KpYxEZ0ZVFmGwjao_Mh8MHKHZwHwupDlx2XiuL0JiTyi--rl2GDVVQtPfB5MHFytQb5ss8YQoQjyPjXLNZxGpgf76cg43D1IPRp4HZ3SSBK0YhHQ"
+        },
+        {
+          "iv": "XWRrcnmAh46VnKOq",
+          "plaintext": "Z251fIOKkZifpq20u8LJ0Nfe5ezz-gEIDxYdJCsyOUBHTlVcY2pxeH-GjZSboqmwt77FzNPa4ejv9v0ECxIZICcuNTxDSlFYX2ZtdHuCiZCXnqWss7rByM_W3eTr8vkABw4V",
+          "purpose": "read",
+          "scope": [
+            "conversation-1"
+          ],
+          "sealed": "XWRrcnmAh46VnKOq8YzS_JkNqqXN93oxnrV78TQb2-oNCCVG4s14X5CD51YA1sQDA26zcJSTvOO-6UgQJmCS7BfrtjA2TrhcEZ6s-LBxHXIlRFkIDXk7MkgYpt8evbihA_WApakDtbB8sJbtR6Yce_LySWmmFalJUDs3wg_sSg"
+        }
+      ],
+      "tags": [
+        {
+          "parts": [
+            "conversation",
+            "conversation-1"
+          ],
+          "tag": "lg1WhrtON7A-d5GsbChMdObTwUe0eisxCN4vees8EtQ"
+        },
+        {
+          "parts": [
+            "record",
+            "conversation-1",
+            "record-1"
+          ],
+          "tag": "zX0tqs3wutSJ2_PdFqq_5QqIfW_uaekO_mYnpLdpaZE"
+        },
+        {
+          "parts": [],
+          "tag": "dIaZxUmKfy2366-K1Y3ZXRobADWT4hjBJHqeWzpSqTA"
+        },
+        {
+          "parts": [
+            "é😀",
+            "\"quoted\"",
+            "a\nb"
+          ],
+          "tag": "aMAj6UpC9zR2l-fAln-zpNSvV1MYcE1enO1kZIAvHok"
+        }
+      ]
+    },
+    {
+      "canary": {
+        "iv": "eYCHjpWco6qxuL_G",
+        "sealed": "eYCHjpWco6qxuL_GlpvvM-kt927wDPhYf1_-5vIqu_pxxhPx6b-UT1meZ8eydBj6FkEcukVojA"
+      },
+      "identityId": "MCowBQYDK2VwAyEAgTl3Dqh9F19Wo1Rmw0x+zMuNipG07jeiXfYPW4/Js5Q=",
+      "label": "pigeon-group-history",
+      "root": "UVhfZm10e4KJkJeepayzusHIz9bd5Ovy+QAHDhUcIyo=",
+      "rows": [
+        {
+          "iv": "XmVsc3qBiI-WnaSr",
+          "plaintext": "",
+          "purpose": "row",
+          "scope": [],
+          "sealed": "XmVsc3qBiI-WnaSr7g31_SQarMm7VWysooBRug"
+        },
+        {
+          "iv": "X2ZtdHuCiZCXnqWs",
+          "plaintext": "ZWxzeoGIj5adpKuyucDHztXc4-rx-P8GDRQbIikwNz5F",
+          "purpose": "entry",
+          "scope": [
+            "state",
+            "tag-1"
+          ],
+          "sealed": "X2ZtdHuCiZCXnqWsXss7hBy6WMKvBtd8ibRPO9Bguzy0EI5e9kZ4IeJetBN6lmaJ_UVqg-BvDhyYqV98mw"
+        },
+        {
+          "iv": "YGdudXyDipGYn6at",
+          "plaintext": "Zm10e4KJkJeepayzusHIz9bd5Ovy-QAHDhUcIyoxOD9GTVRbYmlwd36FjJOaoaivtr3Ey9LZ4Ofu9fwDChEYHyYt",
+          "purpose": "record",
+          "scope": [
+            "conversation-1",
+            "record-1"
+          ],
+          "sealed": "YGdudXyDipGYn6atXN1t0S2An1ZzuMK9GIydAffMC329NKxnxUZY8VP-DqQbeScHzadJ8iyv-27Hure8Gp2B1rK6cNI2-V29IOX9uMHOawR0NgE6fPUKe9ZlVcha1w"
+        },
+        {
+          "iv": "YWhvdn2Ei5KZoKeu",
+          "plaintext": "Z251fIOKkZifpq20u8LJ0Nfe5ezz-gEIDxYdJCsyOUBHTlVcY2pxeH-GjZSboqmwt77FzNPa4ejv9v0ECxIZICcuNTxDSlFYX2ZtdHuCiZCXnqWss7rByM_W3eTr8vkABw4V",
+          "purpose": "read",
+          "scope": [
+            "conversation-1"
+          ],
+          "sealed": "YWhvdn2Ei5KZoKeuKFY6njXCfy4PLD25vphy_EV4LLzIuDDIVuDWiEXY1FJ2TXC6D7peDEGPALZKnRDk1ZFo33wfKSGJsb6NPE4ujLmbYyaLiScc2XQiu_ZcEbhiR57s2jTcauID8jxfdAFr6yIuP_dt_Rrlm-2McCYK2rjrvw"
+        }
+      ],
+      "tags": [
+        {
+          "parts": [
+            "conversation",
+            "conversation-1"
+          ],
+          "tag": "KbEvQOLn2ZUnhOMyazy9UM-bPz_H7W8j7I6m5DbQyMc"
+        },
+        {
+          "parts": [
+            "record",
+            "conversation-1",
+            "record-1"
+          ],
+          "tag": "w-jwKjZJW2Oya2GhG8z3OFEHJdJGngT2hMUgCHUKz3Q"
+        },
+        {
+          "parts": [],
+          "tag": "zcaJX9ihVgtKtbKRwD8RsjuB5HWKiU2m9eA4TRg1Nsg"
+        },
+        {
+          "parts": [
+            "é😀",
+            "\"quoted\"",
+            "a\nb"
+          ],
+          "tag": "94EmIuzOaGlFUzuZ9WNhqIQ-AZ3txQH0q193a6qXZ60"
+        }
+      ]
+    },
+    {
+      "canary": {
+        "iv": "eoGIj5adpKuyucDH",
+        "sealed": "eoGIj5adpKuyucDHapXDq9-f4bU3YdLZ7T1YWgdC2awZc48F5afD7sO5rj6G4F4JW_2j"
+      },
+      "identityId": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+      "label": "pigeon-mls-state",
+      "root": "UllgZ251fIOKkZifpq20u8LJ0Nfe5ezz+gEIDxYdJCs=",
+      "rows": [
+        {
+          "iv": "Ymlwd36FjJOaoaiv",
+          "plaintext": "",
+          "purpose": "row",
+          "scope": [],
+          "sealed": "Ymlwd36FjJOaoaiv-F0LAjXRMBs3_dnWWXr1vw"
+        },
+        {
+          "iv": "Y2pxeH-GjZSboqmw",
+          "plaintext": "ZWxzeoGIj5adpKuyucDHztXc4-rx-P8GDRQbIikwNz5F",
+          "purpose": "entry",
+          "scope": [
+            "state",
+            "tag-1"
+          ],
+          "sealed": "Y2pxeH-GjZSboqmwyN1pUiDvRB-d_EhA3COvvI2CF-anLU57TejTzvYTd2NZCGMvan47TjMksoaGBYk94w"
+        },
+        {
+          "iv": "ZGtyeYCHjpWco6qx",
+          "plaintext": "Zm10e4KJkJeepayzusHIz9bd5Ovy-QAHDhUcIyoxOD9GTVRbYmlwd36FjJOaoaivtr3Ey9LZ4Ofu9fwDChEYHyYt",
+          "purpose": "record",
+          "scope": [
+            "conversation-1",
+            "record-1"
+          ],
+          "sealed": "ZGtyeYCHjpWco6qxf5bU_tYshWSXWrY8xIynHH8-Z5Qy7Ef1TrCBeOiIouYuukqUOdiMRhsglFHw9CAF2K_xthPIXSoPU2xoxe4p_VH6t3PEnDIHMFsOFHI56NKGmA"
+        },
+        {
+          "iv": "ZWxzeoGIj5adpKuy",
+          "plaintext": "Z251fIOKkZifpq20u8LJ0Nfe5ezz-gEIDxYdJCsyOUBHTlVcY2pxeH-GjZSboqmwt77FzNPa4ejv9v0ECxIZICcuNTxDSlFYX2ZtdHuCiZCXnqWss7rByM_W3eTr8vkABw4V",
+          "purpose": "read",
+          "scope": [
+            "conversation-1"
+          ],
+          "sealed": "ZWxzeoGIj5adpKuyQcvbIyHWJafmkxK8kfLwpOzdnRjU1llVTa1XMFj-jmkHNWavuPKq53Q1MVBQV9M72GBwq49i7488Jj6lmShLGOr6uJ4hiGQtMv6loYMf358XV76B8XhwHlPDuRlKjmGbyE_WXu4yXNdzZqazceV014BWLw"
+        }
+      ],
+      "tags": [
+        {
+          "parts": [
+            "conversation",
+            "conversation-1"
+          ],
+          "tag": "xE4hPKLEuCpaMVQk_EuE-0EId312y7c_d69ivbkakZ0"
+        },
+        {
+          "parts": [
+            "record",
+            "conversation-1",
+            "record-1"
+          ],
+          "tag": "-vxpqM35dkMsm2LDSul9s3CYyBOinnzJ3m7opo1tgHE"
+        },
+        {
+          "parts": [],
+          "tag": "Y7ymSuLD-FqdLjV33-rrtMdY2vymyd5pUlhNCpw3bLk"
+        },
+        {
+          "parts": [
+            "é😀",
+            "\"quoted\"",
+            "a\nb"
+          ],
+          "tag": "pk46SzCjxIEuMJXg-9SdSET6PECBhshB91tKB27mWX8"
+        }
+      ]
+    }
+  ]
+}

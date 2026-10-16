@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "first": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+      "groups": [
+        "80275",
+        "93811",
+        "92778",
+        "30378",
+        "96490",
+        "90765",
+        "23020",
+        "77876",
+        "65413",
+        "66234",
+        "31257",
+        "47872"
+      ],
+      "second": "MCowBQYDK2VwAyEAgTl3Dqh9F19Wo1Rmw0x+zMuNipG07jeiXfYPW4/Js5Q="
+    },
+    {
+      "first": "MCowBQYDK2VwAyEAgTl3Dqh9F19Wo1Rmw0x+zMuNipG07jeiXfYPW4/Js5Q=",
+      "groups": [
+        "80275",
+        "93811",
+        "92778",
+        "30378",
+        "96490",
+        "90765",
+        "23020",
+        "77876",
+        "65413",
+        "66234",
+        "31257",
+        "47872"
+      ],
+      "second": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w="
+    },
+    {
+      "first": "a",
+      "groups": [
+        "06082",
+        "54072",
+        "39734",
+        "50830",
+        "37519",
+        "39481",
+        "96158",
+        "92403",
+        "91435",
+        "26356",
+        "78486",
+        "75246"
+      ],
+      "second": "b"
+    },
+    {
+      "first": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w=",
+      "groups": [
+        "79554",
+        "18968",
+        "80123",
+        "77028",
+        "68598",
+        "61106",
+        "87018",
+        "76212",
+        "69567",
+        "77483",
+        "48664",
+        "36994"
+      ],
+      "second": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w="
+    }
+  ]
+}

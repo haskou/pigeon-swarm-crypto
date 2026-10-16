@@ -32,6 +32,11 @@
     "docs/mls-key-lifecycle.md",
     "docs/signed-preimages.md",
     "docs/device-pairing.md",
+    "docs/mailbox-keys.md",
+    "docs/device-local-storage.md",
+    "docs/recovery-kit.md",
+    "docs/identity-verification.md",
+    "docs/call-media-frames.md",
     "vectors"
   ],
   "sideEffects": false,
@@ -78,7 +83,8 @@
     "test:mls-browser": "node tests/runtime/mls-browser.cjs",
     "test:mls-standard-vectors": "node tests/runtime/mls-standard-vectors.mjs",
     "test:private-delivery": "node tests/runtime/private-delivery.cjs",
-    "test:signed-preimages": "node tests/runtime/signed-preimages.cjs"
+    "test:signed-preimages": "node tests/runtime/signed-preimages.cjs",
+    "test:client-key-schedules": "node tests/runtime/client-key-schedules.cjs"
   },
   "dependencies": {
     "@noble/ciphers": "2.4.0",

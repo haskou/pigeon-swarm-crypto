@@ -1,0 +1,32 @@
+{
+  "publicBytes": [
+    {
+      "bytes": "tLvCydDX3uXs8_oBCA8WHSQrMjlAR05VXGNqcXh_ho0",
+      "fingerprint": "6FCF 632D D01C 8D9E CC3A 36B4 851C 6BB8"
+    },
+    {
+      "bytes": "",
+      "fingerprint": "E3B0 C442 98FC 1C14 9AFB F4C8 996F B924"
+    }
+  ],
+  "publicKeys": [
+    {
+      "fingerprint": "FD11 0D30 1D2F 077D E141 4B8F 99F4 41B1",
+      "publicKey": "MCowBQYDK2VwAyEAiojj3XQJ8ZX9UtstPLpdcspnCb8dlBIb83SIAbQPb1w="
+    },
+    {
+      "fingerprint": "47DE A58E A00F AE94 17EE 19D7 6755 BFEF",
+      "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAgTl3Dqh9F19Wo1Rmw0x+zMuNipG07jeiXfYPW4/Js5Q=\n-----END PUBLIC KEY-----\n"
+    }
+  ],
+  "secrets": [
+    {
+      "fingerprint": "D910 0509 609F DF0B 49AE 7A3B 7071 2E21",
+      "secret": "tbzDytHY3-bt9PsCCRAXHiUsMzpBSE9WXWRrcnmAh44"
+    },
+    {
+      "fingerprint": "F9F9 9CFC 1027 D8E6 0E56 8623 FA5F 439C",
+      "secret": "tg"
+    }
+  ]
+}

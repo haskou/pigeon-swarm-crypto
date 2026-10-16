@@ -71,6 +71,9 @@ jobs:
       - name: Verify client key schedules in Node, Chromium and a Worker
         run: yarn test:client-key-schedules
 
+      - name: Verify commitment ids in Node and Chromium
+        run: yarn test:commitments
+
       - name: Verify MLS key lifecycle in Node
         run: yarn test:mls-key-lifecycle
 

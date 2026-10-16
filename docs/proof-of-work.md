@@ -28,6 +28,14 @@ accepts, which lets tests build proofs with an exact amount of work without
 hashing on their own. Both search decimal counters from `0`, so a challenge and
 difficulty always mint the same nonce.
 
+The search is bounded: both stop after `2^(difficultyBits + 7)` counters and
+throw `InvalidProofOfWorkError` when no nonce in that range qualifies. Without
+a predicate the chance that an honest challenge has no proof in the range is
+below `e^-128`, so the error means a predicate that accepts too little, never a
+retry condition. The largest counter, `2^39 - 1` at 32 bits, has 12 digits, so
+every minted nonce is a canonical nonce that `verify` accepts and every counter
+is a safe integer.
+
 ## Format
 
 ```text

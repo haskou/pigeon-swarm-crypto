@@ -21,7 +21,8 @@ const importsOf = (source) =>
   new Set([...source.matchAll(specifier)].map(([, id]) => id));
 
 // The scanner must see every form a bundler or minifier leaves behind, so an
-// undeclared package cannot hide behind spacing or a side-effect import.
+// undeclared package cannot hide behind spacing, a side-effect import, a
+// bundler's require shim or a template literal.
 assert.deepEqual(
   [
     ...importsOf(
@@ -36,11 +37,15 @@ assert.deepEqual(
         'await import ( "spaced-dynamic" );',
         'require("required");',
         'require ( "spaced-required" );',
+        'try { __require("shimmed"); } catch {}',
+        'await import(`templated`);',
+        'require(`templated-required`);',
         'import "@scope/side-effect/deep";',
         'import "node:crypto";',
         'import "./relative";',
         'Array.from("text");',
         'new Error("read from" + x + "here");',
+        'log(`imported from ${where}`);',
       ].join('\n'),
     ),
   ].sort(),
@@ -52,11 +57,14 @@ assert.deepEqual(
     'node:crypto',
     're-exported',
     'required',
+    'shimmed',
     'side-effect',
     'single-quoted',
     'spaced',
     'spaced-dynamic',
     'spaced-required',
+    'templated',
+    'templated-required',
   ],
 );
 

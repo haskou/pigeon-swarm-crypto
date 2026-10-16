@@ -910,6 +910,16 @@ export async function run({ mls, KeyPair, tsMls }) {
       ok(throws(() => MlsGroup.restore('community-1', alice.key.owner, policy, corrupt, [])), 'corrupt');
     },
 
+    'refuses a stored state whose own leaf names another owner': async () => {
+      const { alice, bob } = await setup(['alice', 'bob']);
+      const state = alice.group.serialize();
+      const otherDevice = { ...alice.key.owner, deviceCredential: bob.key.owner.deviceCredential };
+
+      ok(throws(() => MlsGroup.restore('community-1', bob.key.owner, policy, state, [])), 'identity');
+      ok(throws(() => MlsGroup.restore('community-1', otherDevice, policy, state, [])), 'device');
+      same(MlsGroup.restore('community-1', alice.key.owner, policy, state, []).epoch, alice.group.epoch, 'owner');
+    },
+
     'rejects messages it cannot read as the kind asked for': async () => {
       const { alice, bob } = await setup(['alice', 'bob']);
       const record = recordOf(await bob.group.update(), 'c-bob');

@@ -10,18 +10,27 @@ const dependencies = new Set(Object.keys(manifest.dependencies ?? {}));
 const peers = manifest.peerDependencies ?? {};
 const peerMeta = manifest.peerDependenciesMeta ?? {};
 const builtins = new Set(builtinModules);
-// A specifier holds no whitespace, which keeps `"read from" + x + "y"` out.
+// A specifier holds no whitespace, which keeps `"read from" + x + "y"` out. A
+// static import or export names a string literal; a dynamic import or a
+// require, esbuild's `__require` shim included, may also name a template
+// literal, opened and closed by the same quote. A backtick after a bare
+// `import` or `from` is prose, as in a comment's "stepping from `baseline`".
 const specifier =
-  /(?:\bimport\s*\(|\bimport|\bfrom|\brequire\s*\()\s*["']([^"'./\s][^"'\s]*)["']/g;
+  /(?:\bimport|\bfrom)\s*["']([^"'./\s][^"'\s]*)["']|(?:\bimport\s*\(|(?<![\w$])(?:__)?require\s*\()\s*(["'`])([^"'`./\s][^"'`\s]*)\2/g;
 
 const packageName = (id) =>
   id.startsWith('@') ? id.split('/').slice(0, 2).join('/') : id.split('/')[0];
 
 const importsOf = (source) =>
-  new Set([...source.matchAll(specifier)].map(([, id]) => id));
+  new Set(
+    [...source.matchAll(specifier)].map(
+      ([, staticId, , calledId]) => staticId ?? calledId,
+    ),
+  );
 
 // The scanner must see every form a bundler or minifier leaves behind, so an
-// undeclared package cannot hide behind spacing or a side-effect import.
+// undeclared package cannot hide behind spacing, a side-effect import, a
+// bundler's require shim or a template literal.
 assert.deepEqual(
   [
     ...importsOf(
@@ -36,11 +45,16 @@ assert.deepEqual(
         'await import ( "spaced-dynamic" );',
         'require("required");',
         'require ( "spaced-required" );',
+        'try { __require("shimmed"); } catch {}',
+        'await import(`templated`);',
+        'require(`templated-required`);',
         'import "@scope/side-effect/deep";',
         'import "node:crypto";',
         'import "./relative";',
         'Array.from("text");',
         'new Error("read from" + x + "here");',
+        'log(`imported from ${where}`);',
+        '/** Steps from `baseline`, as import `x` does. */',
       ].join('\n'),
     ),
   ].sort(),
@@ -52,11 +66,14 @@ assert.deepEqual(
     'node:crypto',
     're-exported',
     'required',
+    'shimmed',
     'side-effect',
     'single-quoted',
     'spaced',
     'spaced-dynamic',
     'spaced-required',
+    'templated',
+    'templated-required',
   ],
 );
 

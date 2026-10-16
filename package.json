@@ -94,6 +94,7 @@
     "test:network-derivations": "node tests/runtime/network-derivations.cjs",
     "test:mls-key-lifecycle": "node tests/runtime/mls-key-lifecycle.cjs",
     "test:mls-browser": "node tests/runtime/mls-browser.cjs",
+    "test:mls-bundle-imports": "node tests/runtime/mls-bundle-imports.cjs",
     "test:mls-standard-vectors": "node tests/runtime/mls-standard-vectors.mjs",
     "test:private-delivery": "node tests/runtime/private-delivery.cjs",
     "test:signed-preimages": "node tests/runtime/signed-preimages.cjs",
@@ -129,7 +130,29 @@
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "@haskou/value-objects": "^8.3.3"
+    "@haskou/value-objects": "^8.3.3",
+    "@hpke/chacha20poly1305": "1.8.0",
+    "@hpke/dhkem-x448": "1.8.0",
+    "@hpke/hybridkem-x-wing": "0.7.0",
+    "@hpke/ml-kem": "0.3.0",
+    "@noble/post-quantum": "0.5.2"
+  },
+  "peerDependenciesMeta": {
+    "@hpke/chacha20poly1305": {
+      "optional": true
+    },
+    "@hpke/dhkem-x448": {
+      "optional": true
+    },
+    "@hpke/hybridkem-x-wing": {
+      "optional": true
+    },
+    "@hpke/ml-kem": {
+      "optional": true
+    },
+    "@noble/post-quantum": {
+      "optional": true
+    }
   },
   "browser": {
     "jsonc-parser": "jsonc-parser/lib/esm/main.js"

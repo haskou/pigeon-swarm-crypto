@@ -92,6 +92,9 @@ jobs:
       - name: Verify MLS key lifecycle in Chromium
         run: yarn test:mls-browser
 
+      - name: Verify the MLS bundles import only declared packages
+        run: yarn test:mls-bundle-imports
+
       - name: Verify MLS groups in Node and Chromium
         run: yarn test:mls-group
 

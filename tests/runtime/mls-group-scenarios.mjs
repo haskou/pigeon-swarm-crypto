@@ -310,7 +310,8 @@ export async function run({ mls, KeyPair, tsMls }) {
       same(read(await bob.group.decrypt(after)), 'after', 'bob');
       await rejects(carol.group.decrypt(after), 'carol decrypts');
       await rejects(carol.group.encrypt(text.encode('x')), 'carol encrypts');
-      await rejects(carol.group.exportSecret('pigeon/x/v1', text.encode('')), 'carol exports');
+      await rejects(carol.group.callMediaKey('call-1'), 'carol exports');
+      await rejects(carol.group.groupMailboxGenerationSecret(), 'carol generation');
       await rejects(carol.group.update(), 'carol commits');
       same(await carol.group.applyCommit(record), { kind: 'removed' }, 'again');
       ok(!alice.group.identities().includes(idOf('carol')), 'gone');
@@ -448,14 +449,8 @@ export async function run({ mls, KeyPair, tsMls }) {
         policy,
       );
       await admit(channel, [await device('bob', 'd3')], []);
-      const communitySecret = await community.carol.group.exportSecret(
-        'pigeon/call-media/v1',
-        text.encode('call-1'),
-      );
-      const channelSecret = await channel.exportSecret(
-        'pigeon/call-media/v1',
-        text.encode('call-1'),
-      );
+      const communitySecret = await community.carol.group.callMediaKey('call-1');
+      const channelSecret = await channel.callMediaKey('call-1');
       const sealedInChannel = await channel.encrypt(text.encode('restricted'));
 
       ok(comparable(communitySecret) !== comparable(channelSecret), 'distinct');
@@ -464,32 +459,34 @@ export async function run({ mls, KeyPair, tsMls }) {
 
     'derives different secrets per purpose, equal across members of an epoch': async () => {
       const { alice, bob } = await setup(['alice', 'bob']);
-      const context = text.encode('call-1');
-      const aliceMedia = await alice.group.exportSecret('pigeon/call-media/v1', context);
-      const bobMedia = await bob.group.exportSecret('pigeon/call-media/v1', context);
-      const other = await alice.group.exportSecret('pigeon/other/v1', context);
-      const otherCall = await alice.group.exportSecret(
-        'pigeon/call-media/v1',
-        text.encode('call-2'),
-      );
-      const longer = await alice.group.exportSecret('pigeon/call-media/v1', context, 48);
+      const aliceMedia = comparable(await alice.group.callMediaKey('call-1'));
+      const bobMedia = comparable(await bob.group.callMediaKey('call-1'));
+      const otherCall = comparable(await alice.group.callMediaKey('call-2'));
+      const generation = comparable(await alice.group.groupMailboxGenerationSecret());
 
       same(aliceMedia, bobMedia, 'equal');
-      ok(comparable(aliceMedia) !== comparable(other), 'purpose');
-      ok(comparable(aliceMedia) !== comparable(otherCall), 'context');
-      same(longer.length, 48, 'length');
+      same(comparable(await bob.group.groupMailboxGenerationSecret()), generation, 'generation');
+      ok(aliceMedia !== otherCall, 'context');
+      ok(aliceMedia !== generation, 'purpose');
+      same((await alice.group.callMediaKey('c'.repeat(256))).length, 32, 'longest');
+      await rejects(alice.group.callMediaKey(''), 'empty call');
+      await rejects(alice.group.callMediaKey('c'.repeat(257)), 'long call');
+      await rejects(alice.group.callMediaKey('é'.repeat(129)), 'long utf8 call');
+      await rejects(alice.group.callMediaKey('\uD800'), 'lone surrogate');
+      await rejects(alice.group.callMediaKey(7), 'not text');
     },
 
     'changes the exported secret when the epoch changes': async () => {
       const { alice, bob } = await setup(['alice', 'bob']);
-      const context = text.encode('call-1');
-      const first = await alice.group.exportSecret('pigeon/call-media/v1', context);
+      const first = comparable(await alice.group.callMediaKey('call-1'));
+      const generation = comparable(await alice.group.groupMailboxGenerationSecret());
 
       await rotate(alice.group, [bob.group]);
-      const second = await alice.group.exportSecret('pigeon/call-media/v1', context);
+      const second = comparable(await alice.group.callMediaKey('call-1'));
 
-      ok(comparable(first) !== comparable(second), 'changed');
-      same(second, await bob.group.exportSecret('pigeon/call-media/v1', context), 'shared');
+      ok(first !== second, 'changed');
+      ok(generation !== comparable(await alice.group.groupMailboxGenerationSecret()), 'generation');
+      same(comparable(await bob.group.callMediaKey('call-1')), second, 'shared');
     },
 
     'applies a repeated commit only once and reports a missing one as a gap': async () => {
@@ -884,6 +881,22 @@ export async function run({ mls, KeyPair, tsMls }) {
       ok(throws(() => alice.group.confirm('c-late')), 'confirm');
     },
 
+    'refuses to confirm a commit built on a commit a rival then replaced': async () => {
+      const { alice, bob, carol } = await setup(['alice', 'bob', 'carol']);
+      const rival = recordOf(await carol.group.update(), 'a-carol');
+      const first = recordOf(await alice.group.update(), 'b-alice');
+
+      alice.group.confirm(first.id);
+      await bob.group.applyCommit(first);
+      const built = await bob.group.update();
+
+      same((await bob.group.applyCommit(rival)).kind, 'replaced', 'replaced');
+      same(bob.group.epoch, built.epoch, 'same epoch');
+      ok(throws(() => bob.group.confirm('c-forked')), 'confirm');
+      ok(throws(() => bob.group.pendingState()), 'dropped');
+      same(bob.group.epoch, built.epoch, 'kept');
+    },
+
     'refuses a stored state of another group or garbage': async () => {
       const { alice } = await setup(['alice', 'bob']);
       const state = alice.group.serialize();
@@ -990,6 +1003,22 @@ export async function run({ mls, KeyPair, tsMls }) {
       same(bob.group.changes().length, 1, 'dropped');
     },
 
+    'ignores a rival for an epoch past the 8 it keeps as stale': async () => {
+      const { alice, bob, carol } = await setup(['alice', 'bob', 'carol']);
+      const rival = recordOf(await carol.group.update(), 'a-carol');
+      const first = recordOf(await alice.group.update(), 'b-alice');
+
+      alice.group.confirm(first.id);
+      await bob.group.applyCommit(first);
+      for (let step = 0; step < 7; step++) await rotate(alice.group, [bob.group]);
+      same((await bob.group.applyCommit(rival)).kind, 'replaced', 'inside');
+
+      const taken = alice.group.changes().length;
+      await rotate(alice.group, []);
+      same(await alice.group.applyCommit(rival), { kind: 'ignored', reason: 'stale' }, 'past');
+      same(alice.group.changes().length, taken + 1, 'changes kept');
+    },
+
     'waits on a commit for its own epoch that binds withheld operations': async () => {
       const { alice, bob } = await setup(['alice', 'bob']);
       latest = [op('kick')];
@@ -1044,8 +1073,7 @@ export async function run({ mls, KeyPair, tsMls }) {
     'heals a copied member state only once that member commits its own update': async () => {
       const { alice, bob } = await setup(['alice', 'bob']);
       const copy = copyOf(bob);
-      const callKey = (group) =>
-        group.exportSecret('pigeon/call-media/v1', text.encode('call-1'));
+      const callKey = async (group) => comparable(await group.callMediaKey('call-1'));
       const signatureKeys = (group) =>
         group.leaves().map(({ signaturePublicKey }) => signaturePublicKey);
 

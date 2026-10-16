@@ -122,6 +122,27 @@ const checkBuilder = async (tsMls) => {
   );
 };
 
+/** The exported secrets keep the labels and contexts the UI derived with. */
+const checkExporterLabels = async (tsMls) => {
+  const group = await mls.MlsGroup.create('community-1', await keyOf(), policy);
+  const { exporterSecret } = tsMls.decodeGroupState(group.serialize(), 0)[0]
+    .keySchedule;
+  const cs = await getMlsCiphersuite();
+  const exported = async (label, context) =>
+    Buffer.from(
+      await tsMls.mlsExporter(exporterSecret, label, context, 32, cs),
+    ).toString('base64');
+
+  assert.equal(
+    Buffer.from(await group.callMediaKey('call-1')).toString('base64'),
+    await exported('pigeon/call-media/v1', new TextEncoder().encode('call-1')),
+  );
+  assert.equal(
+    Buffer.from(await group.groupMailboxGenerationSecret()).toString('base64'),
+    await exported('pigeon/group-mailbox/gen/v1', new Uint8Array()),
+  );
+};
+
 (async () => {
   const { run } = await import('./mls-group-scenarios.mjs');
   const tsMls = await import('ts-mls');
@@ -132,7 +153,10 @@ const checkBuilder = async (tsMls) => {
   console.log(`PASS ${ran.length} MlsGroup scenarios in Chromium.`);
   checkRuleGuards();
   await checkBuilder(tsMls);
-  console.log('PASS MlsGroup rule guards and commit builder in Node.');
+  await checkExporterLabels(tsMls);
+  console.log(
+    'PASS MlsGroup rule guards, commit builder and exporter labels in Node.',
+  );
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

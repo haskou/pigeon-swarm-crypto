@@ -19,6 +19,14 @@ point provides separate ESM and bundled CommonJS builds for browser and Node.js
 consumers. Import `UserRootKey` from the package root so every component uses
 the same runtime constructor.
 
+Both MLS builds bundle `ts-mls`, which loads the packages of the cipher suites
+the library does not use through dynamic imports. The package declares those
+packages as optional peers (`@hpke/chacha20poly1305`, `@hpke/dhkem-x448`,
+`@hpke/hybridkem-x-wing`, `@hpke/ml-kem`, `@noble/post-quantum`), as `ts-mls`
+does, so bundlers such as Vite leave them out instead of failing to resolve
+them. Consumers need not install them: the library only runs
+`MLS_128_DHKEMX25519_AES128GCM_SHA256_Ed25519`.
+
 The package currently publishes CommonJS JavaScript and TypeScript declarations.
 It requires Node.js 20.20.2 or newer. Browser applications need a bundler with
 CommonJS and `buffer` support, and a secure context providing Web Crypto. Validate

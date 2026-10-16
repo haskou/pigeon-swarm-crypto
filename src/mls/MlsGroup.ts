@@ -5,7 +5,6 @@ import {
   type Proposal,
   type ProcessMessageResult,
   createApplicationMessage,
-  createCommit,
   createGroup,
   decodeGroupState,
   emptyPskIndex,
@@ -32,6 +31,7 @@ import type { MlsMembershipChange } from './MlsMembershipChange';
 import type { MlsMembershipPolicy } from './MlsMembershipPolicy';
 import type { MlsOpenedMessage } from './MlsOpenedMessage';
 
+import { buildMlsCommit } from './internal/MlsCommitBuilder';
 import {
   assertCommitterKept,
   clientConfig,
@@ -596,19 +596,17 @@ export class MlsGroup {
     if (!this.policy.allows(change, { baseline: this.bound, frontier }))
       throw new InvalidMlsGroupError();
     const binding = MlsRosterFrontier.encode(frontier);
-    const result = await createCommit(
-      { cipherSuite: await getMlsCiphersuite(), state: this.state },
-      {
-        authenticatedData: binding,
-        extraProposals: proposals,
-        groupInfoExtensions: [
-          {
-            extensionData: binding,
-            extensionType: MlsRosterFrontier.EXTENSION_TYPE,
-          },
-        ],
-        ratchetTreeExtension: true,
-      },
+    const result = await buildMlsCommit(
+      this.state,
+      proposals,
+      binding,
+      [
+        {
+          extensionData: binding,
+          extensionType: MlsRosterFrontier.EXTENSION_TYPE,
+        },
+      ],
+      await getMlsCiphersuite(),
     );
     const epoch = this.state.groupContext.epoch;
 

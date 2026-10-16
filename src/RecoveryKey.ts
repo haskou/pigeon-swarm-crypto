@@ -1,3 +1,5 @@
+import { equalBytes } from '@noble/ciphers/utils.js';
+
 import { InvalidRecoveryKeyError } from './errors/InvalidRecoveryKeyError';
 import { CanonicalBase64Url } from './internal/CanonicalBase64Url';
 import { CryptoAdapter } from './internal/CryptoAdapter';
@@ -58,8 +60,18 @@ export class RecoveryKey {
     return RecoveryKey.decode(this.#value);
   }
 
+  /** Compares the decoded keys in constant time, then wipes both copies. */
   public isEqual(other: unknown): boolean {
-    return other instanceof RecoveryKey && other.#value === this.#value;
+    if (!(other instanceof RecoveryKey)) return false;
+    const mine = this.getBytes();
+    const theirs = other.getBytes();
+
+    try {
+      return equalBytes(mine, theirs);
+    } finally {
+      mine.fill(0);
+      theirs.fill(0);
+    }
   }
 
   public toJSON(): never {

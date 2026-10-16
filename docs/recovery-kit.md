@@ -6,7 +6,8 @@ bytes shown to the user once as `psrk1.` followed by unpadded base64url.
 `RecoveryKey.fromString` accepts only that exact canonical form. It does not
 trim: user interfaces must trim pasted input before parsing. `generate()` uses
 the platform CSPRNG. The key keeps its value in a native private field, refuses
-JSON serialisation and returns a fresh byte copy from `getBytes()`.
+JSON serialisation and returns a fresh byte copy from `getBytes()`. `isEqual()`
+compares the decoded bytes of both keys in constant time and wipes both copies.
 
 `RecoveryKit.derive(recoveryKey)` returns frozen material. Every key is
 HKDF-SHA-256 of 32 bytes over the recovery bytes:

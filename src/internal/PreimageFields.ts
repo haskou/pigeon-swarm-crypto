@@ -1,5 +1,3 @@
-import { Buffer } from 'buffer';
-
 import { PrivateKey } from '../PrivateKey';
 import { PublicKey } from '../PublicKey';
 import { Signature } from '../Signature';
@@ -131,11 +129,7 @@ export class PreimageFields {
     signature: Signature,
     key: PublicKey,
   ): void {
-    const encoded = signature.valueOf();
-    this.check(
-      Buffer.from(encoded, 'base64').toString('base64') === encoded &&
-        key.isValidSignature(content, signature),
-    );
+    this.check(key.isValidSignature(content, signature));
   }
 
   public static verifyFor(

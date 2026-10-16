@@ -1,11 +1,10 @@
-import type { Buffer } from 'buffer';
-
 import {
   NullObject,
   StringValueObject,
   ValueObject,
   assert,
 } from '@haskou/value-objects';
+import { Buffer } from 'buffer';
 
 import { InvalidSignatureError } from './errors/InvalidSignatureError';
 
@@ -28,6 +27,9 @@ export class Signature extends ValueObject<string> {
   }
 
   private hasValidFormat(): boolean {
-    return Signature.PATTERN.test(this.value);
+    return (
+      Signature.PATTERN.test(this.value) &&
+      Buffer.from(this.value, 'base64').toString('base64') === this.value
+    );
   }
 }

@@ -5,8 +5,18 @@ Nodes and clients pass domain values to one static class per format and never
 assemble signed bytes, digests or domain strings themselves. Each class exposes
 `signingContent`, `sign` and `verify`; some formats add a digest or helper. All
 preimages are RFC 8785 (JCS) canonical JSON encoded as UTF-8, sometimes behind a
-domain prefix. All signatures are Ed25519, verified strictly, and must be
-canonical padded standard base64, the encoding `Signature` produces.
+domain prefix. All signatures are Ed25519 and verified strictly.
+
+## Signature encoding
+
+A `Signature` is the 64-byte Ed25519 signature as padded standard base64:
+exactly 88 characters, 86 data characters followed by `==`. The 86th character
+carries two signature bits and four zero padding bits, so sixteen strings decode
+to the same bytes. `Signature` accepts only the canonical one, the text whose
+base64 decode and re-encode round trip is unchanged, and throws
+`InvalidSignatureError` for the other fifteen. A signature therefore has exactly
+one accepted text form, so consumers may key replay guards, record ids and
+deduplication on it, and `PublicKey.isValidSignature` never sees another form.
 
 ## Canonical JSON
 

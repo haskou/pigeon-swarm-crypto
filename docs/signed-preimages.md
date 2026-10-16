@@ -19,16 +19,16 @@ instances, functions, symbols and bigints with `InvalidCanonicalJsonError`.
 
 ## Formats
 
-| Class                                    | Signed bytes                                                                                       | Signer                                                 |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `SignedHttpRequestSignature`             | JCS `{bodyHash, method, path, timestamp}`                                                          | identity key                                           |
-| `IdentitySignature`                      | JCS of the identity document without `signature`                                                   | identity key                                           |
-| `KeychainSignature`                      | JCS `{encryptedPayload, ownerIdentityId, previousKeychainExternalIdentifier?, timestamp, version}` | owner identity key                                     |
-| `DeviceAuthorizationTransitionSignature` | JCS `{domain: 'pigeon:device-authorization:transition:v3', proofOfPossession?, transition}`        | author device, or the recovery authority for `recover` |
-| proof of possession                      | JCS `{domain: 'pigeon:device-authorization:proof-of-possession:v2', transition}`                   | target device                                          |
-| `DeviceSealedSecretSignature`            | JCS of the sealed secret with `purpose: 'pigeon:device-sealed-secret:v1'`                          | publisher device                                       |
-| `PublicMutationSignature`                | `'pigeon:public-mutation:v2\n'` + JCS of the mutation without `signature`                          | device named by `author.deviceCredential`              |
-| `CommunityOperationSignature`            | `'pigeon:community-operation:v1\n'` + record id `community:<id>:op:<digest>`                       | actor identity key                                     |
+| Class                                    | Signed bytes                                                                                                                  | Signer                                                 |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `SignedHttpRequestSignature`             | `'pigeon:signed-http-request:v1\n'` + JCS `{bodyHash, method, path, timestamp}`                                               | identity, device or recovery key                       |
+| `IdentitySignature`                      | `'pigeon:identity:v1\n'` + JCS of the identity document without `signature`                                                   | identity key                                           |
+| `KeychainSignature`                      | `'pigeon:keychain:v1\n'` + JCS `{encryptedPayload, ownerIdentityId, previousKeychainExternalIdentifier?, timestamp, version}` | owner identity key                                     |
+| `DeviceAuthorizationTransitionSignature` | JCS `{domain: 'pigeon:device-authorization:transition:v3', proofOfPossession?, transition}`                                   | author device, or the recovery authority for `recover` |
+| proof of possession                      | JCS `{domain: 'pigeon:device-authorization:proof-of-possession:v2', transition}`                                              | target device                                          |
+| `DeviceSealedSecretSignature`            | JCS of the sealed secret with `purpose: 'pigeon:device-sealed-secret:v1'`                                                     | publisher device                                       |
+| `PublicMutationSignature`                | `'pigeon:public-mutation:v2\n'` + JCS of the mutation without `signature`                                                     | device named by `author.deviceCredential`              |
+| `CommunityOperationSignature`            | `'pigeon:community-operation:v1\n'` + record id `community:<id>:op:<digest>`                                                  | actor identity key                                     |
 
 Device pairing messages are described in [device-pairing.md](device-pairing.md).
 
@@ -37,6 +37,11 @@ error. When the document names its signer (`authorCredential`,
 `targetCredential`, `author.deviceCredential`), `sign` and `verify` also require
 the key to be that credential. `PublicMutationSignature.verify(mutation, key)`
 returns the strictly parsed, frozen mutation.
+
+Every format has its own versioned domain, either as a `pigeon:…\n` prefix or as
+a `domain` member, so a signature made in one context never verifies in another
+even when the same key signs both. Plain JCS without a domain is not accepted
+for any format.
 
 ### Signed HTTP requests
 
@@ -119,7 +124,9 @@ Consumers load them in their own specs instead of keeping mirrored fixtures:
 ## Verification
 
 Unit tests reproduce every vector byte for byte and cover tampering, wrong
-signers, non-canonical signatures, closed shapes and bounds.
+signers, non-canonical signatures, closed shapes and bounds. The identity,
+keychain and signed-HTTP vectors also reject signatures made without their
+domain and signatures replayed from each of the other two domains.
 `yarn test:signed-preimages`, after `yarn build`, bundles the public API for
 Chromium and checks that Node and the browser produce and accept the same bytes
 and signatures for the shipped vectors.

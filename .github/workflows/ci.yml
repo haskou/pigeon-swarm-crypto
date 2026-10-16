@@ -35,6 +35,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Install Chromium for interoperability and MLS group coverage
+        run: yarn playwright install --with-deps chromium
+
       - name: Run lint and tests with coverage
         run: yarn lint && yarn test:coverage
 
@@ -43,9 +46,6 @@ jobs:
 
       - name: Check bounded-stack runtime compatibility
         run: yarn test:runtime
-
-      - name: Install Chromium for signature interoperability
-        run: yarn playwright install --with-deps chromium
 
       - name: Verify private signatures in Node and Chromium
         run: yarn test:private-signatures
@@ -85,6 +85,12 @@ jobs:
 
       - name: Verify MLS key lifecycle in Chromium
         run: yarn test:mls-browser
+
+      - name: Verify MLS groups in Node and Chromium
+        run: yarn test:mls-group
+
+      - name: Verify MLS group codec vectors in Node and Chromium
+        run: yarn test:mls-group-codecs
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

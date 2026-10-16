@@ -1,0 +1,162 @@
+{
+  "description": "The GroupContext extension 0xf421 of a group conversation (GroupMailboxRosterExtension): its roster as RFC 8785 canonical JSON.",
+  "algorithms": {
+    "encoding": "utf8(RFC 8785 canonical JSON of {adminIds, conversationId, creatorId, memberIds, name, version}) with adminIds and memberIds sorted ascending by UTF-16 code units",
+    "fields": "exactly these six keys; version 1; conversationId \"group:\" + 43 unpadded base64url characters with a canonical last one; name, creatorId and every id non-empty, without surrounding whitespace or lone surrogates; name at most 80 UTF-16 code units, ids at most 1024",
+    "roles": "at most 256 distinct members and 256 distinct admins; the creator is a member and not an admin; every admin is a member",
+    "limits": "at most 1048576 bytes of strict UTF-8; the bytes are exactly the canonical encoding of the fields they decode to",
+    "extensionType": "0xf421"
+  },
+  "valid": [
+    {
+      "name": "roster with an admin",
+      "fields": {
+        "adminIds": [
+          "bob"
+        ],
+        "conversationId": "group:izTbwsBetNfiXUjv6s6CRWsWzudgvK6AwVf1KjwueHs",
+        "creatorId": "alice",
+        "memberIds": [
+          "alice",
+          "bob",
+          "carol"
+        ],
+        "name": "Team ✓",
+        "version": 1
+      },
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSDinJMiLCJ2ZXJzaW9uIjoxfQ"
+    },
+    {
+      "name": "unsorted lists are sorted",
+      "fields": {
+        "adminIds": [
+          "bob"
+        ],
+        "conversationId": "group:izTbwsBetNfiXUjv6s6CRWsWzudgvK6AwVf1KjwueHs",
+        "creatorId": "alice",
+        "memberIds": [
+          "alice",
+          "bob",
+          "carol"
+        ],
+        "name": "Team ✓",
+        "version": 1
+      },
+      "input": {
+        "adminIds": [
+          "bob"
+        ],
+        "conversationId": "group:izTbwsBetNfiXUjv6s6CRWsWzudgvK6AwVf1KjwueHs",
+        "creatorId": "alice",
+        "memberIds": [
+          "carol",
+          "alice",
+          "bob"
+        ],
+        "name": "Team ✓",
+        "version": 1
+      },
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSDinJMiLCJ2ZXJzaW9uIjoxfQ"
+    },
+    {
+      "name": "creator alone",
+      "fields": {
+        "adminIds": [],
+        "conversationId": "group:izTbwsBetNfiXUjv6s6CRWsWzudgvK6AwVf1KjwueHs",
+        "creatorId": "alice",
+        "memberIds": [
+          "alice"
+        ],
+        "name": "Notes",
+        "version": 1
+      },
+      "encoded": "eyJhZG1pbklkcyI6W10sImNvbnZlcnNhdGlvbklkIjoiZ3JvdXA6aXpUYndzQmV0TmZpWFVqdjZzNkNSV3NXenVkZ3ZLNkF3VmYxS2p3dWVIcyIsImNyZWF0b3JJZCI6ImFsaWNlIiwibWVtYmVySWRzIjpbImFsaWNlIl0sIm5hbWUiOiJOb3RlcyIsInZlcnNpb24iOjF9"
+    }
+  ],
+  "invalid": [
+    {
+      "name": "keys out of canonical order",
+      "encoded": "eyJ2ZXJzaW9uIjoxLCJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSDinJMifQ"
+    },
+    {
+      "name": "unsorted members",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiY2Fyb2wiLCJhbGljZSIsImJvYiJdLCJuYW1lIjoiVGVhbSDinJMiLCJ2ZXJzaW9uIjoxfQ"
+    },
+    {
+      "name": "whitespace",
+      "encoded": "ewogImFkbWluSWRzIjogWwogICJib2IiCiBdLAogImNvbnZlcnNhdGlvbklkIjogImdyb3VwOml6VGJ3c0JldE5maVhVanY2czZDUldzV3p1ZGd2SzZBd1ZmMUtqd3VlSHMiLAogImNyZWF0b3JJZCI6ICJhbGljZSIsCiAibWVtYmVySWRzIjogWwogICJhbGljZSIsCiAgImJvYiIsCiAgImNhcm9sIgogXSwKICJuYW1lIjogIlRlYW0g4pyTIiwKICJ2ZXJzaW9uIjogMQp9"
+    },
+    {
+      "name": "extra key",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSDinJMiLCJ2ZXJzaW9uIjoxLCJ4IjoxfQ"
+    },
+    {
+      "name": "missing key",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJ2ZXJzaW9uIjoxfQ"
+    },
+    {
+      "name": "version as string",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSDinJMiLCJ2ZXJzaW9uIjoiMSJ9"
+    },
+    {
+      "name": "version 2",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSDinJMiLCJ2ZXJzaW9uIjoyfQ"
+    },
+    {
+      "name": "creator as admin",
+      "encoded": "eyJhZG1pbklkcyI6WyJhbGljZSIsImJvYiJdLCJjb252ZXJzYXRpb25JZCI6Imdyb3VwOml6VGJ3c0JldE5maVhVanY2czZDUldzV3p1ZGd2SzZBd1ZmMUtqd3VlSHMiLCJjcmVhdG9ySWQiOiJhbGljZSIsIm1lbWJlcklkcyI6WyJhbGljZSIsImJvYiIsImNhcm9sIl0sIm5hbWUiOiJUZWFtIOKckyIsInZlcnNpb24iOjF9"
+    },
+    {
+      "name": "creator not a member",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYm9iIiwiY2Fyb2wiXSwibmFtZSI6IlRlYW0g4pyTIiwidmVyc2lvbiI6MX0"
+    },
+    {
+      "name": "admin not a member",
+      "encoded": "eyJhZG1pbklkcyI6WyJkYXZlIl0sImNvbnZlcnNhdGlvbklkIjoiZ3JvdXA6aXpUYndzQmV0TmZpWFVqdjZzNkNSV3NXenVkZ3ZLNkF3VmYxS2p3dWVIcyIsImNyZWF0b3JJZCI6ImFsaWNlIiwibWVtYmVySWRzIjpbImFsaWNlIiwiYm9iIiwiY2Fyb2wiXSwibmFtZSI6IlRlYW0g4pyTIiwidmVyc2lvbiI6MX0"
+    },
+    {
+      "name": "duplicate member",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSDinJMiLCJ2ZXJzaW9uIjoxfQ"
+    },
+    {
+      "name": "empty name",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiIiwidmVyc2lvbiI6MX0"
+    },
+    {
+      "name": "name with surrounding whitespace",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiIFRlYW0iLCJ2ZXJzaW9uIjoxfQ"
+    },
+    {
+      "name": "name over 80 characters",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoibm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5ubm5uIiwidmVyc2lvbiI6MX0"
+    },
+    {
+      "name": "lone surrogate in name",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSBcdWQ4MDAiLCJ2ZXJzaW9uIjoxfQ"
+    },
+    {
+      "name": "conversation id without prefix",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJpelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSDinJMiLCJ2ZXJzaW9uIjoxfQ"
+    },
+    {
+      "name": "non-canonical conversation id",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhCIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCJdLCJuYW1lIjoiVGVhbSDinJMiLCJ2ZXJzaW9uIjoxfQ"
+    },
+    {
+      "name": "array",
+      "encoded": "W10"
+    },
+    {
+      "name": "truncated JSON",
+      "encoded": "ew"
+    },
+    {
+      "name": "invalid UTF-8",
+      "encoded": "e_99"
+    },
+    {
+      "name": "257 members",
+      "encoded": "eyJhZG1pbklkcyI6WyJib2IiXSwiY29udmVyc2F0aW9uSWQiOiJncm91cDppelRid3NCZXROZmlYVWp2NnM2Q1JXc1d6dWRndks2QXdWZjFLand1ZUhzIiwiY3JlYXRvcklkIjoiYWxpY2UiLCJtZW1iZXJJZHMiOlsiYWxpY2UiLCJib2IiLCJjYXJvbCIsIm0wMDAiLCJtMDAxIiwibTAwMiIsIm0wMDMiLCJtMDA0IiwibTAwNSIsIm0wMDYiLCJtMDA3IiwibTAwOCIsIm0wMDkiLCJtMDEwIiwibTAxMSIsIm0wMTIiLCJtMDEzIiwibTAxNCIsIm0wMTUiLCJtMDE2IiwibTAxNyIsIm0wMTgiLCJtMDE5IiwibTAyMCIsIm0wMjEiLCJtMDIyIiwibTAyMyIsIm0wMjQiLCJtMDI1IiwibTAyNiIsIm0wMjciLCJtMDI4IiwibTAyOSIsIm0wMzAiLCJtMDMxIiwibTAzMiIsIm0wMzMiLCJtMDM0IiwibTAzNSIsIm0wMzYiLCJtMDM3IiwibTAzOCIsIm0wMzkiLCJtMDQwIiwibTA0MSIsIm0wNDIiLCJtMDQzIiwibTA0NCIsIm0wNDUiLCJtMDQ2IiwibTA0NyIsIm0wNDgiLCJtMDQ5IiwibTA1MCIsIm0wNTEiLCJtMDUyIiwibTA1MyIsIm0wNTQiLCJtMDU1IiwibTA1NiIsIm0wNTciLCJtMDU4IiwibTA1OSIsIm0wNjAiLCJtMDYxIiwibTA2MiIsIm0wNjMiLCJtMDY0IiwibTA2NSIsIm0wNjYiLCJtMDY3IiwibTA2OCIsIm0wNjkiLCJtMDcwIiwibTA3MSIsIm0wNzIiLCJtMDczIiwibTA3NCIsIm0wNzUiLCJtMDc2IiwibTA3NyIsIm0wNzgiLCJtMDc5IiwibTA4MCIsIm0wODEiLCJtMDgyIiwibTA4MyIsIm0wODQiLCJtMDg1IiwibTA4NiIsIm0wODciLCJtMDg4IiwibTA4OSIsIm0wOTAiLCJtMDkxIiwibTA5MiIsIm0wOTMiLCJtMDk0IiwibTA5NSIsIm0wOTYiLCJtMDk3IiwibTA5OCIsIm0wOTkiLCJtMTAwIiwibTEwMSIsIm0xMDIiLCJtMTAzIiwibTEwNCIsIm0xMDUiLCJtMTA2IiwibTEwNyIsIm0xMDgiLCJtMTA5IiwibTExMCIsIm0xMTEiLCJtMTEyIiwibTExMyIsIm0xMTQiLCJtMTE1IiwibTExNiIsIm0xMTciLCJtMTE4IiwibTExOSIsIm0xMjAiLCJtMTIxIiwibTEyMiIsIm0xMjMiLCJtMTI0IiwibTEyNSIsIm0xMjYiLCJtMTI3IiwibTEyOCIsIm0xMjkiLCJtMTMwIiwibTEzMSIsIm0xMzIiLCJtMTMzIiwibTEzNCIsIm0xMzUiLCJtMTM2IiwibTEzNyIsIm0xMzgiLCJtMTM5IiwibTE0MCIsIm0xNDEiLCJtMTQyIiwibTE0MyIsIm0xNDQiLCJtMTQ1IiwibTE0NiIsIm0xNDciLCJtMTQ4IiwibTE0OSIsIm0xNTAiLCJtMTUxIiwibTE1MiIsIm0xNTMiLCJtMTU0IiwibTE1NSIsIm0xNTYiLCJtMTU3IiwibTE1OCIsIm0xNTkiLCJtMTYwIiwibTE2MSIsIm0xNjIiLCJtMTYzIiwibTE2NCIsIm0xNjUiLCJtMTY2IiwibTE2NyIsIm0xNjgiLCJtMTY5IiwibTE3MCIsIm0xNzEiLCJtMTcyIiwibTE3MyIsIm0xNzQiLCJtMTc1IiwibTE3NiIsIm0xNzciLCJtMTc4IiwibTE3OSIsIm0xODAiLCJtMTgxIiwibTE4MiIsIm0xODMiLCJtMTg0IiwibTE4NSIsIm0xODYiLCJtMTg3IiwibTE4OCIsIm0xODkiLCJtMTkwIiwibTE5MSIsIm0xOTIiLCJtMTkzIiwibTE5NCIsIm0xOTUiLCJtMTk2IiwibTE5NyIsIm0xOTgiLCJtMTk5IiwibTIwMCIsIm0yMDEiLCJtMjAyIiwibTIwMyIsIm0yMDQiLCJtMjA1IiwibTIwNiIsIm0yMDciLCJtMjA4IiwibTIwOSIsIm0yMTAiLCJtMjExIiwibTIxMiIsIm0yMTMiLCJtMjE0IiwibTIxNSIsIm0yMTYiLCJtMjE3IiwibTIxOCIsIm0yMTkiLCJtMjIwIiwibTIyMSIsIm0yMjIiLCJtMjIzIiwibTIyNCIsIm0yMjUiLCJtMjI2IiwibTIyNyIsIm0yMjgiLCJtMjI5IiwibTIzMCIsIm0yMzEiLCJtMjMyIiwibTIzMyIsIm0yMzQiLCJtMjM1IiwibTIzNiIsIm0yMzciLCJtMjM4IiwibTIzOSIsIm0yNDAiLCJtMjQxIiwibTI0MiIsIm0yNDMiLCJtMjQ0IiwibTI0NSIsIm0yNDYiLCJtMjQ3IiwibTI0OCIsIm0yNDkiLCJtMjUwIiwibTI1MSIsIm0yNTIiLCJtMjUzIl0sIm5hbWUiOiJUZWFtIOKckyIsInZlcnNpb24iOjF9"
+    }
+  ]
+}

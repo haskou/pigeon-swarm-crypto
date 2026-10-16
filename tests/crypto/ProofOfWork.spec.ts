@@ -293,6 +293,43 @@ describe('ProofOfWork', () => {
     );
   });
 
+  it('fails closed when its bounded nonce search finds no proof', async () => {
+    const proof = mailboxCreation(
+      vectors.mailboxCreation.accepted[0].challenge,
+    );
+    const unbounded = 1_000_000;
+    let offered = 0;
+    let hashed = 0;
+
+    expectInvalid(() =>
+      proof.mintSync(ProofOfWork.MIN_DIFFICULTY_BITS, () => {
+        offered += 1;
+        if (offered > unbounded) throw new Error('Unbounded nonce search');
+
+        return false;
+      }),
+    );
+    expect(offered).toBeGreaterThan(0);
+
+    const leadingZeroBits = jest
+      .spyOn(ProofOfWorkEncoding, 'leadingZeroBits')
+      .mockImplementation(() => {
+        hashed += 1;
+        if (hashed > unbounded) throw new Error('Unbounded nonce search');
+
+        return 0;
+      });
+
+    try {
+      await expect(
+        proof.mint(ProofOfWork.MIN_DIFFICULTY_BITS),
+      ).rejects.toBeInstanceOf(InvalidProofOfWorkError);
+      expect(hashed).toBeGreaterThan(0);
+    } finally {
+      leadingZeroBits.mockRestore();
+    }
+  });
+
   it('yields to the event loop while minting asynchronously', async () => {
     const vector = vectors.mailboxCreation.accepted[1];
     const proof = mailboxCreation(vector.challenge);

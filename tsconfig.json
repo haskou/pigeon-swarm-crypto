@@ -8,6 +8,9 @@
     "resolveJsonModule": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
+    "paths": {
+      "ts-mls/*.js": ["./node_modules/ts-mls/dist/src/*.d.ts"]
+    },
     "ignoreDeprecations": "6.0",
     "importHelpers": true,
     "allowSyntheticDefaultImports": true,

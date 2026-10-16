@@ -1,8 +1,10 @@
 import { type _SHA256, sha256 } from '@noble/hashes/sha2.js';
 
+import { InvalidProofOfWorkError } from './errors/InvalidProofOfWorkError';
 import { ProofOfWorkEncoding } from './internal/ProofOfWorkEncoding';
 
 export class ProofOfWork {
+  private static readonly MINT_MARGIN_BITS = 7;
   private static readonly MINT_YIELD_INTERVAL = 4096;
 
   public static readonly MAX_DIFFICULTY_BITS =
@@ -19,6 +21,10 @@ export class ProofOfWork {
     ProofOfWorkEncoding.MIN_DIFFICULTY_BITS;
 
   private readonly challenge: _SHA256;
+
+  private static attempts(difficultyBits: number): number {
+    return 2 ** (difficultyBits + ProofOfWork.MINT_MARGIN_BITS);
+  }
 
   public static identityAdmission(
     identityId: string,
@@ -55,8 +61,9 @@ export class ProofOfWork {
 
   public async mint(difficultyBits: number): Promise<string> {
     ProofOfWorkEncoding.assertDifficulty(difficultyBits);
+    const attempts = ProofOfWork.attempts(difficultyBits);
 
-    for (let counter = 0; ; counter += 1) {
+    for (let counter = 0; counter < attempts; counter += 1) {
       if (counter > 0 && counter % ProofOfWork.MINT_YIELD_INTERVAL === 0) {
         await new Promise<void>((resolve) => setTimeout(resolve, 0));
       }
@@ -66,6 +73,7 @@ export class ProofOfWork {
         return nonce;
       }
     }
+    throw new InvalidProofOfWorkError();
   }
 
   public mintSync(
@@ -73,14 +81,16 @@ export class ProofOfWork {
     accepts: (nonce: string) => boolean = () => true,
   ): string {
     ProofOfWorkEncoding.assertDifficulty(difficultyBits);
+    const attempts = ProofOfWork.attempts(difficultyBits);
 
-    for (let counter = 0; ; counter += 1) {
+    for (let counter = 0; counter < attempts; counter += 1) {
       const nonce = String(counter);
 
       if (this.workBits(nonce) >= difficultyBits && accepts(nonce)) {
         return nonce;
       }
     }
+    throw new InvalidProofOfWorkError();
   }
 
   public verify(nonce: unknown, difficultyBits: number): boolean {

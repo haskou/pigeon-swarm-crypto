@@ -59,6 +59,25 @@ sealer is only recorded after its frame authenticates, so forged frames do not
 consume sequences or sealer slots; of two concurrent copies of a frame, only
 one opens.
 
+## Trust model
+
+Every member of the call holds the same call key. Frames authenticate against
+the key, not against a sender: the sender id binds a frame to the opener it was
+sealed for, but it does not prove who sealed it. Any holder of the call key can
+therefore:
+
+- seal frames under another member's sender id, which every opener for that
+  member accepts as theirs;
+- create up to 64 sealers under another member's sender id in an epoch, after
+  which openers for that member refuse the member's own new sealers until the
+  next epoch.
+
+The replay window, the sealer cap and the epoch rules only stop parties without
+a held call key: relays, SFUs, and former members once the opener has dropped
+the epochs they knew. Removing a misbehaving member takes a rekey that excludes
+them. Per-sender frame signatures, which would stop members from impersonating
+each other, are out of scope.
+
 ## Format
 
 ```text

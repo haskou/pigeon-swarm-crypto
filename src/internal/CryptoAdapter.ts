@@ -204,22 +204,16 @@ export class CryptoAdapter {
   public static verify(
     signature: Uint8Array,
     message: Uint8Array,
-    publicKeyPem: string,
+    publicKey: string | Uint8Array,
   ): boolean {
     return ed25519.verify(
       signature,
       message,
-      this.publicKeyToBytes(publicKeyPem),
+      typeof publicKey === 'string'
+        ? this.publicKeyToBytes(publicKey)
+        : publicKey,
       { zip215: false },
     );
-  }
-
-  public static verifyStrictEd25519(
-    signature: Uint8Array,
-    message: Uint8Array,
-    publicKey: Uint8Array,
-  ): boolean {
-    return ed25519.verify(signature, message, publicKey, { zip215: false });
   }
 
   public static x25519PublicKey(privateKey: Uint8Array): Uint8Array {

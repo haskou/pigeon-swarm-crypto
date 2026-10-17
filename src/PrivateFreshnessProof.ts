@@ -72,11 +72,10 @@ export class PrivateFreshnessProof {
       const { signature, ...unsigned } = value;
 
       if (
-        !ed25519.verify(
+        !CryptoAdapter.verify(
           CanonicalBase64Url.decode(signature, 64),
           this.signingBytes(unsigned),
           publicKey,
-          { zip215: false },
         )
       )
         throw new InvalidPrivateFreshnessProofError();

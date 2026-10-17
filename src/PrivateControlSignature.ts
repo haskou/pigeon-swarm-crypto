@@ -1,8 +1,8 @@
-import { ed25519 } from '@noble/curves/ed25519.js';
 import { Buffer } from 'buffer';
 
 import { InvalidPrivateControlError } from './errors/InvalidPrivateControlError';
 import { CanonicalBase64Url } from './internal/CanonicalBase64Url';
+import { CryptoAdapter } from './internal/CryptoAdapter';
 import { PrivateControlEncoding } from './internal/PrivateControlEncoding';
 import { PrivateControlRecord } from './internal/PrivateControlRecord';
 import { StrictCanonicalJson } from './internal/StrictCanonicalJson';
@@ -33,11 +33,10 @@ export class PrivateControlSignature {
     for (const [key, signature] of entries) {
       if (
         !authorities.includes(key) ||
-        !ed25519.verify(
+        !CryptoAdapter.verify(
           CanonicalBase64Url.decode(signature, 64),
           bytes,
           CanonicalBase64Url.decode(key, 32),
-          { zip215: false },
         )
       )
         throw new InvalidPrivateControlError();

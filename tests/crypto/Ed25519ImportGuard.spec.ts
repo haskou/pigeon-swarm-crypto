@@ -272,63 +272,81 @@ describe('Ed25519 import allowlist', () => {
     expect(violations).toEqual([]);
   });
 
-  it('keeps the adapter as the one module importing the binding', () => {
-    expect(sourceOf(adapter)).toMatch(
-      /import \{ ed25519, x25519 \} from '@noble\/curves\/ed25519\.js';/,
-    );
+  it('pins the adapter import to exactly { ed25519, x25519 }', () => {
+    expect(adapterImportNames(sourceOf(adapter))).toEqual([
+      'ed25519',
+      'x25519',
+    ]);
   });
 
   describe('adapter verify call count (AST)', () => {
-    const adapterMembers = ['getPublicKey', 'sign', 'utils', 'Point'];
+    const adapterMembers = [
+      'getPublicKey',
+      'sign',
+      'Point.fromBytes',
+      'utils.randomSecretKey',
+      'utils.toMontgomery',
+      'utils.toMontgomerySecret',
+    ];
 
     it.each([
       [
-        'plain call',
-        'ed25519.verify(a, b, c);',
-        { verifyCalls: 1, members: [], bare: 0 },
+        'plain call with options',
+        'ed25519.verify(a, b, c, { zip215: false });',
+        { verifyCalls: 1, members: [], bare: 0, verifyOptions: ['{ zip215: false }'] },
       ],
       [
-        'element access call',
-        "ed25519['verify'](a, b, c);",
-        { verifyCalls: 1, members: [], bare: 0 },
+        'element access call with options',
+        "ed25519['verify'](a, b, c, { zip215: false });",
+        { verifyCalls: 1, members: [], bare: 0, verifyOptions: ['{ zip215: false }'] },
+      ],
+      [
+        'verify without options',
+        'ed25519.verify(a, b, c);',
+        { verifyCalls: 1, members: [], bare: 0, verifyOptions: [''] },
       ],
       [
         'allowlisted member call',
         'ed25519.sign(a, b);',
-        { verifyCalls: 0, members: ['sign'], bare: 0 },
+        { verifyCalls: 0, members: ['sign'], bare: 0, verifyOptions: [] },
+      ],
+      [
+        'allowlisted member pair',
+        'ed25519.utils.toMontgomery(a);',
+        { verifyCalls: 0, members: ['utils.toMontgomery'], bare: 0, verifyOptions: [] },
       ],
       [
         'comment only',
         '// ed25519.verify(a, b, c);',
-        { verifyCalls: 0, members: [], bare: 0 },
+        { verifyCalls: 0, members: [], bare: 0, verifyOptions: [] },
       ],
       [
         'destructured alias',
         'const { verify } = ed25519;',
-        { verifyCalls: 0, members: [], bare: 1 },
+        { verifyCalls: 0, members: [], bare: 1, verifyOptions: [] },
       ],
       [
         'detached reference',
         'const check = ed25519.verify;',
-        { verifyCalls: 0, members: ['verify'], bare: 0 },
+        { verifyCalls: 0, members: ['verify'], bare: 0, verifyOptions: [] },
       ],
       [
         'passed as a value',
         'use(ed25519);',
-        { verifyCalls: 0, members: [], bare: 1 },
+        { verifyCalls: 0, members: [], bare: 1, verifyOptions: [] },
       ],
     ])('%s', (_label, source, counts) => {
       expect(ed25519Uses('fixture.ts', source)).toEqual(counts);
     });
 
-    it('allows only allowlisted members and exactly one verify call in the adapter', () => {
+    it('pins the adapter to the allowlisted member pairs and one zip215-off verify', () => {
       const uses = ed25519Uses(adapter, sourceOf(adapter));
+      const members = [...new Set(uses.members)].sort();
 
       expect(uses.verifyCalls).toBe(1);
+      expect(uses.verifyOptions).toEqual(['{ zip215: false }']);
       expect(uses.bare).toBe(0);
-      expect(
-        uses.members.filter((member) => !adapterMembers.includes(member)),
-      ).toEqual([]);
+      expect(members).toEqual([...adapterMembers].sort());
     });
   });
 
@@ -458,6 +476,20 @@ describe('Ed25519 import allowlist', () => {
       "import { sha256 } from '@noble/hashes/sha2.js';",
       [],
     ],
+    [
+      'constructor escape',
+      "(() => {}).constructor('return require')();",
+      [1],
+    ],
+    ['string constructor key', "fn['constructor']('x');", [1]],
+    ['computed loader key', 'module[name]("node:vm");', [1]],
+    ['computed global key', 'globalThis[name](code);', [1]],
+    ['vm literal require', "require('node:vm').runInThisContext(code);", [1]],
+    ['vm literal import', "import('vm');", [1]],
+    ['vm static import', "import { runInThisContext } from 'node:vm';", [1]],
+    ['vm run name', 'vm.runInNewContext(code);', [1]],
+    ['class constructor', 'class A { constructor() {} }', []],
+    ['literal global property', 'const c = globalThis.crypto.subtle;', []],
   ])('%s', (_label, source, lines) => {
     expect(
       ed25519Violations('fixture.ts', source).map((violation) =>

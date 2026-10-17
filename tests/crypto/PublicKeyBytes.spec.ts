@@ -119,3 +119,59 @@ describe('CryptoAdapter.publicKeyToBytes', () => {
     expect(message).not.toContain(rawKey.toString('base64'));
   });
 });
+
+describe('CryptoAdapter.publicKeyToBytes PEM shape', () => {
+  const pair = crypto.generateKeyPairSync('ed25519', {
+    publicKeyEncoding: { format: 'pem', type: 'spki' },
+  });
+  const pem = pair.publicKey;
+  const body = pem
+    .replace('-----BEGIN PUBLIC KEY-----\n', '')
+    .replace('\n-----END PUBLIC KEY-----\n', '');
+
+  it('rejects input without armor', () => {
+    expect(() => CryptoAdapter.publicKeyToBytes(body)).toThrow(
+      InvalidEd25519PublicKeyError,
+    );
+  });
+
+  it('rejects a missing trailing newline', () => {
+    expect(() => CryptoAdapter.publicKeyToBytes(pem.trimEnd())).toThrow(
+      InvalidEd25519PublicKeyError,
+    );
+  });
+
+  it('rejects CRLF line endings', () => {
+    expect(() =>
+      CryptoAdapter.publicKeyToBytes(pem.replace(/\n/g, '\r\n')),
+    ).toThrow(InvalidEd25519PublicKeyError);
+  });
+
+  it('rejects trailing data after the END marker', () => {
+    expect(() => CryptoAdapter.publicKeyToBytes(`${pem}extra`)).toThrow(
+      InvalidEd25519PublicKeyError,
+    );
+    expect(() => CryptoAdapter.publicKeyToBytes(`${pem}\n`)).toThrow(
+      InvalidEd25519PublicKeyError,
+    );
+  });
+
+  it('rejects a second PEM block', () => {
+    expect(() => CryptoAdapter.publicKeyToBytes(`${pem}${pem}`)).toThrow(
+      InvalidEd25519PublicKeyError,
+    );
+  });
+
+  it('rejects injected markers inside the body', () => {
+    const injected = `-----BEGIN PUBLIC KEY-----\n${body}\n-----END PUBLIC KEY-----\n-----BEGIN PUBLIC KEY-----\n${body}\n-----END PUBLIC KEY-----\n`;
+
+    expect(() => CryptoAdapter.publicKeyToBytes(injected)).toThrow(
+      InvalidEd25519PublicKeyError,
+    );
+    expect(() =>
+      CryptoAdapter.publicKeyToBytes(
+        `-----BEGIN PUBLIC KEY-----\n${body.slice(0, 20)}\n-----END PUBLIC KEY-----\n${body.slice(20)}\n`,
+      ),
+    ).toThrow(InvalidEd25519PublicKeyError);
+  });
+});

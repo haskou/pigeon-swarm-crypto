@@ -78,11 +78,55 @@ const unsafeNames: Record<string, true> = {
   createRequire: true,
   _load: true,
   getBuiltinModule: true,
+  runInThisContext: true,
+  runInNewContext: true,
+  runInContext: true,
+  compileFunction: true,
 };
-const unsafeStrings: Record<string, true> = { ...unsafeNames, require: true };
+const unsafeStrings: Record<string, true> = {
+  ...unsafeNames,
+  require: true,
+};
+const forbiddenModules: Record<string, true> = {
+  vm: true,
+  'node:vm': true,
+  module: true,
+  'node:module': true,
+};
+const loaderRoots: Record<string, true> = {
+  globalThis: true,
+  global: true,
+  self: true,
+  window: true,
+  process: true,
+  module: true,
+  Module: true,
+  require: true,
+};
 
 const isUnsafeName = (text: string): boolean =>
   Object.hasOwn(unsafeNames, text) || text === 'require';
+
+// `.constructor` reaches the Function constructor from any function value.
+const isConstructorAccess = (identifier: ts.Identifier): boolean =>
+  identifier.text === 'constructor' &&
+  ts.isPropertyAccessExpression(identifier.parent) &&
+  identifier.parent.name === identifier;
+
+const isLoaderCall = (call: ts.CallExpression): boolean =>
+  call.expression.kind === ts.SyntaxKind.ImportKeyword ||
+  (ts.isIdentifier(call.expression) && call.expression.text === 'require');
+
+const isForbiddenModuleCall = (call: ts.CallExpression): boolean => {
+  const [specifier] = call.arguments;
+
+  return (
+    isLoaderCall(call) &&
+    specifier !== undefined &&
+    ts.isStringLiteralLike(specifier) &&
+    Object.hasOwn(forbiddenModules, specifier.text)
+  );
+};
 
 const isUnsafeReference = (identifier: ts.Identifier): boolean =>
   isUnsafeName(identifier.text) &&
@@ -143,8 +187,17 @@ const isVerifyCall = (identifier: ts.Identifier): boolean => {
 const memberOf = (identifier: ts.Identifier): string | undefined => {
   const access = identifier.parent;
 
-  if (ts.isPropertyAccessExpression(access) && access.expression === identifier)
-    return access.name.text;
+  if (
+    ts.isPropertyAccessExpression(access) &&
+    access.expression === identifier
+  ) {
+    // Two levels deep for namespaces such as `ed25519.utils.toMontgomery`.
+    const outer = access.parent;
+
+    return ts.isPropertyAccessExpression(outer) && outer.expression === access
+      ? `${access.name.text}.${outer.name.text}`
+      : access.name.text;
+  }
   if (
     ts.isElementAccessExpression(access) &&
     access.expression === identifier &&
@@ -158,14 +211,24 @@ const memberOf = (identifier: ts.Identifier): string | undefined => {
 export const ed25519Uses = (
   fileName: string,
   source: string,
-): { verifyCalls: number; members: string[]; bare: number } => {
+): {
+  verifyCalls: number;
+  members: string[];
+  bare: number;
+  verifyOptions: string[];
+} => {
   const sourceFile = ts.createSourceFile(
     fileName,
     source,
     ts.ScriptTarget.Latest,
     true,
   );
-  const uses = { verifyCalls: 0, members: [] as string[], bare: 0 };
+  const uses = {
+    verifyCalls: 0,
+    members: [] as string[],
+    bare: 0,
+    verifyOptions: [] as string[],
+  };
   const visit = (node: ts.Node): void => {
     if (ts.isImportDeclaration(node)) return;
 
@@ -176,8 +239,11 @@ export const ed25519Uses = (
     ) {
       const member = memberOf(node);
 
-      if (isVerifyCall(node)) uses.verifyCalls += 1;
-      else if (member === undefined) uses.bare += 1;
+      if (isVerifyCall(node)) {
+        uses.verifyCalls += 1;
+        const call = node.parent.parent as ts.CallExpression;
+        uses.verifyOptions.push(call.arguments[3]?.getText(sourceFile) ?? '');
+      } else if (member === undefined) uses.bare += 1;
       else uses.members.push(member);
     }
 
@@ -189,13 +255,45 @@ export const ed25519Uses = (
   return uses;
 };
 
+// The names the adapter imports from @noble/curves, one entry per clause
+// element as written. Aliases, default and namespace imports all appear, so
+// the adapter test can require the exact list.
+export const adapterImportNames = (source: string): string[] => {
+  const sourceFile = ts.createSourceFile(
+    'adapter.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+
+  return sourceFile.statements
+    .filter(ts.isImportDeclaration)
+    .filter((node) => bindingModule.test(moduleSpecifierOf(node) ?? ''))
+    .flatMap((node) => {
+      const clause = node.importClause;
+      const named = clause?.namedBindings;
+      const defaultName =
+        clause?.name !== undefined ? [`default ${clause.name.text}`] : [];
+
+      if (named === undefined) return defaultName;
+      if (ts.isNamespaceImport(named)) return [...defaultName, 'namespace'];
+
+      return [
+        ...defaultName,
+        ...named.elements.map((element) => element.getText(sourceFile)),
+      ];
+    });
+};
+
 // Outside the adapter, the only permitted reference to @noble/curves' ed25519
 // module is a static import or re-export of x25519. Rejected routes: a module
-// name in a string; an import or export naming `require`, `createRequire`,
-// `eval`, `Function`, `_load` or `getBuiltinModule`; a `require` reference other
+// name in a string; an import, export or require of `node:vm` or `module`; an
+// import or export naming `require`, `createRequire`, `eval`, `Function`,
+// `_load`, `getBuiltinModule` or a vm run method; a `require` reference other
 // than a direct call with a string-literal specifier; a bare `createRequire`,
-// `eval`, `Function`, `_load` or `getBuiltinModule` identifier; the same names
-// as string literals (for example `module['require']`); and `import()` with a
+// `eval`, `Function`, `_load`, `getBuiltinModule` or `.constructor` identifier;
+// the same names as string literals (for example `module['require']`); a
+// computed key on a loader root such as `module[name]`; and `import()` with a
 // non-literal specifier. This is a static text scan. Computed access through a
 // value it cannot resolve is out of its reach.
 export const ed25519Violations = (
@@ -227,13 +325,19 @@ export const ed25519Violations = (
         !allowedDeclaration(node)
       )
         report(node);
+      if (specifier !== undefined && Object.hasOwn(forbiddenModules, specifier))
+        report(node);
 
       if (importedNames(node).some(isUnsafeName)) report(node);
 
       return;
     }
 
-    if (ts.isIdentifier(node) && isUnsafeReference(node)) report(node);
+    if (
+      ts.isIdentifier(node) &&
+      (isUnsafeReference(node) || isConstructorAccess(node))
+    )
+      report(node);
 
     if (
       ts.isCallExpression(node) &&
@@ -242,9 +346,22 @@ export const ed25519Violations = (
     )
       report(node);
 
+    if (ts.isCallExpression(node) && isForbiddenModuleCall(node)) report(node);
+
+    if (
+      ts.isElementAccessExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      Object.hasOwn(loaderRoots, node.expression.text) &&
+      !ts.isStringLiteralLike(node.argumentExpression)
+    )
+      report(node);
+
     if (isStringLike(node) && curveText.test(node.text)) report(node);
 
-    if (ts.isStringLiteralLike(node) && Object.hasOwn(unsafeStrings, node.text))
+    if (
+      ts.isStringLiteralLike(node) &&
+      (Object.hasOwn(unsafeStrings, node.text) || node.text === 'constructor')
+    )
       report(node);
 
     ts.forEachChild(node, visit);
@@ -293,12 +410,22 @@ describe('Ed25519 import allowlist', () => {
       [
         'plain call with options',
         'ed25519.verify(a, b, c, { zip215: false });',
-        { verifyCalls: 1, members: [], bare: 0, verifyOptions: ['{ zip215: false }'] },
+        {
+          verifyCalls: 1,
+          members: [],
+          bare: 0,
+          verifyOptions: ['{ zip215: false }'],
+        },
       ],
       [
         'element access call with options',
         "ed25519['verify'](a, b, c, { zip215: false });",
-        { verifyCalls: 1, members: [], bare: 0, verifyOptions: ['{ zip215: false }'] },
+        {
+          verifyCalls: 1,
+          members: [],
+          bare: 0,
+          verifyOptions: ['{ zip215: false }'],
+        },
       ],
       [
         'verify without options',
@@ -313,7 +440,12 @@ describe('Ed25519 import allowlist', () => {
       [
         'allowlisted member pair',
         'ed25519.utils.toMontgomery(a);',
-        { verifyCalls: 0, members: ['utils.toMontgomery'], bare: 0, verifyOptions: [] },
+        {
+          verifyCalls: 0,
+          members: ['utils.toMontgomery'],
+          bare: 0,
+          verifyOptions: [],
+        },
       ],
       [
         'comment only',
@@ -476,11 +608,7 @@ describe('Ed25519 import allowlist', () => {
       "import { sha256 } from '@noble/hashes/sha2.js';",
       [],
     ],
-    [
-      'constructor escape',
-      "(() => {}).constructor('return require')();",
-      [1],
-    ],
+    ['constructor escape', "(() => {}).constructor('return require')();", [1]],
     ['string constructor key', "fn['constructor']('x');", [1]],
     ['computed loader key', 'module[name]("node:vm");', [1]],
     ['computed global key', 'globalThis[name](code);', [1]],

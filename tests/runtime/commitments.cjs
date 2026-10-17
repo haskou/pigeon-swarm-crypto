@@ -13,7 +13,6 @@ const owners = {
   communityRole: ['CommitmentId', 'communityRole'],
   communityRequest: ['CommitmentId', 'communityRequest'],
   communityModerationLog: ['CommitmentId', 'communityModerationLog'],
-  communityInviteToken: ['CommitmentId', 'communityInviteToken'],
   mlsRecord: ['CommitmentId', 'mlsRecord'],
   privateBlobOwner: ['CommitmentId', 'privateBlobOwner'],
   oneToOneConversation: ['CommitmentId', 'oneToOneConversation'],

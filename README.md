@@ -94,7 +94,7 @@ package does not enforce an application password policy or provide account recov
 | Encrypted envelopes | `EncryptedPayload`, `AsymmetricEncryptedPayload`, `SymmetricEncryptedPayload`, `EncryptedPayloadScheme` |
 | Symmetric encryption | `SymmetricKey`, `SymmetricKeyCryptOptions`, `SymmetricKeyDerivationOptions` |
 | Digest computation | `SHA256Hash`, `SHA512Hash`, `HashPayload` |
-| Signed protocol preimages | `CanonicalJson`, `SignedHttpRequestSignature`, `IdentitySignature`, `KeychainSignature`, `DeviceAuthorizationTransitionSignature`, `DeviceSealedSecretSignature`, `DeviceCredentialCommitment`, `PublicMutationSignature`, `CommunityOperationSignature`, `CommunityInviteReference`, `PrivateFreshnessRequest` |
+| Signed protocol preimages | `CanonicalJson`, `SignedHttpRequestSignature`, `IdentitySignature`, `KeychainSignature`, `DeviceAuthorizationTransitionSignature`, `DeviceSealedSecretSignature`, `DeviceCredentialCommitment`, `PublicMutationSignature`, `CommunityOperationSignature`, `CommunityInvitationKey`, `CommunityInvitationPossession`, `CommunityInvitationConsent`, `PrivateFreshnessRequest` |
 | Device pairing | `DevicePairingInvitationSignature`, `DevicePairingRequestSignature`, `DevicePairingCompletionSignature`, `DevicePairingVerificationCode` |
 | Public errors | `InvalidKeyError`, `InvalidSignatureError`, `InvalidEncryptedPrivateKeyFormatError` |
 

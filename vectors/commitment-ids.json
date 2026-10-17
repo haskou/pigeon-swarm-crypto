@@ -7,7 +7,6 @@
     "communityRole": "first 24 hex chars of sha256(utf8(JSON [\"role\", communityId, creatorIdentityId, createdAt]))",
     "communityRequest": "first 24 hex chars of sha256(utf8(JSON [communityId, type, creatorIdentityId, identityId, createdAt]))",
     "communityModerationLog": "first 24 hex chars of sha256(utf8(JSON [communityId, actorIdentityId, action, targetType, targetId, createdAt]))",
-    "communityInviteToken": "base64url(sha256(utf8(JSON [communityId, creatorIdentityId, nonce, maxUses, expiresAt or null])))",
     "mlsRecord": "base64url(sha256(utf8(RFC 8785 {epoch?, groupId, kind, payload, recipientIdentityId?}))); an empty recipient is omitted, epoch 0 is kept",
     "privateBlobOwner": "lowercase hex HMAC-SHA256(key = 32-byte salt, utf8(identityId))",
     "stateDigest": "base64url(sha256(utf8(RFC 8785 value)))",
@@ -518,96 +517,6 @@
           "member",
           "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
           "1767225300000"
-        ]
-      }
-    ]
-  },
-  "communityInviteToken": {
-    "valid": [
-      {
-        "name": "invite link with limits",
-        "args": [
-          "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
-          "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          "vector-invite-nonce-1",
-          5,
-          1773935231000
-        ],
-        "preimage": "[\"889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c\",\"MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=\",\"vector-invite-nonce-1\",5,1773935231000]",
-        "id": "6OJePeok3Aw4yx5OJjt1IVeh6lPkGsJv7pjgOCQVfzY"
-      },
-      {
-        "name": "invite link without expiry",
-        "args": [
-          "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
-          "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          "vector-invite-nonce-1",
-          5
-        ],
-        "preimage": "[\"889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c\",\"MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=\",\"vector-invite-nonce-1\",5,null]",
-        "id": "JjXUvyN5GoWRDiiJuLCdDY-6clyD_VjlaLZq9IPO0gA"
-      },
-      {
-        "name": "invite link with zero uses",
-        "args": [
-          "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
-          "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          "vector-invite-nonce-2",
-          0
-        ],
-        "preimage": "[\"889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c\",\"MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=\",\"vector-invite-nonce-2\",0,null]",
-        "id": "klJ96EMScYxwh2N59VZ4V-FxCcJB5pzQfutGXxRIKsQ"
-      }
-    ],
-    "invalid": [
-      {
-        "name": "empty nonce",
-        "args": [
-          "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
-          "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          "",
-          5,
-          1773935231000
-        ]
-      },
-      {
-        "name": "negative max uses",
-        "args": [
-          "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
-          "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          "vector-invite-nonce-1",
-          -1,
-          1773935231000
-        ]
-      },
-      {
-        "name": "fractional max uses",
-        "args": [
-          "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
-          "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          "vector-invite-nonce-1",
-          1.5,
-          1773935231000
-        ]
-      },
-      {
-        "name": "null expiry",
-        "args": [
-          "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
-          "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          "vector-invite-nonce-1",
-          5,
-          null
-        ]
-      },
-      {
-        "name": "fractional expiry",
-        "args": [
-          "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
-          "MCowBQYDK2VwAyEAqB+GBbuXZLmdsbPWs3Ie0lfU6Nj9ab7x0HCHHivC1HM=",
-          "vector-invite-nonce-1",
-          5,
-          1773935231000.5
         ]
       }
     ]

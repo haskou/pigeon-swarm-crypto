@@ -140,24 +140,6 @@ export class CommitmentId {
     ]);
   }
 
-  public static communityInviteToken(
-    communityId: string,
-    creatorIdentityId: string,
-    nonce: string,
-    maxUses: number,
-    expiresAt?: number,
-  ): string {
-    return this.longId(
-      JSON.stringify([
-        CommitmentInput.text(communityId),
-        CommitmentInput.text(creatorIdentityId),
-        CommitmentInput.text(nonce),
-        CommitmentInput.counter(maxUses),
-        expiresAt === undefined ? null : CommitmentInput.counter(expiresAt),
-      ]),
-    );
-  }
-
   public static mlsRecord(content: MlsRecordContent): string {
     if (
       typeof content !== 'object' ||

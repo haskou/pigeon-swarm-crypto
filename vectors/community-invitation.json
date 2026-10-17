@@ -1,0 +1,620 @@
+{
+  "algorithms": {
+    "body": "RFC 8785 canonical JSON of {communityId, identityId, invitationId, networkId}. communityId is 1 to 128 base64url characters; identityId is the canonical base64 SPKI body of a strict Ed25519 key that is not of small order; invitationId is the canonical unpadded base64url of 32 bytes (43 characters); networkId is a UUID with version 1 to 8 and variant 8 to b, or the nil or max UUID, in either case, and the proofs sign its exact text",
+    "consent": "Ed25519 by the joiner identity key over utf8(\"pigeon:community-invitation-consent:v1\\n\" + body), canonical unpadded base64url of the 64 signature bytes (86 characters), verified under fields.identityId",
+    "invitationKey": "canonical unpadded base64url of the raw 32-byte Ed25519 public key of the seed (43 characters); strict decoding refuses non-canonical and small-order points",
+    "possession": "Ed25519 by the invitation key over utf8(\"pigeon:community-invitation-possession:v1\\n\" + body), canonical unpadded base64url of the 64 signature bytes (86 characters), verified under the invitationKey of the invitation",
+    "secret": "32 random bytes as canonical unpadded base64url (43 characters), carried only in the link fragment",
+    "seed": "HKDF-SHA256(ikm = secret bytes, salt = empty, info = utf8(\"pigeon:community-invitation-key:v1\"), L = 32), the Ed25519 seed of the invitation key",
+    "verification": "strict RFC 8032: S >= L, a non-canonical R or key, and a small-order key are refused; signatures and keys decode only from their single canonical text"
+  },
+  "description": "Fixed vectors for signed community invitations. derivations map a link secret to the invitation key, proofs map the four fields to both preimages and signatures, and every invalid case must be refused with InvalidCommunityInvitationError. The first proof is the member_joined_invitation operation of community-operation.json. Keys are disposable test keys.",
+  "derivations": [
+    {
+      "name": "vector secret",
+      "secretDerivation": "base64url(sha256(utf8(\"pigeon-vector:community-invitation-secret\")))",
+      "secret": "ZG5gNRIlsDdW4g0yIaieRL98wYywe2iot4ekBBz_dMU",
+      "seedHex": "bbb9a548384ad5429c2f5f870dd5b6b631177ea548600cdc0b4f27aced446c22",
+      "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc"
+    },
+    {
+      "name": "second vector secret",
+      "secretDerivation": "base64url(sha256(utf8(\"pigeon-vector:community-invitation-secret-2\")))",
+      "secret": "DaPJXzGQu2IxAgd7Rr7C2I2Kud4EEnvacTxsVW19H1U",
+      "seedHex": "af808ff1dad1bee3c3f6205d82f9b69ec4cce0d5d8cea0c69735bbab21246c94",
+      "invitationKey": "Os9xFxgN6fLTum-0ajwofryKKP2__HBOA9vxNa2Z1jY"
+    },
+    {
+      "name": "all-zero secret",
+      "secretDerivation": "32 zero bytes",
+      "secret": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "seedHex": "d09635c922c4a1e68d14f5a54ee3e6b9ecbb2d691fabab4b18576c11905c51a5",
+      "invitationKey": "dccgUMvQzDDDY-vSgRc1p89oFQPCEkr1Zm-rRywYoRM"
+    }
+  ],
+  "invalid": {
+    "secrets": [
+      {
+        "name": "padding",
+        "secret": "ZG5gNRIlsDdW4g0yIaieRL98wYywe2iot4ekBBz_dMU="
+      },
+      {
+        "name": "the standard base64 alphabet",
+        "secret": "ZG5gNRIlsDdW4g0yIaieRL98wYywe2iot4ekBBz/dMU"
+      },
+      {
+        "name": "42 characters",
+        "secret": "ZG5gNRIlsDdW4g0yIaieRL98wYywe2iot4ekBBz_dM"
+      },
+      {
+        "name": "44 characters",
+        "secret": "ZG5gNRIlsDdW4g0yIaieRL98wYywe2iot4ekBBz_dMUA"
+      },
+      {
+        "name": "other padding bits in the final character",
+        "secret": "ZG5gNRIlsDdW4g0yIaieRL98wYywe2iot4ekBBz_dMV"
+      },
+      {
+        "name": "a stray character",
+        "secret": "ZG5gNRIlsD W4g0yIaieRL98wYywe2iot4ekBBz_dMU"
+      },
+      {
+        "name": "an empty string",
+        "secret": ""
+      }
+    ],
+    "invitationKeys": [
+      {
+        "name": "a small-order point",
+        "invitationKey": "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      {
+        "name": "a point off the curve",
+        "invitationKey": "AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      },
+      {
+        "name": "a non-canonical y coordinate (p + 3)",
+        "invitationKey": "8P_______________________________________38"
+      },
+      {
+        "name": "padding",
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc="
+      },
+      {
+        "name": "the standard base64 alphabet",
+        "invitationKey": "OumT+jQdndyKrHT6U3Cwev2rXycXB2Qz6+XUe47UvJc"
+      },
+      {
+        "name": "other padding bits in the final character",
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJd"
+      },
+      {
+        "name": "42 characters",
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJ"
+      },
+      {
+        "name": "an identity id",
+        "invitationKey": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI="
+      }
+    ],
+    "fields": [
+      {
+        "name": "an alias DER prefix on the joiner identity id",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MSowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      {
+        "name": "other padding bits in the joiner identity id",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yJ=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      {
+        "name": "a small-order joiner key",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      {
+        "name": "a PEM joiner identity id",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=\n-----END PUBLIC KEY-----\n",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      {
+        "name": "an extra field",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000",
+          "admitter": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI="
+        }
+      },
+      {
+        "name": "no network id",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk"
+        }
+      },
+      {
+        "name": "other padding bits in the invitation id",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPl",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      {
+        "name": "a padded invitation id",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk=",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      {
+        "name": "a community id with a dot",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c.",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      {
+        "name": "a community id of 129 characters",
+        "fields": {
+          "communityId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      {
+        "name": "an empty community id",
+        "fields": {
+          "communityId": "",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      {
+        "name": "a network id that is not a UUID",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "pigeon-main"
+        }
+      },
+      {
+        "name": "a network id in braces",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "{550e8400-e29b-41d4-a716-446655440000}"
+        }
+      },
+      {
+        "name": "a numeric network id",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": 1
+        }
+      }
+    ],
+    "possessions": [
+      {
+        "name": "a possession with the standard base64 alphabet",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP/YE/Tsxfk7QDS0mHB4JG7sBA"
+      },
+      {
+        "name": "a possession with padding",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBA=="
+      },
+      {
+        "name": "a possession with a stray character",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9 Vcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBA"
+      },
+      {
+        "name": "a possession with 85 characters",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sB"
+      },
+      {
+        "name": "a possession with 87 characters",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBAA"
+      },
+      {
+        "name": "a possession with other padding bits in the final character",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBB"
+      },
+      {
+        "name": "a possession with S + L in place of S",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIT309oHq7IX2UwIAscqRt7tE_Tsxfk7QDS0mHB4JG7sFA"
+      },
+      {
+        "name": "a possession with an empty string",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": ""
+      },
+      {
+        "name": "the invitation key over the consent domain",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "DtC5LckMl6nZcwXZhV-qNbiam1pS_TiZBNJYoNdpk21Rc7Ps48cszONlJux3elOt8vR_LrQk7dagLUw5gW0eBg"
+      },
+      {
+        "name": "the consent proof",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+      },
+      {
+        "name": "another invitation key",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "Os9xFxgN6fLTum-0ajwofryKKP2__HBOA9vxNa2Z1jY",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBA"
+      },
+      {
+        "name": "a swapped joiner",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAY9c4uJOxftxqpNbSo9x/vpz9bKr56kHpvf6MuZSutJM=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBA"
+      },
+      {
+        "name": "a swapped invitation",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "EcWkD4mudE3FiCjzd_5etJbovqkB-hXtyDcJsBQ4cNI",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBA"
+      },
+      {
+        "name": "a swapped network",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBA"
+      },
+      {
+        "name": "a swapped community",
+        "fields": {
+          "communityId": "jS4VE6GtU1G8SVCazF00N1SQJr2W6gHBDcaVKtG_L_0",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+        "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBA"
+      }
+    ],
+    "consents": [
+      {
+        "name": "a consent with the standard base64 alphabet",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ+FI/DOf+Xa/QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+      },
+      {
+        "name": "a consent with padding",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg=="
+      },
+      {
+        "name": "a consent with a stray character",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRP 7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+      },
+      {
+        "name": "a consent with 85 characters",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLD"
+      },
+      {
+        "name": "a consent with 87 characters",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDgA"
+      },
+      {
+        "name": "a consent with other padding bits in the final character",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDh"
+      },
+      {
+        "name": "a consent with S + L in place of S",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyL9v3IQykum4FMVS88LBmDYyK0ZgO6rBYnUJiP5jwLHg"
+      },
+      {
+        "name": "a consent with an empty string",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": ""
+      },
+      {
+        "name": "the joiner key over the possession domain",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "-h9bylkLrkb7r1ZKPfaZl6StKEEprv8Q4SpnEmlSbcSlRhUvOpq0XWpnweIg-zyAnETpjTYxmf8VegSXlsmFCw"
+      },
+      {
+        "name": "the possession proof",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBA"
+      },
+      {
+        "name": "another identity key over the joiner fields",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "tvUHXEqLXwNGJamk_QeL20zWB4lD0xoO8XThviNUzRHQW40SN8x-qtEHwXrWy8tt_Qibpg0CoqTnt9I8BKwGCA"
+      },
+      {
+        "name": "a swapped joiner",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAY9c4uJOxftxqpNbSo9x/vpz9bKr56kHpvf6MuZSutJM=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+      },
+      {
+        "name": "a swapped invitation",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "EcWkD4mudE3FiCjzd_5etJbovqkB-hXtyDcJsBQ4cNI",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+      },
+      {
+        "name": "a swapped network",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+      },
+      {
+        "name": "a swapped community",
+        "fields": {
+          "communityId": "jS4VE6GtU1G8SVCazF00N1SQJr2W6gHBDcaVKtG_L_0",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+      },
+      {
+        "name": "an alias DER prefix on the joiner identity id",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MSowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+      },
+      {
+        "name": "other padding bits in the joiner identity id",
+        "fields": {
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yJ=",
+          "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "networkId": "550e8400-e29b-41d4-a716-446655440000"
+        },
+        "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+      }
+    ]
+  },
+  "keys": {
+    "member": {
+      "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEILDZV/VJ156PVuezQ2VLU9Vy3Xf6oTEIZ5RjTJGhzYZ5\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=\n-----END PUBLIC KEY-----\n",
+      "seedDerivation": "sha256(utf8(\"pigeon-vector:member\")), PKCS#8 ed25519 private key with the 16 byte prefix 302e020100300506032b657004220420 in front of the 32 byte seed",
+      "seedHex": "b0d957f549d79e8f56e7b343654b53d572dd77faa131086794634c91a1cd8679"
+    },
+    "other": {
+      "identityId": "MCowBQYDK2VwAyEAY9c4uJOxftxqpNbSo9x/vpz9bKr56kHpvf6MuZSutJM=",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIIQMaTpFcHUI0y6x+osTv+2OCLSbFrxNt7XDo2UyBt5f\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAY9c4uJOxftxqpNbSo9x/vpz9bKr56kHpvf6MuZSutJM=\n-----END PUBLIC KEY-----\n",
+      "seedDerivation": "sha256(utf8(\"pigeon-vector:other\")), PKCS#8 ed25519 private key with the 16 byte prefix 302e020100300506032b657004220420 in front of the 32 byte seed",
+      "seedHex": "840c693a45707508d32eb1fa8b13bfed8e08b49b16bc4db7b5c3a3653206de5f"
+    }
+  },
+  "proofs": [
+    {
+      "name": "member joins through the invitation of community-operation.json",
+      "secret": "ZG5gNRIlsDdW4g0yIaieRL98wYywe2iot4ekBBz_dMU",
+      "invitationKey": "OumT-jQdndyKrHT6U3Cwev2rXycXB2Qz6-XUe47UvJc",
+      "joiner": "member",
+      "fields": {
+        "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+        "identityId": "MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=",
+        "invitationId": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+        "networkId": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "body": "{\"communityId\":\"889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c\",\"identityId\":\"MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=\",\"invitationId\":\"fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk\",\"networkId\":\"550e8400-e29b-41d4-a716-446655440000\"}",
+      "possessionContent": "pigeon:community-invitation-possession:v1\n{\"communityId\":\"889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c\",\"identityId\":\"MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=\",\"invitationId\":\"fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk\",\"networkId\":\"550e8400-e29b-41d4-a716-446655440000\"}",
+      "possession": "6iJutiWHo9GVcw7F87yClxGqDOM09vzH16Exs0CEiIQKAOWqkE8FgXZrCiRMTP_YE_Tsxfk7QDS0mHB4JG7sBA",
+      "consentContent": "pigeon:community-invitation-consent:v1\n{\"communityId\":\"889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c\",\"identityId\":\"MCowBQYDK2VwAyEAIqEp34Xt46gS5nDBcFiWTvXd/hfiakKa1daH3T/V9yI=\",\"invitationId\":\"fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk\",\"networkId\":\"550e8400-e29b-41d4-a716-446655440000\"}",
+      "consent": "13yXp4kgRPs7iZrTCzs0NFCR9aJ-FI_DOf-Xa_QYLlyeIghsKcYbQ6uvXYxdMjpuYyK0ZgO6rBYnUJiP5jwLDg"
+    },
+    {
+      "name": "other joins another community through a second invitation",
+      "secret": "DaPJXzGQu2IxAgd7Rr7C2I2Kud4EEnvacTxsVW19H1U",
+      "invitationKey": "Os9xFxgN6fLTum-0ajwofryKKP2__HBOA9vxNa2Z1jY",
+      "joiner": "other",
+      "fields": {
+        "communityId": "jS4VE6GtU1G8SVCazF00N1SQJr2W6gHBDcaVKtG_L_0",
+        "identityId": "MCowBQYDK2VwAyEAY9c4uJOxftxqpNbSo9x/vpz9bKr56kHpvf6MuZSutJM=",
+        "invitationId": "2Pv7rX0CNT8NuCs_fyZaJ2e8Yrap3OOxUKOMcExbsq4",
+        "networkId": "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+      },
+      "body": "{\"communityId\":\"jS4VE6GtU1G8SVCazF00N1SQJr2W6gHBDcaVKtG_L_0\",\"identityId\":\"MCowBQYDK2VwAyEAY9c4uJOxftxqpNbSo9x/vpz9bKr56kHpvf6MuZSutJM=\",\"invitationId\":\"2Pv7rX0CNT8NuCs_fyZaJ2e8Yrap3OOxUKOMcExbsq4\",\"networkId\":\"6ba7b810-9dad-11d1-80b4-00c04fd430c8\"}",
+      "possessionContent": "pigeon:community-invitation-possession:v1\n{\"communityId\":\"jS4VE6GtU1G8SVCazF00N1SQJr2W6gHBDcaVKtG_L_0\",\"identityId\":\"MCowBQYDK2VwAyEAY9c4uJOxftxqpNbSo9x/vpz9bKr56kHpvf6MuZSutJM=\",\"invitationId\":\"2Pv7rX0CNT8NuCs_fyZaJ2e8Yrap3OOxUKOMcExbsq4\",\"networkId\":\"6ba7b810-9dad-11d1-80b4-00c04fd430c8\"}",
+      "possession": "_4hSIAK0dyqIWzK_9lBFymGbcBKSqTz_ShSTC-RqhRBpcZNVSsPg85ei6SevfWCxheJXAp5boWqlukADYBbDCQ",
+      "consentContent": "pigeon:community-invitation-consent:v1\n{\"communityId\":\"jS4VE6GtU1G8SVCazF00N1SQJr2W6gHBDcaVKtG_L_0\",\"identityId\":\"MCowBQYDK2VwAyEAY9c4uJOxftxqpNbSo9x/vpz9bKr56kHpvf6MuZSutJM=\",\"invitationId\":\"2Pv7rX0CNT8NuCs_fyZaJ2e8Yrap3OOxUKOMcExbsq4\",\"networkId\":\"6ba7b810-9dad-11d1-80b4-00c04fd430c8\"}",
+      "consent": "85D6nPKDAIwFYpsfircZqLZ6b5_0n0cag0Hqqq6Jn5E8jaDMEDGO3_6SIiOtb3SEJceL-QNEE-b8i1bB-v6NBQ"
+    }
+  ]
+}

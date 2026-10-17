@@ -19,7 +19,9 @@ const vectorsOf = (name) =>
 function computeAll(PigeonCrypto, vectors) {
   const {
     CanonicalJson,
-    CommunityInviteReference,
+    CommunityInvitationConsent,
+    CommunityInvitationKey,
+    CommunityInvitationPossession,
     CommunityOperationSignature,
     DevicePairingCompletionSignature,
     DevicePairingInvitationSignature,
@@ -65,6 +67,9 @@ function computeAll(PigeonCrypto, vectors) {
   };
   const community = vectors.community;
   const freshness = vectors.freshness;
+  const invitation = vectors.invitation;
+  const invitationKeyOf = ({ secret }) =>
+    CommunityInvitationKey.fromSecret(secret);
 
   return {
     canonical: vectors.canonical.cases.map(({ value }) =>
@@ -156,7 +161,50 @@ function computeAll(PigeonCrypto, vectors) {
         PrivateKey.fromPEM(community.keys[input.signer].privateKeyPem),
       ).valueOf(),
     ]),
-    inviteReference: CommunityInviteReference.of(community.inviteToken.token),
+    invitationKeys: invitation.derivations.map((derivation) =>
+      invitationKeyOf(derivation).publicKey(),
+    ),
+    invitationProofs: invitation.proofs.map((proof) => {
+      CommunityInvitationPossession.verify(
+        proof.fields,
+        proof.possession,
+        proof.invitationKey,
+      );
+      CommunityInvitationConsent.verify(proof.fields, proof.consent);
+      return [
+        CommunityInvitationPossession.contentOf(proof.fields),
+        invitationKeyOf(proof).signPossession(proof.fields),
+        CommunityInvitationConsent.contentOf(proof.fields),
+        CommunityInvitationConsent.sign(
+          proof.fields,
+          PrivateKey.fromPEM(invitation.keys[proof.joiner].privateKeyPem),
+        ),
+      ];
+    }),
+    invitationRejected: [
+      ...invitation.invalid.secrets.map((derivation) =>
+        rejects(() => invitationKeyOf(derivation)),
+      ),
+      ...invitation.invalid.invitationKeys.map(({ invitationKey }) =>
+        rejects(() => CommunityInvitationKey.parsePublicKey(invitationKey)),
+      ),
+      ...invitation.invalid.fields.map(({ fields }) =>
+        rejects(() => CommunityInvitationConsent.contentOf(fields)),
+      ),
+      ...invitation.invalid.possessions.map(
+        ({ fields, invitationKey, possession }) =>
+          rejects(() =>
+            CommunityInvitationPossession.verify(
+              fields,
+              possession,
+              invitationKey,
+            ),
+          ),
+      ),
+      ...invitation.invalid.consents.map(({ fields, consent }) =>
+        rejects(() => CommunityInvitationConsent.verify(fields, consent)),
+      ),
+    ],
     freshness: freshness.cases.map(({ input }) =>
       PrivateFreshnessRequest.serialize(input),
     ),
@@ -187,7 +235,18 @@ const expected = (vectors) => ({
     derived.identitySigningContent,
     derived.identitySignature,
   ]),
-  inviteReference: vectors.community.inviteToken.reference,
+  invitationKeys: vectors.invitation.derivations.map(
+    ({ invitationKey }) => invitationKey,
+  ),
+  invitationProofs: vectors.invitation.proofs.map((proof) => [
+    proof.possessionContent,
+    proof.possession,
+    proof.consentContent,
+    proof.consent,
+  ]),
+  invitationRejected: Object.values(vectors.invitation.invalid)
+    .flat()
+    .map(() => true),
   freshness: vectors.freshness.cases.map(({ requestJson }) => requestJson),
 });
 
@@ -198,6 +257,7 @@ const expected = (vectors) => ({
     community: vectorsOf('community-operation'),
     freshness: vectorsOf('private-freshness-request'),
     http: vectorsOf('signed-http-request'),
+    invitation: vectorsOf('community-invitation'),
     pairing: vectorsOf('device-pairing'),
   };
   const want = expected(vectors);

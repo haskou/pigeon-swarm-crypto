@@ -28,13 +28,6 @@ CommitmentId.communityModerationLog(
   targetId,
   createdAt,
 );
-CommitmentId.communityInviteToken(
-  communityId,
-  creatorIdentityId,
-  nonce,
-  maxUses,
-  expiresAt,
-);
 CommitmentId.mlsRecord({ epoch, groupId, kind, payload, recipientIdentityId });
 CommitmentId.privateBlobOwner(saltHex, identityId);
 CommitmentId.privateBlobOwnerSalt();
@@ -62,7 +55,6 @@ Canonicalization Scheme bytes. base64url is unpadded.
 | `communityRole`                  | First 24 hex characters of SHA-256 of JSON `["role", communityId, creatorIdentityId, createdAt]`                                                              |
 | `communityRequest`               | First 24 hex characters of SHA-256 of JSON `[communityId, type, creatorIdentityId, identityId, createdAt]`                                                    |
 | `communityModerationLog`         | First 24 hex characters of SHA-256 of JSON `[communityId, actorIdentityId, action, targetType, targetId, createdAt]`                                          |
-| `communityInviteToken`           | base64url SHA-256 of JSON `[communityId, creatorIdentityId, nonce, maxUses, expiresAt or null]`                                                               |
 | `mlsRecord`                      | base64url SHA-256 of RFC 8785 `{epoch?, groupId, kind, payload, recipientIdentityId?}`                                                                        |
 | `privateBlobOwner`               | Lowercase hex HMAC-SHA256 keyed by the 32-byte salt over the UTF-8 identity id                                                                                |
 | `oneToOneConversation`           | `one-to-one:` and lowercase hex SHA-256 of `a ":" b ":" networkId`, with the two identity ids sorted by UTF-16 code unit                                      |

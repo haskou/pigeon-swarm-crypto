@@ -398,12 +398,12 @@ describe('Ed25519 import allowlist', () => {
 
   describe('adapter verify call count (AST)', () => {
     const adapterMembers = [
-      'getPublicKey',
-      'sign',
-      'Point.fromBytes',
-      'utils.randomSecretKey',
-      'utils.toMontgomery',
-      'utils.toMontgomerySecret',
+      'getPublicKey()',
+      'sign()',
+      'Point.fromBytes().isSmallOrder()',
+      'utils.randomSecretKey()',
+      'utils.toMontgomery()',
+      'utils.toMontgomerySecret()',
     ];
 
     it.each([
@@ -435,14 +435,14 @@ describe('Ed25519 import allowlist', () => {
       [
         'allowlisted member call',
         'ed25519.sign(a, b);',
-        { verifyCalls: 0, members: ['sign'], bare: 0, verifyOptions: [] },
+        { verifyCalls: 0, members: ['sign()'], bare: 0, verifyOptions: [] },
       ],
       [
         'allowlisted member pair',
         'ed25519.utils.toMontgomery(a);',
         {
           verifyCalls: 0,
-          members: ['utils.toMontgomery'],
+          members: ['utils.toMontgomery()'],
           bare: 0,
           verifyOptions: [],
         },
@@ -467,6 +467,36 @@ describe('Ed25519 import allowlist', () => {
         'use(ed25519);',
         { verifyCalls: 0, members: [], bare: 1, verifyOptions: [] },
       ],
+      [
+        'chained point method',
+        'ed25519.Point.fromBytes(a).isSmallOrder();',
+        {
+          verifyCalls: 0,
+          members: ['Point.fromBytes().isSmallOrder()'],
+          bare: 0,
+          verifyOptions: [],
+        },
+      ],
+      [
+        'escaped point',
+        'const p = ed25519.Point.fromBytes(a);',
+        {
+          verifyCalls: 0,
+          members: ['Point.fromBytes()'],
+          bare: 0,
+          verifyOptions: [],
+        },
+      ],
+      [
+        'chained point multiply',
+        'ed25519.Point.fromBytes(a).multiply(b);',
+        {
+          verifyCalls: 0,
+          members: ['Point.fromBytes().multiply()'],
+          bare: 0,
+          verifyOptions: [],
+        },
+      ],
     ])('%s', (_label, source, counts) => {
       expect(ed25519Uses('fixture.ts', source)).toEqual(counts);
     });
@@ -479,6 +509,10 @@ describe('Ed25519 import allowlist', () => {
       expect(uses.verifyOptions).toEqual(['{ zip215: false }']);
       expect(uses.bare).toBe(0);
       expect(members).toEqual([...adapterMembers].sort());
+    });
+
+    it('pins the adapter to exactly one curve-module string', () => {
+      expect(curveModuleStrings(sourceOf(adapter))).toBe(1);
     });
   });
 
@@ -618,6 +652,24 @@ describe('Ed25519 import allowlist', () => {
     ['vm run name', 'vm.runInNewContext(code);', [1]],
     ['class constructor', 'class A { constructor() {} }', []],
     ['literal global property', 'const c = globalThis.crypto.subtle;', []],
+    ['process mainModule', 'process.mainModule.require("node:vm");', [1]],
+    ['process binding', "process.binding('fs');", [1]],
+    ['process dlopen', 'process.dlopen(mod, file);', [1]],
+    ['linked binding', "process._linkedBinding('x');", [1]],
+    ['child process require', "require('node:child_process').exec(cmd);", [1]],
+    [
+      'worker threads import',
+      "import { Worker } from 'node:worker_threads';",
+      [1],
+    ],
+    ['local binding name', 'const binding = make();', []],
+    ['aliased root computed key', 'const g = globalThis;\ng[name]("x");', [2]],
+    [
+      'aliased process computed key',
+      'const p = globalThis.process;\np[key]("x");',
+      [2],
+    ],
+    ['aliased root literal key', "const g = globalThis;\ng['crypto'];", []],
   ])('%s', (_label, source, lines) => {
     expect(
       ed25519Violations('fixture.ts', source).map((violation) =>

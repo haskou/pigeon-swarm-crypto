@@ -130,6 +130,12 @@ describe('Ed25519 import allowlist', () => {
     );
   });
 
+  it('keeps exactly one ed25519.verify call, inside the adapter', () => {
+    expect(
+      sourceOf(adapter).match(/\bed25519\s*\.\s*verify\b/g),
+    ).toHaveLength(1);
+  });
+
   it.each([
     [
       'named x25519 import',
@@ -222,6 +228,16 @@ describe('Ed25519 import allowlist', () => {
       "import curves = require('@noble/curves/ed25519.js');",
       [1],
     ],
+    ['identifier require', 'require(name);', [1]],
+    [
+      'split specifier',
+      "require('@no' + 'ble/cu' + 'rves/ed' + '25519.js');",
+      [1],
+    ],
+    ['identifier import', 'import(path);', [1]],
+    ['module.require', 'module.require(name);', [1]],
+    ['literal relative require', "require('./local');", []],
+    ['literal node import', "import('node:crypto');", []],
     [
       'unrelated package',
       "import { sha256 } from '@noble/hashes/sha2.js';",

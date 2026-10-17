@@ -1,6 +1,9 @@
 import {
   CallMediaFrameOpener,
   CallMediaFrameSealer,
+  CommunityInvitationConsent,
+  CommunityInvitationKey,
+  CommunityInvitationPossession,
   ConversationDraft,
   DeviceRootRowKeys,
   DeviceUnlockFactor,
@@ -39,6 +42,9 @@ describe('crypto public API', () => {
     expect([
       CallMediaFrameOpener,
       CallMediaFrameSealer,
+      CommunityInvitationConsent,
+      CommunityInvitationKey,
+      CommunityInvitationPossession,
       ConversationDraft,
       DeviceRootRowKeys,
       DeviceUnlockFactor,

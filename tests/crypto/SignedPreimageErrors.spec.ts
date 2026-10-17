@@ -1,6 +1,6 @@
 import {
   InvalidCanonicalJsonError,
-  InvalidCommunityInviteReferenceError,
+  InvalidCommunityInvitationError,
   InvalidCommunityOperationSignatureError,
   InvalidDeviceAuthorizationTransitionError,
   InvalidDevicePairingError,
@@ -15,10 +15,7 @@ import {
 describe('signed preimage errors', () => {
   it.each([
     [InvalidCanonicalJsonError, 'Invalid canonical JSON'],
-    [
-      InvalidCommunityInviteReferenceError,
-      'Invalid community invite reference',
-    ],
+    [InvalidCommunityInvitationError, 'Invalid community invitation'],
     [
       InvalidCommunityOperationSignatureError,
       'Invalid community operation signature',

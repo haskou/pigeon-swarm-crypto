@@ -35,11 +35,6 @@ const sections: Record<string, [Section, Owner, string]> = {
     CommitmentId,
     'communityModerationLog',
   ],
-  communityInviteToken: [
-    vectors.communityInviteToken,
-    CommitmentId,
-    'communityInviteToken',
-  ],
   mlsRecord: [vectors.mlsRecord, CommitmentId, 'mlsRecord'],
   privateBlobOwner: [
     vectors.privateBlobOwner,

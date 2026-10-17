@@ -262,6 +262,85 @@
         "signer": "moderator"
       },
       "name": "channel_created_empty_details"
+    },
+    {
+      "name": "invitation_created_names_operation_digest",
+      "input": {
+        "action": "invitation_created",
+        "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+        "createdAt": 1773848831000,
+        "details": {
+          "expiresAt": 1774453631000,
+          "maxUses": 5
+        },
+        "frontier": ["RoaVUzHt4daRi2owbCQc9EIdMx6Zt5rmY84nf-r_32M"],
+        "operationId": "vector-moderation-log-0004",
+        "signer": "moderator",
+        "target": {
+          "id": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+          "type": "invitation"
+        }
+      },
+      "derived": {
+        "body": {
+          "createdAt": 1773848831000,
+          "mutation": {
+            "author": {
+              "authorizationRevision": 0,
+              "deviceCredential": "MCowBQYDK2VwAyEAIslXLgpzT1b8jL27EQyTxHxTjss9FVRZoUDuSJGxgEY=",
+              "identityId": "MCowBQYDK2VwAyEAIslXLgpzT1b8jL27EQyTxHxTjss9FVRZoUDuSJGxgEY="
+            },
+            "frontier": ["RoaVUzHt4daRi2owbCQc9EIdMx6Zt5rmY84nf-r_32M"],
+            "kind": "put",
+            "operationId": "vector-moderation-log-0004",
+            "payloadDigest": "jT1bi6F7ckbXbv-o3dNuk3MEALn4JtyOl1ipLm-bw3E",
+            "predecessor": null,
+            "recordId": "981f6817249f985a01bc9ec3",
+            "sequence": 0,
+            "store": "moderationLogs",
+            "version": 2,
+            "signature": "ScYG5WmNMs8BfHgiM3rtj1Bo+w53v1RhSiv0LCF8qdUFAr/0Q8sLB6v8vz6oxtgSUrEy5ppPmlI8TFRiW3PUAw=="
+          }
+        },
+        "id": "981f6817249f985a01bc9ec3",
+        "idPreimage": "[\"889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c\",\"MCowBQYDK2VwAyEAIslXLgpzT1b8jL27EQyTxHxTjss9FVRZoUDuSJGxgEY=\",\"invitation_created\",\"invitation\",\"fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk\",1773848831000]",
+        "mutationBody": {
+          "author": {
+            "authorizationRevision": 0,
+            "deviceCredential": "MCowBQYDK2VwAyEAIslXLgpzT1b8jL27EQyTxHxTjss9FVRZoUDuSJGxgEY=",
+            "identityId": "MCowBQYDK2VwAyEAIslXLgpzT1b8jL27EQyTxHxTjss9FVRZoUDuSJGxgEY="
+          },
+          "frontier": ["RoaVUzHt4daRi2owbCQc9EIdMx6Zt5rmY84nf-r_32M"],
+          "kind": "put",
+          "operationId": "vector-moderation-log-0004",
+          "payloadDigest": "jT1bi6F7ckbXbv-o3dNuk3MEALn4JtyOl1ipLm-bw3E",
+          "predecessor": null,
+          "recordId": "981f6817249f985a01bc9ec3",
+          "sequence": 0,
+          "store": "moderationLogs",
+          "version": 2
+        },
+        "payload": {
+          "action": "invitation_created",
+          "actorIdentityId": "MCowBQYDK2VwAyEAIslXLgpzT1b8jL27EQyTxHxTjss9FVRZoUDuSJGxgEY=",
+          "communityId": "889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c",
+          "createdAt": 1773848831000,
+          "details": {
+            "expiresAt": 1774453631000,
+            "maxUses": 5
+          },
+          "id": "981f6817249f985a01bc9ec3",
+          "scopeType": "community_moderation_log",
+          "target": {
+            "id": "fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk",
+            "type": "invitation"
+          }
+        },
+        "payloadCanonical": "{\"action\":\"invitation_created\",\"actorIdentityId\":\"MCowBQYDK2VwAyEAIslXLgpzT1b8jL27EQyTxHxTjss9FVRZoUDuSJGxgEY=\",\"communityId\":\"889GQafC5pdbxr4OHMPefsLah2wqtHLlYLx3wQtWK7c\",\"createdAt\":1773848831000,\"details\":{\"expiresAt\":1774453631000,\"maxUses\":5},\"id\":\"981f6817249f985a01bc9ec3\",\"scopeType\":\"community_moderation_log\",\"target\":{\"id\":\"fwK_eTbILax6LoJX-uv1jBzgL-2DjjBE09VMRr5LlPk\",\"type\":\"invitation\"}}",
+        "payloadDigest": "jT1bi6F7ckbXbv-o3dNuk3MEALn4JtyOl1ipLm-bw3E",
+        "signature": "ScYG5WmNMs8BfHgiM3rtj1Bo+w53v1RhSiv0LCF8qdUFAr/0Q8sLB6v8vz6oxtgSUrEy5ppPmlI8TFRiW3PUAw==",
+        "signingContent": "pigeon:public-mutation:v2\n{\"author\":{\"authorizationRevision\":0,\"deviceCredential\":\"MCowBQYDK2VwAyEAIslXLgpzT1b8jL27EQyTxHxTjss9FVRZoUDuSJGxgEY=\",\"identityId\":\"MCowBQYDK2VwAyEAIslXLgpzT1b8jL27EQyTxHxTjss9FVRZoUDuSJGxgEY=\"},\"frontier\":[\"RoaVUzHt4daRi2owbCQc9EIdMx6Zt5rmY84nf-r_32M\"],\"kind\":\"put\",\"operationId\":\"vector-moderation-log-0004\",\"payloadDigest\":\"jT1bi6F7ckbXbv-o3dNuk3MEALn4JtyOl1ipLm-bw3E\",\"predecessor\":null,\"recordId\":\"981f6817249f985a01bc9ec3\",\"sequence\":0,\"store\":\"moderationLogs\",\"version\":2}"
+      }
     }
   ],
   "description": "Signed community moderation log entries (store moderationLogs) that the UI signs and the node verifies. Keys derive from sha256(\"pigeon-vector:<name>\") as an Ed25519 seed. Regenerate only with a protocol version bump.",

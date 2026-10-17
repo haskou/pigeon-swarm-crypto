@@ -1,4 +1,5 @@
 import {
+  CommitmentId,
   CommunityOperationSignature,
   InvalidCommunityOperationSignatureError,
   Signature,
@@ -10,9 +11,24 @@ type CommunityOperationVectors = {
     derived: {
       identitySignature: string;
       identitySigningContent: string;
+      digest: string;
       recordId: string;
     };
-    input: { signer: string };
+    input: { createdAt: number; signer: string };
+    name: string;
+  }[];
+  keys: Record<string, VectorKey>;
+};
+type ModerationLogVectors = {
+  cases: {
+    derived: { id: string };
+    input: {
+      action: string;
+      communityId: string;
+      createdAt: number;
+      signer: string;
+      target: { id: string; type: string };
+    };
     name: string;
   }[];
   keys: Record<string, VectorKey>;
@@ -21,6 +37,9 @@ type CommunityOperationVectors = {
 const vectors = loadVectors<CommunityOperationVectors>('community-operation');
 const [{ derived: sample, input: sampleInput }] = vectors.cases;
 const owner = publicKeyOf(vectors.keys[sampleInput.signer]);
+const moderationLogs = loadVectors<ModerationLogVectors>(
+  'community-moderation-log',
+);
 
 describe('CommunityOperationSignature', () => {
   it.each(vectors.cases)('reproduces $name', ({ derived, input }) => {
@@ -70,5 +89,31 @@ describe('CommunityOperationSignature', () => {
         privateKeyOf(vectors.keys[sampleInput.signer]),
       ),
     ).toThrow(new InvalidCommunityOperationSignatureError());
+  });
+
+  it('names the invitation it creates by its digest in the moderation log', () => {
+    const { derived, input } = vectors.cases.find(
+      ({ name }) => name === 'invitation_created',
+    ) as CommunityOperationVectors['cases'][number];
+    const log = moderationLogs.cases.find(
+      ({ name }) => name === 'invitation_created_names_operation_digest',
+    ) as ModerationLogVectors['cases'][number];
+
+    expect(derived.recordId.endsWith(`:op:${derived.digest}`)).toBe(true);
+    expect(log.input.target).toEqual({
+      id: derived.digest,
+      type: 'invitation',
+    });
+    expect(log.input.createdAt).toBe(input.createdAt);
+    expect(
+      CommitmentId.communityModerationLog(
+        log.input.communityId,
+        moderationLogs.keys[log.input.signer].identityId,
+        log.input.action,
+        log.input.target.type,
+        log.input.target.id,
+        log.input.createdAt,
+      ),
+    ).toBe(log.derived.id);
   });
 });

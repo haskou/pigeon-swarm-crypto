@@ -92,6 +92,10 @@ const forbiddenModules: Record<string, true> = {
   'node:vm': true,
   module: true,
   'node:module': true,
+  child_process: true,
+  'node:child_process': true,
+  worker_threads: true,
+  'node:worker_threads': true,
 };
 const loaderRoots: Record<string, true> = {
   globalThis: true,
@@ -131,6 +135,63 @@ const isForbiddenModuleCall = (call: ts.CallExpression): boolean => {
 const isUnsafeReference = (identifier: ts.Identifier): boolean =>
   isUnsafeName(identifier.text) &&
   !(identifier.text === 'require' && isLiteralRequire(identifier));
+
+// Process members that load native code or expose the main module. Checked only
+// as a property name, so a local `binding` variable stays legal.
+const unsafeMembers: Record<string, true> = {
+  binding: true,
+  dlopen: true,
+  linkedBinding: true,
+  _linkedBinding: true,
+  mainModule: true,
+};
+const isUnsafeMember = (identifier: ts.Identifier): boolean =>
+  Object.hasOwn(unsafeMembers, identifier.text) &&
+  ts.isPropertyAccessExpression(identifier.parent) &&
+  identifier.parent.name === identifier;
+
+// The root name of a loader expression: `globalThis` itself, or the last name
+// in a property access such as `globalThis.process`.
+const rootNameOf = (expression: ts.Expression): string | undefined => {
+  if (ts.isParenthesizedExpression(expression))
+    return rootNameOf(expression.expression);
+  if (ts.isIdentifier(expression)) return expression.text;
+  if (ts.isPropertyAccessExpression(expression)) return expression.name.text;
+
+  return undefined;
+};
+
+// Identifiers that hold a loader root, directly or through a chain of
+// declarations (`const g = globalThis; const h = g;`). Reassignment is not
+// followed, which the scan's residual note covers.
+const loaderAliases = (sourceFile: ts.SourceFile): Set<string> => {
+  const aliases = new Set<string>();
+  const collect = (node: ts.Node): void => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer !== undefined
+    ) {
+      const root = rootNameOf(node.initializer);
+
+      if (
+        root !== undefined &&
+        (Object.hasOwn(loaderRoots, root) || aliases.has(root))
+      )
+        aliases.add(node.name.text);
+    }
+    ts.forEachChild(node, collect);
+  };
+  collect(sourceFile);
+
+  return aliases;
+};
+
+const isLoaderRoot = (
+  name: string | undefined,
+  aliases: Set<string>,
+): boolean =>
+  name !== undefined && (Object.hasOwn(loaderRoots, name) || aliases.has(name));
 
 // Names an import or export brings into or out of the module scope.
 const importedNames = (
@@ -181,31 +242,43 @@ const isVerifyCall = (identifier: ts.Identifier): boolean => {
 };
 
 // Counts uses of the adapter's ed25519 binding. Calls to `.verify` (by dot or
-// string index) are counted as verify calls. Other `ed25519.<member>` accesses
-// are listed by member name. Any other use, such as destructuring or passing
-// the binding as a value, is counted as bare.
+// string index) are counted as verify calls. Any other `ed25519` access is
+// listed by its full member chain, with `()` for each call, so a result kept
+// and used later (`Point.fromBytes().multiply()`) is a path the allowlist does
+// not contain. Any other use, such as destructuring or passing the binding as a
+// value, is counted as bare.
 const memberOf = (identifier: ts.Identifier): string | undefined => {
-  const access = identifier.parent;
+  const extend = (
+    node: ts.Node,
+    path: string | undefined,
+  ): string | undefined => {
+    const parent = node.parent;
 
-  if (
-    ts.isPropertyAccessExpression(access) &&
-    access.expression === identifier
-  ) {
-    // Two levels deep for namespaces such as `ed25519.utils.toMontgomery`.
-    const outer = access.parent;
+    if (ts.isPropertyAccessExpression(parent) && parent.expression === node)
+      return extend(
+        parent,
+        path === undefined ? parent.name.text : `${path}.${parent.name.text}`,
+      );
+    if (
+      ts.isElementAccessExpression(parent) &&
+      parent.expression === node &&
+      ts.isStringLiteralLike(parent.argumentExpression)
+    ) {
+      const key = parent.argumentExpression.text;
 
-    return ts.isPropertyAccessExpression(outer) && outer.expression === access
-      ? `${access.name.text}.${outer.name.text}`
-      : access.name.text;
-  }
-  if (
-    ts.isElementAccessExpression(access) &&
-    access.expression === identifier &&
-    ts.isStringLiteralLike(access.argumentExpression)
-  )
-    return access.argumentExpression.text;
+      return extend(parent, path === undefined ? key : `${path}.${key}`);
+    }
+    if (
+      ts.isCallExpression(parent) &&
+      parent.expression === node &&
+      path !== undefined
+    )
+      return extend(parent, `${path}()`);
 
-  return undefined;
+    return path;
+  };
+
+  return extend(identifier, undefined);
 };
 
 export const ed25519Uses = (
@@ -285,17 +358,39 @@ export const adapterImportNames = (source: string): string[] => {
     });
 };
 
+// Counts the string literals naming the curve module (the static import, a
+// require or an import() of it). The adapter test requires exactly one.
+export const curveModuleStrings = (source: string): number => {
+  const sourceFile = ts.createSourceFile(
+    'adapter.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  let count = 0;
+  const visit = (node: ts.Node): void => {
+    if (isStringLike(node) && curveModule.test(node.text)) count += 1;
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+
+  return count;
+};
+
 // Outside the adapter, the only permitted reference to @noble/curves' ed25519
 // module is a static import or re-export of x25519. Rejected routes: a module
-// name in a string; an import, export or require of `node:vm` or `module`; an
-// import or export naming `require`, `createRequire`, `eval`, `Function`,
-// `_load`, `getBuiltinModule` or a vm run method; a `require` reference other
-// than a direct call with a string-literal specifier; a bare `createRequire`,
-// `eval`, `Function`, `_load`, `getBuiltinModule` or `.constructor` identifier;
-// the same names as string literals (for example `module['require']`); a
-// computed key on a loader root such as `module[name]`; and `import()` with a
+// name in a string; an import, export or require of `node:vm`, `module`,
+// `node:child_process` or `node:worker_threads`; an import or export naming
+// `require`, `createRequire`, `eval`, `Function`, `_load`, `getBuiltinModule`
+// or a vm run method; a `require` reference other than a direct call with a
+// string-literal specifier; a bare `createRequire`, `eval`, `Function`, `_load`,
+// `getBuiltinModule` or `.constructor` identifier; a `.binding`, `.dlopen`,
+// `.linkedBinding`, `._linkedBinding` or `.mainModule` property access (also as
+// a string key); the same names as string literals (for example
+// `module['require']`); a computed key on a loader root or an alias of one
+// (`module[name]`, `const g = globalThis; g[name]`); and `import()` with a
 // non-literal specifier. This is a static text scan. Computed access through a
-// value it cannot resolve is out of its reach.
+// value it cannot resolve, or through a reassigned alias, is out of its reach.
 export const ed25519Violations = (
   fileName: string,
   source: string,
@@ -306,6 +401,7 @@ export const ed25519Violations = (
     ts.ScriptTarget.Latest,
     true,
   );
+  const aliases = loaderAliases(sourceFile);
   const violations: string[] = [];
   const report = (node: ts.Node): void => {
     const position = sourceFile.getLineAndCharacterOfPosition(
@@ -335,7 +431,9 @@ export const ed25519Violations = (
 
     if (
       ts.isIdentifier(node) &&
-      (isUnsafeReference(node) || isConstructorAccess(node))
+      (isUnsafeReference(node) ||
+        isConstructorAccess(node) ||
+        isUnsafeMember(node))
     )
       report(node);
 
@@ -350,9 +448,8 @@ export const ed25519Violations = (
 
     if (
       ts.isElementAccessExpression(node) &&
-      ts.isIdentifier(node.expression) &&
-      Object.hasOwn(loaderRoots, node.expression.text) &&
-      !ts.isStringLiteralLike(node.argumentExpression)
+      !ts.isStringLiteralLike(node.argumentExpression) &&
+      isLoaderRoot(rootNameOf(node.expression), aliases)
     )
       report(node);
 
@@ -360,7 +457,9 @@ export const ed25519Violations = (
 
     if (
       ts.isStringLiteralLike(node) &&
-      (Object.hasOwn(unsafeStrings, node.text) || node.text === 'constructor')
+      (Object.hasOwn(unsafeStrings, node.text) ||
+        Object.hasOwn(unsafeMembers, node.text) ||
+        node.text === 'constructor')
     )
       report(node);
 
@@ -398,12 +497,12 @@ describe('Ed25519 import allowlist', () => {
 
   describe('adapter verify call count (AST)', () => {
     const adapterMembers = [
-      'getPublicKey',
-      'sign',
-      'Point.fromBytes',
-      'utils.randomSecretKey',
-      'utils.toMontgomery',
-      'utils.toMontgomerySecret',
+      'getPublicKey()',
+      'sign()',
+      'Point.fromBytes().isSmallOrder()',
+      'utils.randomSecretKey()',
+      'utils.toMontgomery()',
+      'utils.toMontgomerySecret()',
     ];
 
     it.each([
@@ -435,14 +534,14 @@ describe('Ed25519 import allowlist', () => {
       [
         'allowlisted member call',
         'ed25519.sign(a, b);',
-        { verifyCalls: 0, members: ['sign'], bare: 0, verifyOptions: [] },
+        { verifyCalls: 0, members: ['sign()'], bare: 0, verifyOptions: [] },
       ],
       [
         'allowlisted member pair',
         'ed25519.utils.toMontgomery(a);',
         {
           verifyCalls: 0,
-          members: ['utils.toMontgomery'],
+          members: ['utils.toMontgomery()'],
           bare: 0,
           verifyOptions: [],
         },
@@ -467,6 +566,36 @@ describe('Ed25519 import allowlist', () => {
         'use(ed25519);',
         { verifyCalls: 0, members: [], bare: 1, verifyOptions: [] },
       ],
+      [
+        'chained point method',
+        'ed25519.Point.fromBytes(a).isSmallOrder();',
+        {
+          verifyCalls: 0,
+          members: ['Point.fromBytes().isSmallOrder()'],
+          bare: 0,
+          verifyOptions: [],
+        },
+      ],
+      [
+        'escaped point',
+        'const p = ed25519.Point.fromBytes(a);',
+        {
+          verifyCalls: 0,
+          members: ['Point.fromBytes()'],
+          bare: 0,
+          verifyOptions: [],
+        },
+      ],
+      [
+        'chained point multiply',
+        'ed25519.Point.fromBytes(a).multiply(b);',
+        {
+          verifyCalls: 0,
+          members: ['Point.fromBytes().multiply()'],
+          bare: 0,
+          verifyOptions: [],
+        },
+      ],
     ])('%s', (_label, source, counts) => {
       expect(ed25519Uses('fixture.ts', source)).toEqual(counts);
     });
@@ -479,6 +608,10 @@ describe('Ed25519 import allowlist', () => {
       expect(uses.verifyOptions).toEqual(['{ zip215: false }']);
       expect(uses.bare).toBe(0);
       expect(members).toEqual([...adapterMembers].sort());
+    });
+
+    it('pins the adapter to exactly one curve-module string', () => {
+      expect(curveModuleStrings(sourceOf(adapter))).toBe(1);
     });
   });
 
@@ -618,6 +751,24 @@ describe('Ed25519 import allowlist', () => {
     ['vm run name', 'vm.runInNewContext(code);', [1]],
     ['class constructor', 'class A { constructor() {} }', []],
     ['literal global property', 'const c = globalThis.crypto.subtle;', []],
+    ['process mainModule', 'process.mainModule.require("node:vm");', [1]],
+    ['process binding', "process.binding('fs');", [1]],
+    ['process dlopen', 'process.dlopen(mod, file);', [1]],
+    ['linked binding', "process._linkedBinding('x');", [1]],
+    ['child process require', "require('node:child_process').exec(cmd);", [1]],
+    [
+      'worker threads import',
+      "import { Worker } from 'node:worker_threads';",
+      [1],
+    ],
+    ['local binding name', 'const binding = make();', []],
+    ['aliased root computed key', 'const g = globalThis;\ng[name]("x");', [2]],
+    [
+      'aliased process computed key',
+      'const p = globalThis.process;\np[key]("x");',
+      [2],
+    ],
+    ['aliased root literal key', "const g = globalThis;\ng['crypto'];", []],
   ])('%s', (_label, source, lines) => {
     expect(
       ed25519Violations('fixture.ts', source).map((violation) =>

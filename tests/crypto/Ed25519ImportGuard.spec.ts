@@ -61,10 +61,23 @@ const isStringLike = (
   ts.isTemplateMiddle(node) ||
   ts.isTemplateTail(node);
 
+const isModuleLoader = (callee: ts.Expression): boolean =>
+  callee.kind === ts.SyntaxKind.ImportKeyword ||
+  (ts.isIdentifier(callee) &&
+    (callee.text === 'require' || callee.text === 'createRequire')) ||
+  (ts.isPropertyAccessExpression(callee) &&
+    (callee.name.text === 'require' ||
+      (ts.isIdentifier(callee.expression) &&
+        callee.expression.text === 'require')));
+
+const isCreateRequire = (callee: ts.Expression): boolean =>
+  ts.isIdentifier(callee) && callee.text === 'createRequire';
+
 // Outside the adapter, the only permitted reference to @noble/curves' ed25519
 // module is a static import or re-export of x25519. Every other route to the
-// binding (require, import(), require.resolve, createRequire, string
-// concatenation or templates) contains the module name as a string and fails.
+// binding is rejected: a module name appearing as a string, or any require,
+// require.resolve, module.require, createRequire or import() whose specifier
+// is not a plain literal (so concatenation, templates and variables fail).
 export const ed25519Violations = (
   fileName: string,
   source: string,
@@ -81,7 +94,8 @@ export const ed25519Violations = (
       node.getStart(sourceFile),
     );
 
-    violations.push(`${fileName}:${position.line + 1}`);
+    const entry = `${fileName}:${position.line + 1}`;
+    if (!violations.includes(entry)) violations.push(entry);
   };
   const visit = (node: ts.Node): void => {
     if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
@@ -95,6 +109,17 @@ export const ed25519Violations = (
         report(node);
 
       return;
+    }
+
+    if (ts.isCallExpression(node) && isModuleLoader(node.expression)) {
+      const [specifier] = node.arguments;
+
+      if (
+        isCreateRequire(node.expression) ||
+        specifier === undefined ||
+        !ts.isStringLiteralLike(specifier)
+      )
+        report(node);
     }
 
     if (isStringLike(node) && curveText.test(node.text)) report(node);
@@ -131,9 +156,9 @@ describe('Ed25519 import allowlist', () => {
   });
 
   it('keeps exactly one ed25519.verify call, inside the adapter', () => {
-    expect(
-      sourceOf(adapter).match(/\bed25519\s*\.\s*verify\b/g),
-    ).toHaveLength(1);
+    expect(sourceOf(adapter).match(/\bed25519\s*\.\s*verify\b/g)).toHaveLength(
+      1,
+    );
   });
 
   it.each([
@@ -220,9 +245,9 @@ describe('Ed25519 import allowlist', () => {
     [
       'concatenated specifier',
       "require('@noble/' + 'curves/ed25519.js');",
-      [1, 1],
+      [1],
     ],
-    ['template specifier', 'require(`@noble/curves/${"ed25519.js"}`);', [1, 1]],
+    ['template specifier', 'require(`@noble/curves/${"ed25519.js"}`);', [1]],
     [
       'import equals',
       "import curves = require('@noble/curves/ed25519.js');",

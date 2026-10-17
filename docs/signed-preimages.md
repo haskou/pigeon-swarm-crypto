@@ -160,8 +160,9 @@ Consumers load them in their own specs instead of keeping mirrored fixtures:
 `canonical-json`, `signed-http-request`, `identity-signature`,
 `keychain-signature`, `device-authorization-transition`, `device-sealed-secret`,
 `device-pairing`, `call-event`, `community-moderation-log`,
-`community-invitation`, `community-operation`, `content-replication`, `conversation-operation` and
-`private-freshness-request`. Vector keys are disposable test keys.
+`community-invitation`, `community-operation`, `content-replication`,
+`conversation-operation`, `notification` and `private-freshness-request`.
+Vector keys are disposable test keys.
 
 ## Verification
 

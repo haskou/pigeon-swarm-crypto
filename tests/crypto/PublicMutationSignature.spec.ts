@@ -1,4 +1,7 @@
+import { createHash } from 'node:crypto';
+
 import {
+  CommitmentId,
   InvalidPublicMutationError,
   type PublicMutation,
   type PublicMutationBody,
@@ -35,6 +38,7 @@ const files = [
   'community-moderation-log',
   'community-operation',
   'conversation-operation',
+  'notification',
 ];
 const cases = files.flatMap((file) => {
   const { cases: fileCases, keys } = loadVectors<MutationVectors>(file);
@@ -90,6 +94,36 @@ describe('PublicMutationSignature', () => {
       );
     },
   );
+
+  it.each(
+    cases.filter(
+      ({ derived, file }) =>
+        file === 'notification' && 'idPreimage' in (derived as object),
+    ),
+  )('derives the notification id of $name', ({ derived }) => {
+    const { idPreimage, payload } = derived as unknown as {
+      idPreimage: string;
+      payload: {
+        id: string;
+        inviterIdentityId: string;
+        nonce: string;
+        recipientIdentityId: string;
+        subjectId?: string;
+      };
+    };
+
+    expect(
+      CommitmentId.invitation(
+        payload.inviterIdentityId,
+        payload.recipientIdentityId,
+        payload.nonce,
+        payload.subjectId,
+      ),
+    ).toBe(payload.id);
+    expect(payload.id).toBe(
+      `invitation:${createHash('sha256').update(idPreimage).digest('hex')}`,
+    );
+  });
 
   it('chains a predecessor through the mutation digest', () => {
     const joined = callCase('call_participant_joined').derived;

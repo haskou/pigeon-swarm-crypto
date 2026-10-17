@@ -13,6 +13,7 @@ import {
 } from '@noble/hashes/utils.js';
 import { Buffer } from 'buffer';
 
+import { InvalidEd25519PublicKeyError } from '../errors/InvalidEd25519PublicKeyError';
 import { HashAlgorithm } from './HashAlgorithm';
 
 const privateKeyDerPrefix = hexToBytes('302e020100300506032b657004220420');
@@ -30,6 +31,28 @@ export class CryptoAdapter {
       .replace(/\s/g, '');
 
     return Buffer.from(base64, 'base64');
+  }
+
+  private static parseEd25519PublicKeyPem(
+    publicKeyPem: string,
+  ): Uint8Array | undefined {
+    const base64 = publicKeyPem
+      .replace('-----BEGIN PUBLIC KEY-----\n', '')
+      .replace('\n-----END PUBLIC KEY-----\n', '');
+    const der = Buffer.from(base64, 'base64');
+
+    if (
+      der.toString('base64') !== base64 ||
+      der.length !== publicKeyDerPrefix.length + 32 ||
+      !equalBytes(
+        der.subarray(0, publicKeyDerPrefix.length),
+        publicKeyDerPrefix,
+      )
+    ) {
+      return undefined;
+    }
+
+    return der.subarray(publicKeyDerPrefix.length);
   }
 
   private static wrapPem(
@@ -160,27 +183,17 @@ export class CryptoAdapter {
   }
 
   public static publicKeyToBytes(publicKeyPem: string): Uint8Array {
-    return this.pemToDer(publicKeyPem).subarray(publicKeyDerPrefix.length);
+    const key = this.parseEd25519PublicKeyPem(publicKeyPem);
+
+    if (key === undefined) {
+      throw new InvalidEd25519PublicKeyError();
+    }
+
+    return key;
   }
 
   public static publicKeyToStrictBytes(publicKeyPem: string): Uint8Array {
-    const base64 = publicKeyPem
-      .replace('-----BEGIN PUBLIC KEY-----\n', '')
-      .replace('\n-----END PUBLIC KEY-----\n', '');
-    const der = Buffer.from(base64, 'base64');
-
-    if (
-      der.toString('base64') !== base64 ||
-      der.length !== publicKeyDerPrefix.length + 32 ||
-      !equalBytes(
-        der.subarray(0, publicKeyDerPrefix.length),
-        publicKeyDerPrefix,
-      )
-    ) {
-      return new Uint8Array();
-    }
-
-    return der.subarray(publicKeyDerPrefix.length);
+    return this.parseEd25519PublicKeyPem(publicKeyPem) ?? new Uint8Array();
   }
 
   public static randomBytes(size: number): Buffer {

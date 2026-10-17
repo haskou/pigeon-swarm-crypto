@@ -47,6 +47,8 @@ const plaintext = recipient.decrypt(encrypted).toString('utf8');
 
 Keys use Ed25519 for signatures. Asymmetric encryption converts the recipient key
 to X25519 and combines ephemeral key agreement, HKDF-SHA-256 and AES-256-GCM.
+Public key PEM must be an Ed25519 SPKI with a 32-byte key; anything else throws
+`InvalidEd25519PublicKeyError`.
 Applications must authenticate the recipient's public key and define a canonical
 signed message. Encryption to a public key does not authenticate the sender.
 
@@ -96,7 +98,7 @@ package does not enforce an application password policy or provide account recov
 | Digest computation | `SHA256Hash`, `SHA512Hash`, `HashPayload` |
 | Signed protocol preimages | `CanonicalJson`, `SignedHttpRequestSignature`, `IdentitySignature`, `KeychainSignature`, `DeviceAuthorizationTransitionSignature`, `DeviceSealedSecretSignature`, `DeviceCredentialCommitment`, `PublicMutationSignature`, `CommunityOperationSignature`, `CommunityInvitationKey`, `CommunityInvitationPossession`, `CommunityInvitationConsent`, `PrivateFreshnessRequest` |
 | Device pairing | `DevicePairingInvitationSignature`, `DevicePairingRequestSignature`, `DevicePairingCompletionSignature`, `DevicePairingVerificationCode` |
-| Public errors | `InvalidKeyError`, `InvalidSignatureError`, `InvalidEncryptedPrivateKeyFormatError` |
+| Public errors | `InvalidKeyError`, `InvalidEd25519PublicKeyError`, `InvalidSignatureError`, `InvalidEncryptedPrivateKeyFormatError` |
 
 Digest classes expose `.from(payload)` for computation. The corresponding classes
 in `value-objects` validate an already-computed digest. With version 8, equality

@@ -31,7 +31,7 @@ describe('CryptoAdapter.publicKeyToBytes', () => {
 
   it('rejects a wrong 12-byte prefix', () => {
     const prefix = Buffer.from(ed25519Prefix);
-    prefix[prefix.length - 1] ^= 0x01;
+    prefix[prefix.length - 1] = prefix[prefix.length - 1] === 0 ? 1 : 0;
 
     expect(() =>
       CryptoAdapter.publicKeyToBytes(pemOf(Buffer.concat([prefix, rawKey]))),
@@ -92,7 +92,7 @@ describe('CryptoAdapter.publicKeyToBytes', () => {
 
   it('keeps the strict variant empty for malformed input', () => {
     const prefix = Buffer.from(ed25519Prefix);
-    prefix[0] ^= 0x01;
+    prefix[0] = prefix[0] === 0 ? 1 : 0;
 
     expect(
       CryptoAdapter.publicKeyToStrictBytes(

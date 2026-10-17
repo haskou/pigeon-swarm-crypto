@@ -68,7 +68,7 @@ export class RelayRecordEncoding {
     message: Uint8Array,
     publicKey: string,
   ): boolean {
-    return CryptoAdapter.verifyStrictEd25519(
+    return CryptoAdapter.verify(
       CanonicalBase64Url.decode(signature, 64),
       message,
       CanonicalBase64Url.decode(publicKey, 36).subarray(

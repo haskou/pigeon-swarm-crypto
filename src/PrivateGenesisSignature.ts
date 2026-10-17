@@ -56,11 +56,10 @@ export class PrivateGenesisSignature {
       ];
 
       if (
-        !ed25519.verify(
+        !CryptoAdapter.verify(
           CanonicalBase64Url.decode(signature, 64),
           this.signingBytes(unsigned),
           CanonicalBase64Url.decode(expectedOwnerDeviceKey, 32),
-          { zip215: false },
         )
       )
         throw new InvalidPrivateGenesisError();

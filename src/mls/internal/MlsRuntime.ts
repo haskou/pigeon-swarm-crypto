@@ -1,9 +1,10 @@
-import { ed25519 } from '@noble/curves/ed25519.js';
 import {
   CiphersuiteImpl,
   getCiphersuiteFromName,
   getCiphersuiteImpl,
 } from 'ts-mls';
+
+import { CryptoAdapter } from '../../internal/CryptoAdapter';
 
 let suite: Promise<CiphersuiteImpl> | undefined;
 
@@ -20,7 +21,7 @@ const withStrictEd25519 = async (
         Promise.resolve(
           publicKey.length === 32 &&
             signature.length === 64 &&
-            ed25519.verify(signature, message, publicKey, { zip215: false }),
+            CryptoAdapter.verify(signature, message, publicKey),
         ),
     },
   };

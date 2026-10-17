@@ -214,38 +214,56 @@ describe('Ed25519 import allowlist', () => {
   });
 
   describe('adapter verify call count (AST)', () => {
+    const adapterMembers = ['getPublicKey', 'sign', 'utils', 'Point'];
+
     it.each([
       [
         'plain call',
         'ed25519.verify(a, b, c);',
-        { verifyCalls: 1, otherUses: 0 },
+        { verifyCalls: 1, members: [], bare: 0 },
       ],
       [
         'element access call',
         "ed25519['verify'](a, b, c);",
-        { verifyCalls: 1, otherUses: 0 },
+        { verifyCalls: 1, members: [], bare: 0 },
+      ],
+      [
+        'allowlisted member call',
+        'ed25519.sign(a, b);',
+        { verifyCalls: 0, members: ['sign'], bare: 0 },
       ],
       [
         'comment only',
         '// ed25519.verify(a, b, c);',
-        { verifyCalls: 0, otherUses: 0 },
+        { verifyCalls: 0, members: [], bare: 0 },
       ],
       [
         'destructured alias',
         'const { verify } = ed25519;',
-        { verifyCalls: 0, otherUses: 1 },
+        { verifyCalls: 0, members: [], bare: 1 },
       ],
       [
         'detached reference',
         'const check = ed25519.verify;',
-        { verifyCalls: 0, otherUses: 1 },
+        { verifyCalls: 0, members: ['verify'], bare: 0 },
+      ],
+      [
+        'passed as a value',
+        'use(ed25519);',
+        { verifyCalls: 0, members: [], bare: 1 },
       ],
     ])('%s', (_label, source, counts) => {
       expect(ed25519Uses('fixture.ts', source)).toEqual(counts);
     });
 
-    it('keeps exactly one ed25519.verify call in the adapter', () => {
-      expect(ed25519Uses(adapter, sourceOf(adapter)).verifyCalls).toBe(1);
+    it('allows only allowlisted members and exactly one verify call in the adapter', () => {
+      const uses = ed25519Uses(adapter, sourceOf(adapter));
+
+      expect(uses.verifyCalls).toBe(1);
+      expect(uses.bare).toBe(0);
+      expect(
+        uses.members.filter((member) => !adapterMembers.includes(member)),
+      ).toEqual([]);
     });
   });
 
@@ -265,6 +283,21 @@ describe('Ed25519 import allowlist', () => {
       "export { x25519 } from '@noble/curves/ed25519.js';",
       [],
     ],
+    [
+      'aliased createRequire import',
+      "import { createRequire as cr } from 'node:module';",
+      [1],
+    ],
+    [
+      'Function constructor',
+      "const make = new Function('return require');",
+      [1],
+    ],
+    ['Function alias', 'const make = Function;', [1]],
+    ['bracket module require', "module['require'](name);", [1]],
+    ['Module._load', 'Module._load(name);', [1]],
+    ['getBuiltinModule', "process.getBuiltinModule('node:module');", [1]],
+    ['loader name string', "const loader = 'createRequire';", [1]],
     [
       'ed25519 named import',
       "import { ed25519 } from '@noble/curves/ed25519.js';",

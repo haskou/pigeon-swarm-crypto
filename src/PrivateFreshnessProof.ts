@@ -1,4 +1,3 @@
-import { ed25519 } from '@noble/curves/ed25519.js';
 import { Buffer } from 'buffer';
 
 import { InvalidPrivateFreshnessProofError } from './errors/InvalidPrivateFreshnessProofError';
@@ -33,15 +32,12 @@ export class PrivateFreshnessProof {
     try {
       const value = StrictCanonicalJson.parse(unsignedProofJson);
       PrivateFreshnessEncoding.validateProof(value, false);
-      const seed = CryptoAdapter.privateKeyToSeed(key.valueOf());
+      const publicKey = CryptoAdapter.getRawPublicKey(key.valueOf());
 
-      if (
-        value.signerKey !==
-        CanonicalBase64Url.encode(ed25519.getPublicKey(seed))
-      )
+      if (value.signerKey !== CanonicalBase64Url.encode(publicKey))
         throw new InvalidPrivateFreshnessProofError();
       const signature = CanonicalBase64Url.encode(
-        ed25519.sign(this.signingBytes(value), seed),
+        CryptoAdapter.sign(this.signingBytes(value), key.valueOf()),
       );
       const signed = StrictCanonicalJson.serialize({ ...value, signature });
       StrictCanonicalJson.parse(signed);

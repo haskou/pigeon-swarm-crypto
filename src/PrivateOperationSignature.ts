@@ -1,4 +1,3 @@
-import { ed25519 } from '@noble/curves/ed25519.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { Buffer } from 'buffer';
 
@@ -50,15 +49,12 @@ export class PrivateOperationSignature {
     try {
       const value = StrictCanonicalJson.parse(unsignedJson);
       PrivateOperationEncoding.validate(value, false);
-      const seed = CryptoAdapter.privateKeyToSeed(key.valueOf());
+      const publicKey = CryptoAdapter.getRawPublicKey(key.valueOf());
 
-      if (
-        value.authorDeviceKey !==
-        CanonicalBase64Url.encode(ed25519.getPublicKey(seed))
-      )
+      if (value.authorDeviceKey !== CanonicalBase64Url.encode(publicKey))
         throw new InvalidPrivateOperationError();
       const signature = CanonicalBase64Url.encode(
-        ed25519.sign(this.signingBytes(value), seed),
+        CryptoAdapter.sign(this.signingBytes(value), key.valueOf()),
       );
       const signed = StrictCanonicalJson.serialize({ ...value, signature });
       StrictCanonicalJson.parse(signed);

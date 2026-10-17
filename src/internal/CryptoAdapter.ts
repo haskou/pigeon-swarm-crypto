@@ -36,9 +36,16 @@ export class CryptoAdapter {
   private static parseEd25519PublicKeyPem(
     publicKeyPem: string,
   ): Uint8Array | undefined {
-    const base64 = publicKeyPem
-      .replace('-----BEGIN PUBLIC KEY-----\n', '')
-      .replace('\n-----END PUBLIC KEY-----\n', '');
+    const match =
+      /^-----BEGIN PUBLIC KEY-----\n([A-Za-z0-9+/=]+)\n-----END PUBLIC KEY-----\n$/.exec(
+        publicKeyPem,
+      );
+
+    if (match === null) {
+      return undefined;
+    }
+
+    const base64 = match[1];
     const der = Buffer.from(base64, 'base64');
 
     if (

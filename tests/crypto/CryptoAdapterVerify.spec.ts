@@ -100,6 +100,10 @@ describe('CryptoAdapter.verify', () => {
       );
     });
 
+    // Weak: y = p encodes the small-order point y = 0, so a verifier rejects it
+    // by the small-order check alone. This is a regression guard, not a
+    // differential vector. The S + L case above separates verifiers that skip
+    // the S < L check.
     it('rejects a non-canonical R (y = p) under the honest key', () => {
       expect(CryptoAdapter.verify(nonCanonicalR, message, raw)).toBe(false);
       expect(CryptoAdapter.verify(nonCanonicalR, message, publicPem)).toBe(

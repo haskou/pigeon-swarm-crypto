@@ -161,6 +161,45 @@ describe('Ed25519 import allowlist', () => {
     );
   });
 
+  describe('adapter verify call count (AST)', () => {
+    it.each([
+      [
+        'plain call',
+        'ed25519.verify(a, b, c);',
+        { verifyCalls: 1, otherUses: 0 },
+      ],
+      [
+        'element access call',
+        "ed25519['verify'](a, b, c);",
+        { verifyCalls: 1, otherUses: 0 },
+      ],
+      [
+        'comment only',
+        '// ed25519.verify(a, b, c);',
+        { verifyCalls: 0, otherUses: 0 },
+      ],
+      [
+        'destructured alias',
+        'const { verify } = ed25519;',
+        { verifyCalls: 0, otherUses: 1 },
+      ],
+      [
+        'detached reference',
+        'const check = ed25519.verify;',
+        { verifyCalls: 0, otherUses: 1 },
+      ],
+    ])('%s', (_label, source, counts) => {
+      expect(ed25519Uses('fixture.ts', source)).toEqual(counts);
+    });
+
+    it('holds exactly one verify call and no other ed25519 use in the adapter', () => {
+      expect(ed25519Uses(adapter, sourceOf(adapter))).toEqual({
+        verifyCalls: 1,
+        otherUses: 0,
+      });
+    });
+  });
+
   it.each([
     [
       'named x25519 import',
@@ -261,6 +300,10 @@ describe('Ed25519 import allowlist', () => {
     ],
     ['identifier import', 'import(path);', [1]],
     ['module.require', 'module.require(name);', [1]],
+    ['require alias', 'const load = require;', [1]],
+    ['createRequire property', 'const load = mod.createRequire;', [1]],
+    ['eval call', "eval('1 + 1');", [1]],
+    ['local require binding', "const local = require('./local');", []],
     ['literal relative require', "require('./local');", []],
     ['literal node import', "import('node:crypto');", []],
     [

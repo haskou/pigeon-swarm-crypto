@@ -72,10 +72,48 @@ const isLiteralRequire = (identifier: ts.Identifier): boolean =>
   identifier.parent.expression === identifier &&
   isLiteralSpecifier(identifier.parent);
 
+const unsafeNames: Record<string, true> = {
+  eval: true,
+  Function: true,
+  createRequire: true,
+  _load: true,
+  getBuiltinModule: true,
+};
+const unsafeStrings: Record<string, true> = { ...unsafeNames, require: true };
+
+const isUnsafeName = (text: string): boolean =>
+  Object.hasOwn(unsafeNames, text) || text === 'require';
+
 const isUnsafeReference = (identifier: ts.Identifier): boolean =>
-  identifier.text === 'eval' ||
-  identifier.text === 'createRequire' ||
-  (identifier.text === 'require' && !isLiteralRequire(identifier));
+  isUnsafeName(identifier.text) &&
+  !(identifier.text === 'require' && isLiteralRequire(identifier));
+
+// Names an import or export brings into or out of the module scope.
+const importedNames = (
+  node: ts.ImportDeclaration | ts.ExportDeclaration,
+): string[] => {
+  if (ts.isImportDeclaration(node)) {
+    const clause = node.importClause;
+    const named =
+      clause?.namedBindings !== undefined &&
+      ts.isNamedImports(clause.namedBindings)
+        ? clause.namedBindings.elements
+        : [];
+
+    return [
+      ...(clause?.name !== undefined ? [clause.name.text] : []),
+      ...named.map((element) => (element.propertyName ?? element.name).text),
+    ];
+  }
+
+  const clause = node.exportClause;
+
+  return clause !== undefined && ts.isNamedExports(clause)
+    ? clause.elements.map(
+        (element) => (element.propertyName ?? element.name).text,
+      )
+    : [];
+};
 
 const isVerifyCall = (identifier: ts.Identifier): boolean => {
   const access = identifier.parent;
@@ -98,19 +136,36 @@ const isVerifyCall = (identifier: ts.Identifier): boolean => {
         access.argumentExpression.text === 'verify';
 };
 
-// Counts uses of the adapter's ed25519 binding: calls to .verify (by dot or
-// string index) and any other use, such as destructuring or a detached reference.
+// Counts uses of the adapter's ed25519 binding. Calls to `.verify` (by dot or
+// string index) are counted as verify calls. Other `ed25519.<member>` accesses
+// are listed by member name. Any other use, such as destructuring or passing
+// the binding as a value, is counted as bare.
+const memberOf = (identifier: ts.Identifier): string | undefined => {
+  const access = identifier.parent;
+
+  if (ts.isPropertyAccessExpression(access) && access.expression === identifier)
+    return access.name.text;
+  if (
+    ts.isElementAccessExpression(access) &&
+    access.expression === identifier &&
+    ts.isStringLiteralLike(access.argumentExpression)
+  )
+    return access.argumentExpression.text;
+
+  return undefined;
+};
+
 export const ed25519Uses = (
   fileName: string,
   source: string,
-): { verifyCalls: number; otherUses: number } => {
+): { verifyCalls: number; members: string[]; bare: number } => {
   const sourceFile = ts.createSourceFile(
     fileName,
     source,
     ts.ScriptTarget.Latest,
     true,
   );
-  const counts = { verifyCalls: 0, otherUses: 0 };
+  const uses = { verifyCalls: 0, members: [] as string[], bare: 0 };
   const visit = (node: ts.Node): void => {
     if (ts.isImportDeclaration(node)) return;
 
@@ -119,8 +174,11 @@ export const ed25519Uses = (
       node.text === 'ed25519' &&
       !(ts.isPropertyAccessExpression(node.parent) && node.parent.name === node)
     ) {
-      if (isVerifyCall(node)) counts.verifyCalls += 1;
-      else counts.otherUses += 1;
+      const member = memberOf(node);
+
+      if (isVerifyCall(node)) uses.verifyCalls += 1;
+      else if (member === undefined) uses.bare += 1;
+      else uses.members.push(member);
     }
 
     ts.forEachChild(node, visit);
@@ -128,16 +186,18 @@ export const ed25519Uses = (
 
   visit(sourceFile);
 
-  return counts;
+  return uses;
 };
 
 // Outside the adapter, the only permitted reference to @noble/curves' ed25519
-// module is a static import or re-export of x25519. Every other route to the
-// binding is rejected: a module name appearing as a string, a bare `require`
-// reference except a direct call with a string-literal specifier, `createRequire`,
-// `eval`, and `import()` with a non-literal specifier. This is a static text
-// scan: it rejects every route it can see, but computed access from values it
-// cannot resolve is out of its reach.
+// module is a static import or re-export of x25519. Rejected routes: a module
+// name in a string; an import or export naming `require`, `createRequire`,
+// `eval`, `Function`, `_load` or `getBuiltinModule`; a `require` reference other
+// than a direct call with a string-literal specifier; a bare `createRequire`,
+// `eval`, `Function`, `_load` or `getBuiltinModule` identifier; the same names
+// as string literals (for example `module['require']`); and `import()` with a
+// non-literal specifier. This is a static text scan. Computed access through a
+// value it cannot resolve is out of its reach.
 export const ed25519Violations = (
   fileName: string,
   source: string,
@@ -168,6 +228,8 @@ export const ed25519Violations = (
       )
         report(node);
 
+      if (importedNames(node).some(isUnsafeName)) report(node);
+
       return;
     }
 
@@ -181,6 +243,9 @@ export const ed25519Violations = (
       report(node);
 
     if (isStringLike(node) && curveText.test(node.text)) report(node);
+
+    if (ts.isStringLiteralLike(node) && Object.hasOwn(unsafeStrings, node.text))
+      report(node);
 
     ts.forEachChild(node, visit);
   };
@@ -214,38 +279,56 @@ describe('Ed25519 import allowlist', () => {
   });
 
   describe('adapter verify call count (AST)', () => {
+    const adapterMembers = ['getPublicKey', 'sign', 'utils', 'Point'];
+
     it.each([
       [
         'plain call',
         'ed25519.verify(a, b, c);',
-        { verifyCalls: 1, otherUses: 0 },
+        { verifyCalls: 1, members: [], bare: 0 },
       ],
       [
         'element access call',
         "ed25519['verify'](a, b, c);",
-        { verifyCalls: 1, otherUses: 0 },
+        { verifyCalls: 1, members: [], bare: 0 },
+      ],
+      [
+        'allowlisted member call',
+        'ed25519.sign(a, b);',
+        { verifyCalls: 0, members: ['sign'], bare: 0 },
       ],
       [
         'comment only',
         '// ed25519.verify(a, b, c);',
-        { verifyCalls: 0, otherUses: 0 },
+        { verifyCalls: 0, members: [], bare: 0 },
       ],
       [
         'destructured alias',
         'const { verify } = ed25519;',
-        { verifyCalls: 0, otherUses: 1 },
+        { verifyCalls: 0, members: [], bare: 1 },
       ],
       [
         'detached reference',
         'const check = ed25519.verify;',
-        { verifyCalls: 0, otherUses: 1 },
+        { verifyCalls: 0, members: ['verify'], bare: 0 },
+      ],
+      [
+        'passed as a value',
+        'use(ed25519);',
+        { verifyCalls: 0, members: [], bare: 1 },
       ],
     ])('%s', (_label, source, counts) => {
       expect(ed25519Uses('fixture.ts', source)).toEqual(counts);
     });
 
-    it('keeps exactly one ed25519.verify call in the adapter', () => {
-      expect(ed25519Uses(adapter, sourceOf(adapter)).verifyCalls).toBe(1);
+    it('allows only allowlisted members and exactly one verify call in the adapter', () => {
+      const uses = ed25519Uses(adapter, sourceOf(adapter));
+
+      expect(uses.verifyCalls).toBe(1);
+      expect(uses.bare).toBe(0);
+      expect(
+        uses.members.filter((member) => !adapterMembers.includes(member)),
+      ).toEqual([]);
     });
   });
 
@@ -265,6 +348,21 @@ describe('Ed25519 import allowlist', () => {
       "export { x25519 } from '@noble/curves/ed25519.js';",
       [],
     ],
+    [
+      'aliased createRequire import',
+      "import { createRequire as cr } from 'node:module';",
+      [1],
+    ],
+    [
+      'Function constructor',
+      "const make = new Function('return require');",
+      [1],
+    ],
+    ['Function alias', 'const make = Function;', [1]],
+    ['bracket module require', "module['require'](name);", [1]],
+    ['Module._load', 'Module._load(name);', [1]],
+    ['getBuiltinModule', "process.getBuiltinModule('node:module');", [1]],
+    ['loader name string', "const loader = 'createRequire';", [1]],
     [
       'ed25519 named import',
       "import { ed25519 } from '@noble/curves/ed25519.js';",

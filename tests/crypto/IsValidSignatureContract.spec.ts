@@ -1,6 +1,8 @@
 import * as crypto from 'node:crypto';
 
 import { PreimageFields } from '../../src/internal/PreimageFields';
+import { InvalidMlsCredentialError } from '../../src/mls/InvalidMlsCredentialError';
+import { MlsLeafCredential } from '../../src/mls/MlsLeafCredential';
 import { PublicKey, Signature } from '../../src';
 
 const pair = crypto.generateKeyPairSync('ed25519');
@@ -38,5 +40,65 @@ describe('isValidSignature callers', () => {
     expect(() =>
       PreimageFields.verify(content, foreignSignature, publicKey),
     ).toThrow('Invalid preimage');
+  });
+});
+
+describe('MlsLeafCredential.verify caller contract', () => {
+  const pem = (key: crypto.KeyObject): string =>
+    key.export({ format: 'pem', type: 'spki' }).toString();
+  const body = (key: crypto.KeyObject): string =>
+    key.export({ format: 'der', type: 'spki' }).toString('base64');
+  const sign = (key: crypto.KeyObject, text: string): string =>
+    crypto.sign(null, Buffer.from(text), key).toString('base64');
+  const identity = crypto.generateKeyPairSync('ed25519');
+  const device = crypto.generateKeyPairSync('ed25519');
+  const foreign = crypto.generateKeyPairSync('ed25519');
+  const signaturePublicKey = Buffer.alloc(32, 7);
+  const owner = {
+    deviceCredential: pem(device.publicKey),
+    identityId: body(identity.publicKey),
+  };
+  const signerWith = (
+    identitySigner: crypto.KeyObject,
+    deviceSigner: crypto.KeyObject,
+  ) => ({
+    owner,
+    sign: (text: string) => ({
+      device: sign(deviceSigner, text),
+      identity: sign(identitySigner, text),
+    }),
+  });
+
+  it('accepts a credential both keys signed', () => {
+    const credential = MlsLeafCredential.issue(
+      signerWith(identity.privateKey, device.privateKey),
+      signaturePublicKey,
+    );
+
+    expect(MlsLeafCredential.verify(credential, signaturePublicKey)).toEqual(
+      owner,
+    );
+  });
+
+  it('throws InvalidMlsCredentialError when the device signature is foreign', () => {
+    const credential = MlsLeafCredential.issue(
+      signerWith(identity.privateKey, foreign.privateKey),
+      signaturePublicKey,
+    );
+
+    expect(() =>
+      MlsLeafCredential.verify(credential, signaturePublicKey),
+    ).toThrow(InvalidMlsCredentialError);
+  });
+
+  it('throws InvalidMlsCredentialError when the identity signature is foreign', () => {
+    const credential = MlsLeafCredential.issue(
+      signerWith(foreign.privateKey, device.privateKey),
+      signaturePublicKey,
+    );
+
+    expect(() =>
+      MlsLeafCredential.verify(credential, signaturePublicKey),
+    ).toThrow(InvalidMlsCredentialError);
   });
 });

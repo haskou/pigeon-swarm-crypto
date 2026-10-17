@@ -89,6 +89,10 @@ export class CryptoAdapter {
     );
   }
 
+  public static getRawPublicKey(privateKeyPem: string): Uint8Array {
+    return ed25519.getPublicKey(this.privateKeyToSeed(privateKeyPem));
+  }
+
   public static equalBytes(left: Uint8Array, right: Uint8Array): boolean {
     return equalBytes(left, right);
   }
@@ -206,14 +210,16 @@ export class CryptoAdapter {
     message: Uint8Array,
     publicKey: string | Uint8Array,
   ): boolean {
-    return ed25519.verify(
-      signature,
-      message,
+    const key =
       typeof publicKey === 'string'
-        ? this.publicKeyToBytes(publicKey)
-        : publicKey,
-      { zip215: false },
-    );
+        ? this.publicKeyToStrictBytes(publicKey)
+        : publicKey;
+
+    try {
+      return ed25519.verify(signature, message, key, { zip215: false });
+    } catch {
+      return false;
+    }
   }
 
   public static x25519PublicKey(privateKey: Uint8Array): Uint8Array {

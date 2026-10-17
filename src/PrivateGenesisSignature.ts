@@ -1,4 +1,3 @@
-import { ed25519 } from '@noble/curves/ed25519.js';
 import { Buffer } from 'buffer';
 
 import { InvalidPrivateGenesisError } from './errors/InvalidPrivateGenesisError';
@@ -19,11 +18,12 @@ export class PrivateGenesisSignature {
   public static sign(unsignedJson: string, key: PrivateKey): string {
     try {
       const value = StrictCanonicalJson.parse(unsignedJson);
-      const seed = CryptoAdapter.privateKeyToSeed(key.valueOf());
-      const owner = CanonicalBase64Url.encode(ed25519.getPublicKey(seed));
+      const owner = CanonicalBase64Url.encode(
+        CryptoAdapter.getRawPublicKey(key.valueOf()),
+      );
       PrivateGenesisEncoding.validate(value, owner, false);
       const signature = CanonicalBase64Url.encode(
-        ed25519.sign(this.signingBytes(value), seed),
+        CryptoAdapter.sign(this.signingBytes(value), key.valueOf()),
       );
 
       return StrictCanonicalJson.serialize({

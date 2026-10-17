@@ -85,7 +85,7 @@ describe('CommunityInvitationKey', () => {
     expect(() =>
       CommunityInvitationPossession.verify(
         fields,
-        CommunityInvitationPossession.sign(fields, key),
+        key.signPossession(fields),
         key.publicKey(),
       ),
     ).not.toThrow();

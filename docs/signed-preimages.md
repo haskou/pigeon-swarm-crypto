@@ -39,6 +39,8 @@ instances, functions, symbols and bigints with `InvalidCanonicalJsonError`.
 | `DeviceSealedSecretSignature`            | JCS of the sealed secret with `purpose: 'pigeon:device-sealed-secret:v1'`                                                     | publisher device                                       |
 | `PublicMutationSignature`                | `'pigeon:public-mutation:v2\n'` + JCS of the mutation without `signature`                                                     | device named by `author.deviceCredential`              |
 | `CommunityOperationSignature`            | `'pigeon:community-operation:v1\n'` + record id `community:<id>:op:<digest>`                                                  | actor identity key                                     |
+| `CommunityInvitationPossession`          | `'pigeon:community-invitation-possession:v1\n'` + JCS `{communityId, identityId, invitationId, networkId}`                    | invitation key (`CommunityInvitationKey`)              |
+| `CommunityInvitationConsent`             | `'pigeon:community-invitation-consent:v1\n'` + JCS `{communityId, identityId, invitationId, networkId}`                       | identity key named by `identityId`                     |
 
 Device pairing messages are described in [device-pairing.md](device-pairing.md).
 
@@ -95,13 +97,43 @@ the unpadded base64url SHA-256 of the canonical JSON of the record payload and
 of the whole signed mutation; a successor names its predecessor by `digest`.
 Ordering and conflict resolution stay in the application.
 
-### Community operations and invites
+### Community operations and invitations
 
 `CommunityOperationSignature` signs the record id, which already commits to the
-community and the operation digest. `CommunityInviteReference.of(token)` maps a
-32-byte unpadded base64url invite token to the unpadded base64url SHA-256 of
-`'pigeon:community-invite-reference:v1\n' + token`, so nodes store only the
-reference.
+community and the operation digest.
+
+An invitation link carries a secret of 32 bytes as 43 characters of canonical
+unpadded base64url. `CommunityInvitationKey.fromSecret(secret)` derives the
+Ed25519 seed `HKDF-SHA256(ikm = secret, salt = empty, info =
+'pigeon:community-invitation-key:v1', L = 32)` and wipes the secret bytes and
+the seed; `generate()` returns a fresh `{key, secret}`. The key never
+serializes (`toJSON` throws) and signs only possession proofs. `publicKey()`
+is the raw 32-byte public key as canonical unpadded base64url, and
+`CommunityInvitationKey.parsePublicKey(text)` accepts only that text for a
+point that is on the curve, canonically encoded and not of small order.
+
+Both proofs sign `CanonicalJson({communityId, identityId, invitationId,
+networkId})` under their own domain:
+
+- `communityId`: 1 to 128 base64url characters;
+- `identityId`: the canonical base64 SPKI body of a strict Ed25519 key that is
+  not of small order, so an alias of the joiner's key fails;
+- `invitationId`: 32 bytes as canonical unpadded base64url;
+- `networkId`: a UUID as the `@haskou/value-objects` `UUID` accepts it
+  (versions 1 to 8 with variant `8` to `b`, or the nil or max UUID, in either
+  case); the proof signs its exact text.
+
+`key.signPossession(fields)` signs
+`'pigeon:community-invitation-possession:v1\n'` + the body, and
+`CommunityInvitationPossession.verify(fields, possession, invitationKey)`
+checks it under the invitation key. `CommunityInvitationConsent.sign(fields,
+identityKey)` signs `'pigeon:community-invitation-consent:v1\n'` + the body
+only with the key whose SPKI body is `fields.identityId`, and
+`CommunityInvitationConsent.verify(fields, consent)` checks it under that id.
+`contentOf(fields)` returns either preimage. A proof is the 64-byte Ed25519
+signature as 86 characters of canonical unpadded base64url. Verification is
+strict RFC 8032: `S >= L`, a non-canonical `R` or key and a small-order key
+fail, and no other alphabet, padding or PEM key is read.
 
 ### Private freshness requests
 
@@ -118,7 +150,7 @@ nested message: `InvalidSignedHttpRequestError`, `InvalidIdentitySignatureError`
 `InvalidKeychainSignatureError`, `InvalidDeviceAuthorizationTransitionError`,
 `InvalidDeviceSealedSecretError`, `InvalidPublicMutationError`,
 `InvalidCommunityOperationSignatureError`,
-`InvalidCommunityInviteReferenceError`, `InvalidPrivateFreshnessRequestError`
+`InvalidCommunityInvitationError`, `InvalidPrivateFreshnessRequestError`
 and `InvalidCanonicalJsonError`.
 
 ## Vectors
@@ -128,7 +160,7 @@ Consumers load them in their own specs instead of keeping mirrored fixtures:
 `canonical-json`, `signed-http-request`, `identity-signature`,
 `keychain-signature`, `device-authorization-transition`, `device-sealed-secret`,
 `device-pairing`, `call-event`, `community-moderation-log`,
-`community-operation`, `content-replication`, `conversation-operation` and
+`community-invitation`, `community-operation`, `content-replication`, `conversation-operation` and
 `private-freshness-request`. Vector keys are disposable test keys.
 
 ## Verification

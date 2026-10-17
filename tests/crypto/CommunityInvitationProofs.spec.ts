@@ -55,9 +55,7 @@ describe('community invitation proofs', () => {
     expect(CommunityInvitationConsent.contentOf(proof.fields)).toBe(
       proof.consentContent,
     );
-    expect(CommunityInvitationPossession.sign(proof.fields, key)).toBe(
-      proof.possession,
-    );
+    expect(key.signPossession(proof.fields)).toBe(proof.possession);
     expect(CommunityInvitationConsent.sign(proof.fields, joiner)).toBe(
       proof.consent,
     );
@@ -91,10 +89,7 @@ describe('community invitation proofs', () => {
       ...sample.fields,
       networkId: sample.fields.networkId.toUpperCase(),
     };
-    const possession = CommunityInvitationPossession.sign(
-      fields,
-      invitationKey,
-    );
+    const possession = invitationKey.signPossession(fields);
 
     expect(() =>
       CommunityInvitationPossession.verify(
@@ -120,9 +115,7 @@ describe('community invitation proofs', () => {
       expect(() => CommunityInvitationConsent.contentOf(fields)).toThrow(
         refused,
       );
-      expect(() =>
-        CommunityInvitationPossession.sign(fields, invitationKey),
-      ).toThrow(refused);
+      expect(() => invitationKey.signPossession(fields)).toThrow(refused);
       expect(() => CommunityInvitationConsent.sign(fields, joinerKey)).toThrow(
         refused,
       );
@@ -171,15 +164,6 @@ describe('community invitation proofs', () => {
         sample.fields,
         sample.possession,
         `${sample.invitationKey}=`,
-      ),
-    ).toThrow(refused);
-  });
-
-  it('signs possession only with an invitation key', () => {
-    expect(() =>
-      CommunityInvitationPossession.sign(
-        sample.fields,
-        joinerKey as unknown as CommunityInvitationKey,
       ),
     ).toThrow(refused);
   });

@@ -173,10 +173,7 @@ function computeAll(PigeonCrypto, vectors) {
       CommunityInvitationConsent.verify(proof.fields, proof.consent);
       return [
         CommunityInvitationPossession.contentOf(proof.fields),
-        CommunityInvitationPossession.sign(
-          proof.fields,
-          invitationKeyOf(proof),
-        ),
+        invitationKeyOf(proof).signPossession(proof.fields),
         CommunityInvitationConsent.contentOf(proof.fields),
         CommunityInvitationConsent.sign(
           proof.fields,

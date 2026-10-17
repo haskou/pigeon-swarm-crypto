@@ -1,6 +1,6 @@
 {
   "algorithms": {
-    "body": "RFC 8785 canonical JSON of {communityId, identityId, invitationId, networkId}. communityId is 1 to 128 base64url characters; identityId is the canonical base64 SPKI body of a strict Ed25519 key that is not of small order; invitationId is the canonical unpadded base64url of 32 bytes (43 characters); networkId is a UUID (8-4-4-4-12 hexadecimal digits)",
+    "body": "RFC 8785 canonical JSON of {communityId, identityId, invitationId, networkId}. communityId is 1 to 128 base64url characters; identityId is the canonical base64 SPKI body of a strict Ed25519 key that is not of small order; invitationId is the canonical unpadded base64url of 32 bytes (43 characters); networkId is a UUID with version 1 to 8 and variant 8 to b, or the nil or max UUID, in either case, and the proofs sign its exact text",
     "consent": "Ed25519 by the joiner identity key over utf8(\"pigeon:community-invitation-consent:v1\\n\" + body), canonical unpadded base64url of the 64 signature bytes (86 characters), verified under fields.identityId",
     "invitationKey": "canonical unpadded base64url of the raw 32-byte Ed25519 public key of the seed (43 characters); strict decoding refuses non-canonical and small-order points",
     "possession": "Ed25519 by the invitation key over utf8(\"pigeon:community-invitation-possession:v1\\n\" + body), canonical unpadded base64url of the 64 signature bytes (86 characters), verified under the invitationKey of the invitation",

@@ -249,3 +249,74 @@ describe('PublicKey raw Ed25519 encoding', () => {
       expect(() => new PublicKey(pem).toRaw()).toThrow(InvalidFormatError);
   });
 });
+
+describe('PublicKey subclasses whose valueOf() is bare base64', () => {
+  let publicPem: string;
+  let privatePem: string;
+  let bareBase64: string;
+
+  beforeAll(() => {
+    const pair = crypto.generateKeyPairSync('ed25519', {
+      privateKeyEncoding: { format: 'pem', type: 'pkcs8' },
+      publicKeyEncoding: { format: 'pem', type: 'spki' },
+    });
+    publicPem = pair.publicKey;
+    privatePem = pair.privateKey;
+    bareBase64 = publicPem
+      .replace('-----BEGIN PUBLIC KEY-----\n', '')
+      .replace('\n-----END PUBLIC KEY-----\n', '');
+  });
+
+  class IdentityId extends PublicKey {
+    public override valueOf(): string {
+      return bareBase64;
+    }
+  }
+
+  it('converts to raw bytes through the canonical PEM form', () => {
+    expect(new IdentityId(publicPem).toRaw()).toEqual(
+      new PublicKey(publicPem).toRaw(),
+    );
+  });
+
+  it('verifies signatures through the canonical PEM form', () => {
+    const valid = Signature.fromBuffer(
+      crypto.sign(null, Buffer.from('message'), privatePem),
+    );
+    const invalid = Signature.fromBuffer(
+      crypto.sign(null, Buffer.from('other'), privatePem),
+    );
+
+    expect(
+      new IdentityId(publicPem).isValidSignature('message', valid),
+    ).toBeTrue();
+    expect(
+      new IdentityId(publicPem).isValidSignature('message', invalid),
+    ).toBeFalse();
+  });
+
+  it('encrypts to the canonical PEM form and round-trips through PrivateKey', () => {
+    const payload = new IdentityId(publicPem).encrypt('hello');
+
+    expect(new PrivateKey(privatePem).decrypt(payload).toString()).toBe(
+      'hello',
+    );
+  });
+
+  it('keeps canonical PEM keys working alongside the subclass', () => {
+    const key = new PublicKey(publicPem);
+
+    expect(key.toRaw()).toHaveLength(32);
+    expect(
+      key.isValidSignature(
+        'message',
+        Signature.fromBuffer(
+          crypto.sign(null, Buffer.from('message'), privatePem),
+        ),
+      ),
+    ).toBeTrue();
+    expect(
+      new PrivateKey(privatePem).decrypt(key.encrypt('hi')).toString(),
+    ).toBe('hi');
+  });
+});

@@ -63,7 +63,7 @@ export class PublicKey extends Key {
   }
 
   public toRaw(): Uint8Array {
-    const raw = CryptoAdapter.publicKeyToStrictBytes(this.valueOf());
+    const raw = CryptoAdapter.publicKeyToStrictBytes(this.toString());
 
     assert(
       CryptoAdapter.isStrictEd25519PublicKey(raw),
@@ -83,7 +83,11 @@ export class PublicKey extends Key {
         : Buffer.from(payload.valueOf());
     const signatureBuffer = Buffer.from(signature.valueOf(), 'base64');
 
-    return CryptoAdapter.verify(signatureBuffer, messageBuffer, this.valueOf());
+    return CryptoAdapter.verify(
+      signatureBuffer,
+      messageBuffer,
+      this.toString(),
+    );
   }
 
   public encrypt(payload: CryptoPayload): AsymmetricEncryptedPayload {
@@ -100,7 +104,7 @@ export class PublicKey extends Key {
       ),
     );
 
-    const x25519Pub = CryptoAdapter.publicKeyToX25519(this.valueOf());
+    const x25519Pub = CryptoAdapter.publicKeyToX25519(this.toString());
     const ephemeralPriv = CryptoAdapter.x25519RandomPrivateKey();
     const ephemeralPub = CryptoAdapter.x25519PublicKey(ephemeralPriv);
     const sharedSecret = CryptoAdapter.x25519SharedSecret(

@@ -7,7 +7,7 @@ import { PublicKey } from './PublicKey';
 export class DeviceCredentialCommitment {
   public static of(credential: PublicKey): string {
     return Buffer.from(
-      sha256(Buffer.from(credential.valueOf(), 'utf8')),
+      sha256(Buffer.from(credential.toString(), 'utf8')),
     ).toString('hex');
   }
 }

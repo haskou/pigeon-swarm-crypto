@@ -101,7 +101,7 @@ export class PreimageFields {
   }
 
   public static credentialBody(key: PublicKey): string {
-    return key.valueOf().split('\n')[1];
+    return key.toString().split('\n')[1];
   }
 
   /** Reads a credential given as its PEM body, the wire form of device keys. */

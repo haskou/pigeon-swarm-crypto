@@ -2,6 +2,9 @@ import {
   CommitmentId,
   CommunityOperationSignature,
   InvalidCommunityOperationSignatureError,
+  PublicMutation,
+  PublicMutationBody,
+  PublicMutationSignature,
   Signature,
 } from '../../src';
 import { loadVectors, privateKeyOf, publicKeyOf, VectorKey } from '../vectors';
@@ -21,7 +24,12 @@ type CommunityOperationVectors = {
 };
 type ModerationLogVectors = {
   cases: {
-    derived: { id: string };
+    derived: {
+      id: string;
+      mutationBody: PublicMutationBody;
+      payload: { actorIdentityId: string };
+      signature: string;
+    };
     input: {
       action: string;
       communityId: string;
@@ -98,6 +106,8 @@ describe('CommunityOperationSignature', () => {
     const log = moderationLogs.cases.find(
       ({ name }) => name === 'invitation_created_names_operation_digest',
     ) as ModerationLogVectors['cases'][number];
+    const operationAuthor = vectors.keys[input.signer];
+    const actorIdentityId = operationAuthor.identityId;
 
     expect(derived.recordId.endsWith(`:op:${derived.digest}`)).toBe(true);
     expect(log.input.target).toEqual({
@@ -105,15 +115,27 @@ describe('CommunityOperationSignature', () => {
       type: 'invitation',
     });
     expect(log.input.createdAt).toBe(input.createdAt);
+    expect(log.input.signer).toBe(input.signer);
+    expect(log.derived.payload.actorIdentityId).toBe(actorIdentityId);
+    expect(log.derived.mutationBody.author.identityId).toBe(actorIdentityId);
     expect(
       CommitmentId.communityModerationLog(
         log.input.communityId,
-        moderationLogs.keys[log.input.signer].identityId,
+        actorIdentityId,
         log.input.action,
         log.input.target.type,
         log.input.target.id,
         log.input.createdAt,
       ),
     ).toBe(log.derived.id);
+    expect(() =>
+      PublicMutationSignature.verify(
+        {
+          ...log.derived.mutationBody,
+          signature: log.derived.signature,
+        } as PublicMutation,
+        publicKeyOf(operationAuthor),
+      ),
+    ).not.toThrow();
   });
 });

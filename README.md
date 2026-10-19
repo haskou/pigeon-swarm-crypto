@@ -94,11 +94,12 @@ package does not enforce an application password policy or provide account recov
 | Keys and signatures | `Key`, `PrivateKey`, `PublicKey`, `KeyPair`, `Signature` |
 | Protected keys | `EncryptedPrivateKey`, `EncryptedKeyPair`, `CryptoPassword` |
 | Encrypted envelopes | `EncryptedPayload`, `AsymmetricEncryptedPayload`, `SymmetricEncryptedPayload`, `EncryptedPayloadScheme` |
+| X25519 sealing | `X25519KeyPair`, `X25519PublicKey`, `X25519EncryptedPayload` |
 | Symmetric encryption | `SymmetricKey`, `SymmetricKeyCryptOptions`, `SymmetricKeyDerivationOptions` |
 | Digest computation | `SHA256Hash`, `SHA512Hash`, `HashPayload` |
 | Signed protocol preimages | `CanonicalJson`, `SignedHttpRequestSignature`, `IdentitySignature`, `KeychainSignature`, `DeviceAuthorizationTransitionSignature`, `DeviceSealedSecretSignature`, `DeviceCredentialCommitment`, `PublicMutationSignature`, `CommunityOperationSignature`, `CommunityInvitationKey`, `CommunityInvitationPossession`, `CommunityInvitationConsent`, `PrivateFreshnessRequest` |
 | Device pairing | `DevicePairingInvitationSignature`, `DevicePairingRequestSignature`, `DevicePairingCompletionSignature`, `DevicePairingVerificationCode` |
-| Public errors | `InvalidKeyError`, `InvalidEd25519PublicKeyError`, `InvalidSignatureError`, `InvalidEncryptedPrivateKeyFormatError` |
+| Public errors | `InvalidKeyError`, `InvalidEd25519PublicKeyError`, `InvalidSignatureError`, `InvalidEncryptedPrivateKeyFormatError`, `InvalidX25519KeyError`, `InvalidX25519EncryptedPayloadError` |
 
 Digest classes expose `.from(payload)` for computation. The corresponding classes
 in `value-objects` validate an already-computed digest. With version 8, equality

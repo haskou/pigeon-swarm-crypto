@@ -99,6 +99,21 @@ export class CryptoAdapter {
     );
   }
 
+  public static deriveX25519SealKey(
+    sharedSecret: Uint8Array,
+    ephemeralPublicKey: Uint8Array,
+    recipientPublicKey: Uint8Array,
+    info: Uint8Array,
+  ): Uint8Array {
+    return hkdf(
+      sha256,
+      sharedSecret,
+      concatBytes(ephemeralPublicKey, recipientPublicKey),
+      info,
+      32,
+    );
+  }
+
   public static encryptAes256Gcm(
     key: Uint8Array,
     iv: Uint8Array,

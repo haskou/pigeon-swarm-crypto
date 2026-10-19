@@ -63,18 +63,13 @@ const publicBytesOf = (privateKey: crypto.KeyObject): Buffer =>
 const encode = (bytes: Uint8Array): string =>
   Buffer.from(bytes).toString('base64url');
 
-const referenceSeal = (
+const referenceSealWith = (
   recipientPublic: Uint8Array,
   plaintext: Uint8Array,
-  ephemeralPrivate: Uint8Array,
+  ephemeralPublic: Uint8Array,
+  shared: Uint8Array,
   nonce: Uint8Array,
 ): string => {
-  const ephemeral = privateKeyObject(ephemeralPrivate);
-  const ephemeralPublic = publicBytesOf(ephemeral);
-  const shared = crypto.diffieHellman({
-    privateKey: ephemeral,
-    publicKey: publicKeyObject(recipientPublic),
-  });
   const key = Buffer.from(
     crypto.hkdfSync(
       'sha256',
@@ -95,6 +90,27 @@ const referenceSeal = (
     encode(cipherText),
     encode(cipher.getAuthTag()),
   ].join('.');
+};
+
+const referenceSeal = (
+  recipientPublic: Uint8Array,
+  plaintext: Uint8Array,
+  ephemeralPrivate: Uint8Array,
+  nonce: Uint8Array,
+): string => {
+  const ephemeral = privateKeyObject(ephemeralPrivate);
+  const shared = crypto.diffieHellman({
+    privateKey: ephemeral,
+    publicKey: publicKeyObject(recipientPublic),
+  });
+
+  return referenceSealWith(
+    recipientPublic,
+    plaintext,
+    publicBytesOf(ephemeral),
+    shared,
+    nonce,
+  );
 };
 
 const referenceOpen = (recipientPrivate: Uint8Array, envelope: string): Buffer => {
@@ -301,6 +317,46 @@ describe('X25519 sealed payloads', () => {
     const raw = Buffer.from(hex, 'hex');
 
     expect(Buffer.from(X25519PublicKey.fromRaw(raw).toRaw())).toEqual(raw);
+  });
+
+  it('refuses a non-canonical ephemeral key whose envelope would otherwise open', () => {
+    // Key and tag are derived exactly as for a canonical ephemeral key, so only
+    // the canonical check can refuse this envelope.
+    const ephemeral = Buffer.from(`ef${'ff'.repeat(30)}7f`, 'hex');
+    const envelope = referenceSealWith(
+      publicKey.toRaw(),
+      KNOWN_PLAINTEXT,
+      ephemeral,
+      crypto.diffieHellman({
+        privateKey: privateKeyObject(RECIPIENT_PRIVATE),
+        publicKey: publicKeyObject(ephemeral),
+      }),
+      NONCE,
+    );
+
+    expect(() =>
+      recipient.decrypt(new X25519EncryptedPayload(envelope)),
+    ).toThrow(InvalidX25519EncryptedPayloadError);
+  });
+
+  it('opens the canonical counterpart of that ephemeral key', () => {
+    const ephemeral = Buffer.from(`02${'00'.repeat(31)}`, 'hex');
+    const envelope = referenceSealWith(
+      publicKey.toRaw(),
+      KNOWN_PLAINTEXT,
+      ephemeral,
+      crypto.diffieHellman({
+        privateKey: privateKeyObject(RECIPIENT_PRIVATE),
+        publicKey: publicKeyObject(ephemeral),
+      }),
+      NONCE,
+    );
+
+    expect(
+      recipient
+        .decrypt(new X25519EncryptedPayload(envelope))
+        .equals(KNOWN_PLAINTEXT),
+    ).toBe(true);
   });
 
   it('derives the public key from the private key', () => {

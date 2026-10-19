@@ -41,13 +41,17 @@ export class X25519Envelope {
     if (parts.length !== 6 || parts[0] !== SCHEME || parts[1] !== VERSION)
       throw new InvalidX25519EncryptedPayloadError();
     const [, , ephemeral, nonce, cipherText, tag] = parts;
+    const ephemeralPublicKey = CanonicalBase64Url.decode(ephemeral, KEY_LENGTH);
+
+    if (!CryptoAdapter.isCanonicalX25519PublicKey(ephemeralPublicKey))
+      throw new InvalidX25519EncryptedPayloadError();
 
     return {
       cipherText: CanonicalBase64Url.decodeBounded(
         cipherText,
         MAX_PLAINTEXT_LENGTH,
       ),
-      ephemeralPublicKey: CanonicalBase64Url.decode(ephemeral, KEY_LENGTH),
+      ephemeralPublicKey,
       nonce: CanonicalBase64Url.decode(nonce, NONCE_LENGTH),
       tag: CanonicalBase64Url.decode(tag, TAG_LENGTH),
     };

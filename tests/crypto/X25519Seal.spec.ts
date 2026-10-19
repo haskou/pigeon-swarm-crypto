@@ -280,6 +280,29 @@ describe('X25519 sealed payloads', () => {
     ).toThrow(InvalidX25519KeyError);
   });
 
+  it.each([
+    ['the base point with bit 255 set', `09${'00'.repeat(30)}80`],
+    ['the field modulus 2^255-19', `ed${'ff'.repeat(30)}7f`],
+    ['one above the field modulus', `ee${'ff'.repeat(30)}7f`],
+    ['the largest 255-bit value', `${'ff'.repeat(31)}7f`],
+  ])('refuses the non-canonical public key %s', (_name, hex) => {
+    const raw = Buffer.from(hex, 'hex');
+
+    expect(() => X25519PublicKey.fromRaw(raw)).toThrow(InvalidX25519KeyError);
+    expect(() => X25519PublicKey.fromRaw(raw).encrypt('hello')).toThrow(
+      InvalidX25519KeyError,
+    );
+  });
+
+  it.each([
+    ['the base point', `09${'00'.repeat(31)}`],
+    ['the largest value below the field modulus', `ec${'ff'.repeat(30)}7f`],
+  ])('accepts the canonical public key %s', (_name, hex) => {
+    const raw = Buffer.from(hex, 'hex');
+
+    expect(Buffer.from(X25519PublicKey.fromRaw(raw).toRaw())).toEqual(raw);
+  });
+
   it('derives the public key from the private key', () => {
     expect(Buffer.from(publicKey.toRaw()).toString('hex')).toBe(
       RECIPIENT_PUBLIC_HEX,

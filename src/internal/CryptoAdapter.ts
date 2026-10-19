@@ -19,6 +19,7 @@ import { HashAlgorithm } from './HashAlgorithm';
 const privateKeyDerPrefix = hexToBytes('302e020100300506032b657004220420');
 const publicKeyDerPrefix = hexToBytes('302a300506032b6570032100');
 const gcmTagLength = 16;
+const x25519FieldModulus = 2n ** 255n - 19n;
 const asymmetricPayloadV2Info = Buffer.from(
   '@haskou/value-objects/asymmetric-payload/v2',
 );
@@ -169,6 +170,17 @@ export class CryptoAdapter {
 
   public static hmacSha256(key: Uint8Array, message: Uint8Array): Uint8Array {
     return hmac(sha256, key, message);
+  }
+
+  public static isCanonicalX25519PublicKey(publicKey: Uint8Array): boolean {
+    let coordinate = 0n;
+
+    for (let index = publicKey.length - 1; index >= 0; index -= 1) {
+      coordinate = coordinate * 256n + BigInt(publicKey[index]);
+    }
+
+    // Bit 255 set also exceeds the modulus, so one comparison refuses both forms.
+    return coordinate < x25519FieldModulus;
   }
 
   public static isStrictEd25519PublicKey(publicKey: Uint8Array): boolean {

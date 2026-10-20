@@ -130,7 +130,7 @@
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "@haskou/value-objects": "^8.3.3",
+    "@haskou/value-objects": "^8.4.3",
     "@hpke/chacha20poly1305": "1.8.0",
     "@hpke/dhkem-x448": "1.8.0",
     "@hpke/hybridkem-x-wing": "0.7.0",

@@ -140,3 +140,8 @@ export { InvalidCallRelayRecordError } from './errors/InvalidCallRelayRecordErro
 export { PublicRelayRecordSignature } from './PublicRelayRecordSignature';
 export type { PublicRelayRecordFields } from './PublicRelayRecordFields';
 export { InvalidPublicRelayRecordError } from './errors/InvalidPublicRelayRecordError';
+export { X25519PublicKey } from './X25519PublicKey';
+export { X25519KeyPair } from './X25519KeyPair';
+export { X25519EncryptedPayload } from './X25519EncryptedPayload';
+export { InvalidX25519KeyError } from './errors/InvalidX25519KeyError';
+export { InvalidX25519EncryptedPayloadError } from './errors/InvalidX25519EncryptedPayloadError';

@@ -307,7 +307,7 @@ export const ed25519Uses = (
 
     if (
       ts.isIdentifier(node) &&
-      node.text === 'ed25519' &&
+      (node.text === 'ed25519' || node.text === 'x25519') &&
       !(ts.isPropertyAccessExpression(node.parent) && node.parent.name === node)
     ) {
       const member = memberOf(node);
@@ -503,6 +503,7 @@ describe('Ed25519 import allowlist', () => {
       'utils.randomSecretKey()',
       'utils.toMontgomery()',
       'utils.toMontgomerySecret()',
+      'getSharedSecret()',
     ];
 
     it.each([
@@ -592,6 +593,16 @@ describe('Ed25519 import allowlist', () => {
         {
           verifyCalls: 0,
           members: ['Point.fromBytes().multiply()'],
+          bare: 0,
+          verifyOptions: [],
+        },
+      ],
+      [
+        'x25519 member call',
+        'x25519.getSharedSecret(a, b);',
+        {
+          verifyCalls: 0,
+          members: ['getSharedSecret()'],
           bare: 0,
           verifyOptions: [],
         },

@@ -36,6 +36,18 @@
       "matchUpdateTypes": ["major"],
       "additionalBranchPrefix": "break/",
       "automerge": false
+    },
+    {
+      "description": "Major updates of dev dependencies, CI actions and toolchain never release the package",
+      "matchUpdateTypes": ["major"],
+      "matchDepTypes": ["devDependencies"],
+      "additionalBranchPrefix": "chore/"
+    },
+    {
+      "description": "Major updates of CI actions and toolchain never release the package",
+      "matchUpdateTypes": ["major"],
+      "matchManagers": ["github-actions", "nvm", "dockerfile"],
+      "additionalBranchPrefix": "chore/"
     }
   ]
 }

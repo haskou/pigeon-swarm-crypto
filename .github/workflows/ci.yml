@@ -269,6 +269,7 @@ jobs:
               | .[]
               | select(.mergedAt != null)
               | select(.headRefName | test("^(fix|feat|break)(/|$)"))
+              | select(.title | test("^(chore|ci|test|docs|build|style)(\\(|:)") | not)
             ' <<< "$prs_json"
           )
 
